@@ -8,6 +8,10 @@ public class StartGameMessage {
     private int[] colors;
     private int firstGroup;
 
+    public StartGameMessage(String type){
+        this.type = type;
+    }
+
     public String getType() {
         return type;
     }
