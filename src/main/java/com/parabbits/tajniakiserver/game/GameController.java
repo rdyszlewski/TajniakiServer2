@@ -1,7 +1,6 @@
 package com.parabbits.tajniakiserver.game;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -24,20 +23,21 @@ public class GameController{
     private final String wordsPath = "resources/words.txt";
     private final int wordsInFirstGroup = 9;
 
-    // TODO: testowe, usunąć to później
-    public static List<String> sessions = new ArrayList<>();
-
     private Group startGroup;
     private String[] words;
     private int[] groupsWords;
 
     @Autowired
+    private Game gameManager;
+
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("game/start")
+    @MessageMapping("/game/start")
     // @SendTo("/words")
     public void startGame(@Payload  String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception{
         initializeGame();
+        gameManager.testPrint();
 
 //        String sessionId = sessions.get(0);
 
