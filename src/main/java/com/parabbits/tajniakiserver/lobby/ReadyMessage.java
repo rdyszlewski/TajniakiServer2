@@ -1,13 +1,13 @@
 package com.parabbits.tajniakiserver.lobby;
 
-public class ChangeTeamMessage {
+public class ReadyMessage {
 
     private String nickname;
-    private String team;
+    private boolean ready;
 
-    public ChangeTeamMessage(String nickname, String team){
+    public ReadyMessage(String nickname, boolean ready) {
         this.nickname = nickname;
-        this.team = team;
+        this.ready = ready;
     }
 
     public String getNickname() {
@@ -18,11 +18,11 @@ public class ChangeTeamMessage {
         this.nickname = nickname;
     }
 
-    public String getTeam() {
-        return team;
+    public boolean isReady() {
+        return ready;
     }
 
-    public void setTeam(String team) {
-        this.team = team;
+    public void setReady(boolean ready) {
+        this.ready = ready;
     }
 }

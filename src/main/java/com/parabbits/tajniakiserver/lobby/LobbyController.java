@@ -14,6 +14,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class LobbyController {
@@ -59,15 +60,14 @@ public class LobbyController {
 
     @MessageMapping("lobby/team")
     @SendTo("/topic/lobby/team")
-    public ChangeTeamMessage changeTeam(@Payload String teamText, SimpMessageHeaderAccessor headerAccessor) {
+    public TeamMessage changeTeam(@Payload String teamText, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Player player = game.getPlayer(sessionId);
         Team team = getTeam(teamText);
         if (canChangeTeam(team)) {
             player.setTeam(team);
         }
-        return new ChangeTeamMessage(player.getNickName(), player.getTeam().toString());
-//
+        return new TeamMessage(player.getNickName(), player.getTeam().toString());
     }
 
     private boolean canChangeTeam(Team team) {
@@ -86,5 +86,33 @@ public class LobbyController {
         }
     }
 
-    // TODO: gotowość
+    @MessageMapping("/lobby/ready")
+    @SendTo("/topic/lobby/ready")
+    public ReadyMessage changeReady(@Payload boolean ready, SimpMessageHeaderAccessor headerAccessor) {
+        System.out.println("Zmiana gotowości");
+        String sessionId = headerAccessor.getSessionId();
+        Player player = game.getPlayer(sessionId);
+        player.setReady(ready);
+        if (areAllReady()) {
+            new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            for (Player p : game.getPlayers()) {
+                                messagingTemplate.convertAndSend("/queue/lobby/start", "START");
+                            }
+                        }
+                    },
+                    1000
+            );
+        }
+        // TODO: dodać sprawdzanie, czy wszyscy są gotowi. Można też sprawdzić, czy możliwe jest zmienianie gotowości
+        return new ReadyMessage(player.getNickName(), ready);
+    }
+
+    private boolean areAllReady() {
+        int numPlayers = game.getPlayers().size();
+        List<Player> readyPlayers = game.getPlayers().stream().filter(Player::isReady).collect(Collectors.toList());
+        return numPlayers == readyPlayers.size();
+    }
 }
