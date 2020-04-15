@@ -6,6 +6,14 @@ public class Player {
     private String nickName;
     private Team team;
     private Role role;
+    private boolean ready;
+
+    public Player(String sessionId, String nickName){
+        this.sessionId = sessionId;
+        this.nickName = nickName;
+        this.team = Team.OBSERVER;
+        this.ready = false;
+    }
 
     public String getSessionId() {
         return sessionId;
@@ -37,5 +45,13 @@ public class Player {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public boolean isReady(){
+        return ready;
+    }
+
+    public void setReady(boolean ready){
+        this.ready = ready;
     }
 }
