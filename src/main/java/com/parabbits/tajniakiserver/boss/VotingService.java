@@ -50,7 +50,7 @@ public class VotingService {
         votes.put(sessionId, vote);
     }
 
-    private BossCandidatePlayer getWinner(){
+    public BossCandidatePlayer getWinner(){
         BossCandidatePlayer bestCandidate = null;
         int maxVotes = 0;
         for (BossCandidatePlayer candidate: candidates.values()){

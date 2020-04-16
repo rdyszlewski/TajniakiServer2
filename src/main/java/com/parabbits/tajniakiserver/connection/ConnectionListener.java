@@ -1,4 +1,4 @@
-package com.parabbits.tajniakiserver;
+package com.parabbits.tajniakiserver.connection;
 
 
 import com.parabbits.tajniakiserver.game.Game;

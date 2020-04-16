@@ -1,6 +1,8 @@
 package com.parabbits.tajniakiserver.game;
 
+import com.parabbits.tajniakiserver.boss.BossController;
 import com.parabbits.tajniakiserver.boss.VotingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,6 +13,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class Game {
+
+    // TODO: pomyśleć, jak rozwiązać to inaczej
+    @Autowired
+    private BossController bossController;
 
     public static final int MAX_PLAYERS = 10;
 
@@ -60,8 +66,26 @@ public class Game {
     }
 
     public void startVoting(){
-        blueVoting.init(players);
-        redVoting.init(players);
+        if(blueVoting.getCandidates().isEmpty()){
+            blueVoting.init(players);
+            redVoting.init(players);
+            // TODO: z uruchomieniem licznika można poczekać, aż wszyscy się załadują
+            startTimer();
+        }
+    }
+
+    private void startTimer(){
+        // TODO: można zrobić klasę Timer, która będzie znajdować się w Game. Kontrolery będą mogły z niego korzystać.
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        bossController.endVoting();
+                        // TODO: można zrobić wysyłanie czasu do klientów co sekunde
+                    }
+                },
+                10000
+        );
     }
     
     public VotingService getVotingService(Team team){

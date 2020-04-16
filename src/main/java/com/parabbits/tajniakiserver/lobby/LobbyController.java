@@ -1,15 +1,14 @@
 package com.parabbits.tajniakiserver.lobby;
 
+import com.parabbits.tajniakiserver.connection.HeaderUtils;
 import com.parabbits.tajniakiserver.game.Game;
 import com.parabbits.tajniakiserver.game.Player;
 import com.parabbits.tajniakiserver.game.Team;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
@@ -34,24 +33,16 @@ public class LobbyController {
         if (player != null) {
             sendToAllExcept(player, "/queue/connect", player.getNickname());
         }
-        messagingTemplate.convertAndSendToUser(player.getSessionId(), "/lobby/players", getAllPlayersInLobby(), createHeaders(player.getSessionId()));
+        messagingTemplate.convertAndSendToUser(player.getSessionId(), "/lobby/players", getAllPlayersInLobby(), HeaderUtils.createHeaders(player.getSessionId()));
     }
 
     private void sendToAllExcept(Player player, String path, Object message) {
         for (Player p : game.getPlayers()) {
             if (!p.getSessionId().equals(player.getSessionId())) {
                 System.out.println("Wysyłam wiadomość o podłączeniu do " + p.getNickname());
-                messagingTemplate.convertAndSendToUser(p.getSessionId(), path, message, createHeaders(p.getSessionId()));
+                messagingTemplate.convertAndSendToUser(p.getSessionId(), path, message, HeaderUtils.createHeaders(p.getSessionId()));
             }
         }
-    }
-
-    // TODO: przenieść do odzielnej klasy
-    private MessageHeaders createHeaders(String sessionId) {
-        SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
-        headerAccessor.setSessionId(sessionId);
-        headerAccessor.setLeaveMutable(true);
-        return headerAccessor.getMessageHeaders();
     }
 
     private List<Player> getAllPlayersInLobby() {
@@ -94,20 +85,24 @@ public class LobbyController {
         Player player = game.getPlayer(sessionId);
         player.setReady(ready);
         if (areAllReady()) {
-            new java.util.Timer().schedule(
-                    new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                            for (Player p : game.getPlayers()) {
-                                messagingTemplate.convertAndSend("/queue/lobby/start", "START");
-                            }
-                        }
-                    },
-                    1000
-            );
+            finishChoosing();
         }
-        // TODO: dodać sprawdzanie, czy wszyscy są gotowi. Można też sprawdzić, czy możliwe jest zmienianie gotowości
         return new ReadyMessage(player.getNickname(), ready);
+    }
+
+    private void finishChoosing(){
+        int TIME = 1000;
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        for (Player p : game.getPlayers()) {
+                            messagingTemplate.convertAndSend("/queue/lobby/start", "START");
+                        }
+                    }
+                },
+                TIME
+        );
     }
 
     private boolean areAllReady() {
