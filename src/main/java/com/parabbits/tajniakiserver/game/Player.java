@@ -2,17 +2,35 @@ package com.parabbits.tajniakiserver.game;
 
 public class Player {
 
+    private long id;
     private String sessionId;
-    private String nickName;
+    private String nickname;
     private Team team;
     private Role role;
     private boolean ready;
 
-    public Player(String sessionId, String nickName){
-        this.sessionId = sessionId;
-        this.nickName = nickName;
+    public Player(String sessionId, String nickname){
+        init(sessionId, nickname);
+    }
+
+    public Player(String sessionId, long id, String nickname){
+        init(sessionId, nickname);
+        this.id = id;
+    }
+
+    private void init(String sessionid, String nickname){
+        this.sessionId = sessionid;
+        this.nickname = nickname;
         this.team = Team.OBSERVER;
         this.ready = false;
+    }
+
+    public long getId(){
+        return id;
+    }
+
+    public void setId(long id){
+        this.id = id;
     }
 
     public String getSessionId() {
@@ -23,12 +41,12 @@ public class Player {
         this.sessionId = sessionId;
     }
 
-    public String getNickName() {
-        return nickName;
+    public String getNickname() {
+        return nickname;
     }
 
-    public void setNickName(String nickName) {
-        this.nickName = nickName;
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     public Team getTeam() {

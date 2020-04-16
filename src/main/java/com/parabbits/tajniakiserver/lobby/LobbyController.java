@@ -32,7 +32,7 @@ public class LobbyController {
         game.testPrint();
 
         if (player != null) {
-            sendToAllExcept(player, "/queue/connect", player.getNickName());
+            sendToAllExcept(player, "/queue/connect", player.getNickname());
         }
         messagingTemplate.convertAndSendToUser(player.getSessionId(), "/lobby/players", getAllPlayersInLobby(), createHeaders(player.getSessionId()));
     }
@@ -40,7 +40,7 @@ public class LobbyController {
     private void sendToAllExcept(Player player, String path, Object message) {
         for (Player p : game.getPlayers()) {
             if (!p.getSessionId().equals(player.getSessionId())) {
-                System.out.println("Wysyłam wiadomość o podłączeniu do " + p.getNickName());
+                System.out.println("Wysyłam wiadomość o podłączeniu do " + p.getNickname());
                 messagingTemplate.convertAndSendToUser(p.getSessionId(), path, message, createHeaders(p.getSessionId()));
             }
         }
@@ -67,7 +67,7 @@ public class LobbyController {
         if (canChangeTeam(team)) {
             player.setTeam(team);
         }
-        return new TeamMessage(player.getNickName(), player.getTeam().toString());
+        return new TeamMessage(player.getNickname(), player.getTeam().toString());
     }
 
     private boolean canChangeTeam(Team team) {
@@ -107,7 +107,7 @@ public class LobbyController {
             );
         }
         // TODO: dodać sprawdzanie, czy wszyscy są gotowi. Można też sprawdzić, czy możliwe jest zmienianie gotowości
-        return new ReadyMessage(player.getNickName(), ready);
+        return new ReadyMessage(player.getNickname(), ready);
     }
 
     private boolean areAllReady() {
