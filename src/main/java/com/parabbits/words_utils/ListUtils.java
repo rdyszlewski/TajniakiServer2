@@ -7,13 +7,11 @@ import java.util.List;
 public class ListUtils {
 
     public static <T> List<List<T>> splitListBySize(List<T> list, int[] sizes) {
-        // TODO: refaktoryzacja
         List<List<T>> result = new ArrayList<>();
-        int lastIndex = -1;
+        int lastIndex = 0;
         for (Integer size : sizes){
-            int startIndex = lastIndex + 1;
-            lastIndex = startIndex + size; 
-            
+            int startIndex = lastIndex;
+            lastIndex = startIndex + size;
             List<T> subList = list.subList(startIndex, lastIndex);
             result.add(subList);
         }

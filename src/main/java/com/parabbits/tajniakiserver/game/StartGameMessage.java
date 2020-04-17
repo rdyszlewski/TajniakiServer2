@@ -3,33 +3,17 @@ package com.parabbits.tajniakiserver.game;
 
 public class StartGameMessage {
 
-    private String type;
+    private Role role;
     private String[] words;
-    private int[] colors;
-    private int firstGroup;
+    private WordColor[] colors;
+    private Team firstGroup;
 
-    public StartGameMessage(String type){
-        this.type = type;
+    public Role getRole(){
+        return role;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public int getFirstGroup() {
-        return firstGroup;
-    }
-
-    public void setFirstGroup(int firstGroup) {
-        this.firstGroup = firstGroup;
-    }
-
-    public int[] getColors() {
-        return colors;
-    }
-
-    public void setColors(int[] colors) {
-        this.colors = colors;
+    public void setRole(Role role){
+        this.role = role;
     }
 
     public String[] getWords() {
@@ -40,10 +24,19 @@ public class StartGameMessage {
         this.words = words;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public WordColor[] getColors() {
+        return colors;
     }
 
-   
+    public void setColors(WordColor[] colors) {
+        this.colors = colors;
+    }
 
+    public Team getFirstGroup() {
+        return firstGroup;
+    }
+
+    public void setFirstGroup(Team firstGroup) {
+        this.firstGroup = firstGroup;
+    }
 }

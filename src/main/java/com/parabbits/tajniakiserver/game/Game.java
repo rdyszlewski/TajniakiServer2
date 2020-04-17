@@ -2,18 +2,19 @@ package com.parabbits.tajniakiserver.game;
 
 import com.parabbits.tajniakiserver.boss.BossController;
 import com.parabbits.tajniakiserver.boss.VotingService;
+import com.parabbits.words_utils.TeamsRandom;
+import com.parabbits.words_utils.WordsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class Game {
 
+    private final String WORDS_PATH = "resources/words.txt";
     // TODO: pomyśleć, jak rozwiązać to inaczej
     @Autowired
     private BossController bossController;
@@ -24,6 +25,22 @@ public class Game {
 
     private final VotingService blueVoting = new VotingService(Team.BLUE);
     private final VotingService redVoting = new VotingService(Team.RED);
+
+    private Team firstTeam;
+    private String[] words;
+    private WordColor[] wordsColor;
+
+    public Team getFirstTeam(){
+        return firstTeam;
+    }
+
+    public String[] getWords(){
+        return words;
+    }
+
+    public WordColor[] getWordsColors(){
+        return wordsColor;
+    }
 
     public Player addPlayer(String sessionId, String nickname){
         if (players.size() < MAX_PLAYERS){
@@ -105,4 +122,29 @@ public class Game {
         }
         return null;
     }
+
+    public void initializeGame() throws IOException {
+        final int NUMBER_OF_WORDS = 25;
+        final int WORDS_IN_FIRST_TEAM = 9;
+        if(firstTeam == null){
+            firstTeam = randomFirstGroup();
+            words = getRandomWords();
+            wordsColor = TeamsRandom.randomTeamsForWords(NUMBER_OF_WORDS, WORDS_IN_FIRST_TEAM, firstTeam);
+        }
+    }
+
+    private Team randomFirstGroup(){
+        int randValue = new Random().nextInt(100);
+        return randValue < 50 ? Team.BLUE : Team.RED;
+    }
+
+    private String[] getRandomWords() throws IOException {
+        List<String> allWords = WordsHelper.readWords(WORDS_PATH);
+        List<String> randomWords = WordsHelper.randomWords(allWords, 25);
+        return randomWords.toArray(new String[0]);
+    }
+
+
+
+
 }

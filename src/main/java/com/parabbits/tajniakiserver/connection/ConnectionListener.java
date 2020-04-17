@@ -3,14 +3,11 @@ package com.parabbits.tajniakiserver.connection;
 
 import com.parabbits.tajniakiserver.game.Game;
 import com.parabbits.tajniakiserver.game.Player;
+import com.parabbits.tajniakiserver.game.Role;
 import com.parabbits.tajniakiserver.game.Team;
-import com.parabbits.tajniakiserver.lobby.LobbyController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
@@ -31,9 +28,19 @@ public class ConnectionListener {
         String sessionId = event.getMessage().getHeaders().get("simpSessionId").toString();
         System.out.println("Połączono " + sessionId);
         connectedSessions.add(sessionId);
+
         // TODO: wyłącznie do testów
+        needToTest(sessionId);
+    }
+
+    private void needToTest(String sessionId) {
         Player player  = new Player(sessionId, counter, "g"+connectedSessions.size());
         player.setTeam(Team.BLUE);
+        if(player.getId()%2==0){
+            player.setRole(Role.BOSS);
+        } else {
+            player.setRole(Role.PLAYER);
+        }
         game.addPlayer(player);
         counter++;
     }
