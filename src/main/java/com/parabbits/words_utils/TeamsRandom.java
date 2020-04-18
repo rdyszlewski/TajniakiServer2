@@ -1,7 +1,7 @@
 package com.parabbits.words_utils;
 
-import com.parabbits.tajniakiserver.game.Team;
-import com.parabbits.tajniakiserver.game.WordColor;
+import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.game.models.WordColor;
 
 import java.util.ArrayList;
 import java.util.Collections;

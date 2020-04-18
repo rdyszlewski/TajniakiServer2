@@ -2,8 +2,8 @@ package com.parabbits.tajniakiserver.lobby;
 
 import com.parabbits.tajniakiserver.connection.HeaderUtils;
 import com.parabbits.tajniakiserver.game.Game;
-import com.parabbits.tajniakiserver.game.Player;
-import com.parabbits.tajniakiserver.game.Team;
+import com.parabbits.tajniakiserver.game.models.Player;
+import com.parabbits.tajniakiserver.game.models.Team;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;

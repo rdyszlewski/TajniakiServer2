@@ -2,6 +2,9 @@ package com.parabbits.tajniakiserver.game;
 
 import com.parabbits.tajniakiserver.boss.BossController;
 import com.parabbits.tajniakiserver.boss.VotingService;
+import com.parabbits.tajniakiserver.game.models.Player;
+import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.game.models.WordColor;
 import com.parabbits.words_utils.TeamsRandom;
 import com.parabbits.words_utils.WordsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,13 @@ public class Game {
     private Team firstTeam;
     private String[] words;
     private WordColor[] wordsColor;
+
+    private GameState state = new GameState();
+
+
+    public GameState getState(){
+        return state;
+    }
 
     public Team getFirstTeam(){
         return firstTeam;
@@ -130,6 +140,7 @@ public class Game {
             firstTeam = randomFirstGroup();
             words = getRandomWords();
             wordsColor = TeamsRandom.randomTeamsForWords(NUMBER_OF_WORDS, WORDS_IN_FIRST_TEAM, firstTeam);
+            state.initState(firstTeam, WORDS_IN_FIRST_TEAM);
         }
     }
 
@@ -143,6 +154,23 @@ public class Game {
         List<String> randomWords = WordsHelper.randomWords(allWords, 25);
         return randomWords.toArray(new String[0]);
     }
+
+    public WordColor getWordColor(String word){
+        int index = getWordIndex(word);
+        WordColor color = wordsColor[index];
+        return color;
+    }
+
+    private int getWordIndex(String word){
+        for(int i=0; i<words.length; i++){
+            if(words[i].equals(word)){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+
 
 
 

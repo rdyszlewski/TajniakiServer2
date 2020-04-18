@@ -2,9 +2,9 @@ package com.parabbits.tajniakiserver.connection;
 
 
 import com.parabbits.tajniakiserver.game.Game;
-import com.parabbits.tajniakiserver.game.Player;
-import com.parabbits.tajniakiserver.game.Role;
-import com.parabbits.tajniakiserver.game.Team;
+import com.parabbits.tajniakiserver.game.models.Player;
+import com.parabbits.tajniakiserver.game.models.Role;
+import com.parabbits.tajniakiserver.game.models.Team;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;

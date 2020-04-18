@@ -1,4 +1,4 @@
-package com.parabbits.tajniakiserver.game;
+package com.parabbits.tajniakiserver.game.models;
 
 public enum Team {
     BLUE,

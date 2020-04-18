@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.boss;
 
-import com.parabbits.tajniakiserver.game.Player;
-import com.parabbits.tajniakiserver.game.Team;
+import com.parabbits.tajniakiserver.game.models.Player;
+import com.parabbits.tajniakiserver.game.models.Team;
 
 import java.util.ArrayList;
 import java.util.HashMap;
