@@ -1,15 +1,12 @@
 package com.parabbits.tajniakiserver.game;
 
 import com.google.gson.Gson;
-import com.parabbits.tajniakiserver.connection.HeaderUtils;
 
 import com.parabbits.tajniakiserver.game.messages.AnswerResult;
 import com.parabbits.tajniakiserver.game.messages.BossMessage;
 import com.parabbits.tajniakiserver.game.messages.StartGameMessage;
-import com.parabbits.tajniakiserver.game.models.Player;
-import com.parabbits.tajniakiserver.game.models.Role;
-import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.game.models.WordColor;
+import com.parabbits.tajniakiserver.game.models.*;
+import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -17,71 +14,85 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import javax.annotation.PostConstruct;
+
 @Controller
 public class GameController{
 
+    private final String START_MESSAGE_RESPONSE = "/queue/game/start";
+    private final String CLICK_MESSAGE_RESPONSE = "/queue/game/answer";
+    private final String QUESTION_MESSAGE_RESPONSE = "/queue/game/question";
     @Autowired
     private Game game;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    private MessageManager messageManager;
+
+    @PostConstruct
+    public void init(){
+        messageManager = new MessageManager(messagingTemplate);
+    }
+
     @MessageMapping("/game/start")
     public void startGame(@Payload  String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception{
         game.initializeGame();
 
-        StartGameMessage bossMessage = createStartGameMessageForBoss();
-        StartGameMessage playerMessage = createStartMessageForPlayer();
+        StartGameMessage bossMessage = createStartGameMessage(Role.BOSS);
+        StartGameMessage playersMessage = createStartGameMessage(Role.PLAYER);
 
-        sendGameDataToPlayers(bossMessage, playerMessage);
+        messageManager.sendToPlayersWithRole(bossMessage, Role.BOSS, START_MESSAGE_RESPONSE, game);
+        messageManager.sendToPlayersWithRole(playersMessage, Role.PLAYER, START_MESSAGE_RESPONSE, game);
     }
 
-    private void sendGameDataToPlayers(StartGameMessage bossMessage, StartGameMessage playerMessage) {
-        for(Player player: game.getPlayers()){
-            System.out.println(player.getSessionId());
-            StartGameMessage message = player.getRole()== Role.BOSS? bossMessage : playerMessage;
-            messagingTemplate.convertAndSendToUser(player.getSessionId(), "/queue/game/start", message, HeaderUtils.createHeaders(player.getSessionId()));
-        }
-    }
-
-    private StartGameMessage createStartGameMessageForBoss(){
-        StartGameMessage message = createStartGameMessage(Role.BOSS);
-        message.setColors(game.getWordsColors());
-        return message;
-    }
-
+    // TODO: można przenieść do oodzielnej klasy
     private StartGameMessage createStartGameMessage(Role role){
         StartGameMessage message = new StartGameMessage();
         message.setPlayerRole(role);
-        message.setWords(game.getWords());
-        message.setFirstTeam(game.getFirstTeam());
+        message.setGameState(game.getState());
+        message.setCards(game.getBoard().getCards(role));
         return message;
     }
 
-    private StartGameMessage createStartMessageForPlayer(){
-        return createStartGameMessage(Role.PLAYER);
-    }
-
     @MessageMapping("/game/click")
-    public void answer(@Payload String word, SimpMessageHeaderAccessor headerAccessor){
+    public void servePlayersAnswer(@Payload String word, SimpMessageHeaderAccessor headerAccessor){
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        WordColor color  = game.getWordColor(word);
-        AnswerResult result = new AnswerResult(word, color);
-        result.setCorrect(isCorrect(color, player.getTeam()));
-        // TODO: obliczenie pozostałych słów do odgadnięcia
-        result.setRemainingAnswers(1);
-        // TODO: ustawienie stanu
-        sendAnswerResultToAll(result);
-    }
+        if(!isPlayerTurn(player)){
+            return;
+        }
+        Card card = game.getBoard().getCard(word);
+        AnswerCorrectness.Correctness correctness = AnswerCorrectness.checkCorrectness(card.getColor(), player.getTeam());
+        AnswerResult answerResult;
+        switch(correctness){
+            case CORRECT:
+                answerResult = buildAnswerMessage(card, true);
+                messageManager.sendToAll(answerResult, CLICK_MESSAGE_RESPONSE, game);
+            case INCORRECT:
+                // TODO: poinformowanie gry o błędnym wyborze
+                game.getState().nextTeam(); // TODO: to raczej nie powinno być w tym miejscu
+                answerResult = buildAnswerMessage(card, false);
+                messageManager.sendToAll(answerResult, CLICK_MESSAGE_RESPONSE, game);
+                break;
+            case KILLER:
+                // TODO: wysłać komunikat o końcu gry
+                break;
 
-    private void sendAnswerResultToAll(AnswerResult result){
-        for(Player player: game.getPlayers()){
-            messagingTemplate.convertAndSendToUser(player.getSessionId(), "/queue/game/answer", result, HeaderUtils.createHeaders(player.getSessionId()));
         }
     }
 
-    private boolean isCorrect(WordColor color, Team team){
-        return (color == WordColor.BLUE && team == Team.BLUE) || (color == WordColor.RED && team == Team.RED);
+    private AnswerResult buildAnswerMessage(Card card, boolean correct) {
+        AnswerResult result = new AnswerResult(card.getWord(), card.getColor());
+        result.setCorrect(correct);
+        game.getState().useCard(card.getColor());
+        card.setChecked(true);
+
+        result.setGameState(game.getState());
+        return result;
+    }
+
+    private boolean isPlayerTurn(Player player){
+        return player.getTeam() == game.getState().getCurrentTeam() && player.getRole() == game.getState().getCurrentStage();
     }
 
     @MessageMapping("/game/question")
@@ -92,13 +103,17 @@ public class GameController{
         if(player.getRole()==Role.PLAYER || player.getTeam() != game.getState().getCurrentTeam()){
             return;
         }
-        assert player.getTeam() == game.getState().getCurrentTeam() && player.getRole() == Role.BOSS;
         Gson gson = new Gson();
-        BossMessage data = gson.fromJson(messsageText, BossMessage.class);
-        game.getState().setAnswerState(data.getNumber());
+        BossMessage message = buildBossMessage(messsageText, gson);
+        messageManager.sendToAll(message, QUESTION_MESSAGE_RESPONSE, game);
 
-        for(Player p: game.getPlayers()){
-            messagingTemplate.convertAndSendToUser(p.getSessionId(), "/queue/game/question", data, HeaderUtils.createHeaders(p.getSessionId()));
-        }
     }
+
+    private BossMessage buildBossMessage(@Payload String messsageText, Gson gson) {
+        BossMessage message = gson.fromJson(messsageText, BossMessage.class);
+        game.getState().setAnswerState(message.getWord(),message.getNumber());
+        message.setGameState(game.getState());
+        return message;
+    }
+
 }

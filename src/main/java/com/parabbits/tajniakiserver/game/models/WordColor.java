@@ -4,5 +4,6 @@ public enum WordColor {
     RED,
     BLUE,
     KILLER,
-    NEUTRAL
+    NEUTRAL,
+    LACK
 }

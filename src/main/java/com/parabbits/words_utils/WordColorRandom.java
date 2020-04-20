@@ -4,13 +4,13 @@ import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.game.models.WordColor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class TeamsRandom {
+public class WordColorRandom {
 
-
-    public static WordColor[] randomTeamsForWords(int numberOfWords, int wordsInFirstTeam, Team firstTeam){
+    public static List<WordColor> randomTeamsForWords(int numberOfWords, int wordsInFirstTeam, Team firstTeam){
         List<Integer> indices = new ArrayList<>();
         for (int i=0; i < numberOfWords; i++){
             indices.add(i);
@@ -31,8 +31,7 @@ public class TeamsRandom {
         return firstTeam==Team.BLUE? WordColor.RED: WordColor.BLUE;
     }
 
-
-    private static WordColor[] getTeamsForWords(int numberOfWords, List<List<Integer>> indices, WordColor[] wordColors){
+    private static List<WordColor> getTeamsForWords(int numberOfWords, List<List<Integer>> indices, WordColor[] wordColors){
         WordColor[] resultColors = new WordColor[numberOfWords];
         for(int i=0; i<indices.size(); i++){
             List<Integer> colorIndices = indices.get(i);
@@ -41,6 +40,6 @@ public class TeamsRandom {
                 resultColors[index] = color;
             }
         }
-        return resultColors;
+        return Arrays.asList(resultColors);
     }
 }

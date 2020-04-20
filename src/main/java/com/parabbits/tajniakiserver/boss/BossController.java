@@ -5,6 +5,7 @@ import com.parabbits.tajniakiserver.game.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -12,16 +13,28 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Controller
 public class BossController {
+
+    private final String VOTING_START = "/boss/start";
+    private final String VOTING_VOTE = "/boss/vote";
+    private final String VOTING_END = "/boss/end";
 
     @Autowired
     private Game game;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    private MessageManager messageManager;
+
+    @PostConstruct
+    private void init(){
+        messageManager = new MessageManager(messagingTemplate);
+    }
 
     @MessageMapping("/boss/start")
     public void startVoting(@Payload String message, SimpMessageHeaderAccessor headerAccessor) {
@@ -30,10 +43,7 @@ public class BossController {
         Team team = Team.BLUE;
 
         List<BossCandidatePlayer> candidate = game.getVotingService(team).getCandidates();
-        for (Player p : game.getPlayers(team)) {
-            System.out.println("Wysyłam do " + p.getNickname());
-            messagingTemplate.convertAndSendToUser(p.getSessionId(), "/boss/start", candidate, HeaderUtils.createHeaders(p.getSessionId()));
-        }
+        messageManager.sendToTeam(candidate, team, VOTING_START, game);
     }
 
     @MessageMapping("/boss/vote")
@@ -44,20 +54,16 @@ public class BossController {
         voting.vote(player.getSessionId(), votedPlayer.getSessionId());
 
         List<BossCandidatePlayer> candidates = voting.getCandidates();
-        for (Player p : game.getPlayers(player.getTeam())) {
-            messagingTemplate.convertAndSendToUser(p.getSessionId(), "/boss/start", candidates, HeaderUtils.createHeaders(p.getSessionId()));
-        }
+        messageManager.sendToTeam(candidates, player.getTeam(), VOTING_VOTE, game);
     }
 
     public void endVoting(){
-        System.out.println("Koniec głosowania");
-        for(Player player: game.getPlayers()){
-            messagingTemplate.convertAndSendToUser(player.getSessionId(), "/boss/end", "END", HeaderUtils.createHeaders(player.getSessionId()));
-        }
+        messageManager.sendToAll("END", VOTING_END, game);
         setRoles();
 
     }
 
+    // TODO: przenieść to do innej klasy
     private void setRoles(){
         BossCandidatePlayer redBoss = game.getVotingService(Team.RED).getWinner();
         BossCandidatePlayer blueBoss = game.getVotingService(Team.BLUE).getWinner();

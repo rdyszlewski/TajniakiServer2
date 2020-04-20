@@ -1,16 +1,16 @@
 package com.parabbits.tajniakiserver.game.messages;
-
-
+import com.parabbits.tajniakiserver.game.GameState;
+import com.parabbits.tajniakiserver.game.models.Board;
+import com.parabbits.tajniakiserver.game.models.Card;
 import com.parabbits.tajniakiserver.game.models.Role;
-import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.game.models.WordColor;
+
+import java.util.List;
 
 public class StartGameMessage {
 
     private Role playerRole;
-    private String[] words;
-    private WordColor[] colors;
-    private Team firstTeam;
+    private GameState gameState;
+    private List<Card> cards;
 
     public Role getPlayerRole(){
         return playerRole;
@@ -20,27 +20,19 @@ public class StartGameMessage {
         this.playerRole = playerRole;
     }
 
-    public String[] getWords() {
-        return words;
+    public GameState getGameState() {
+        return gameState;
     }
 
-    public void setWords(String[] words) {
-        this.words = words;
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
     }
 
-    public WordColor[] getColors() {
-        return colors;
+    public List<Card> getCards() {
+        return cards;
     }
 
-    public void setColors(WordColor[] colors) {
-        this.colors = colors;
-    }
-
-    public Team getFirstTeam() {
-        return firstTeam;
-    }
-
-    public void setFirstTeam(Team firstTeam) {
-        this.firstTeam = firstTeam;
+    public void setCards(List<Card> cards) {
+        this.cards = cards;
     }
 }

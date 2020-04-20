@@ -2,10 +2,8 @@ package com.parabbits.tajniakiserver.game;
 
 import com.parabbits.tajniakiserver.boss.BossController;
 import com.parabbits.tajniakiserver.boss.VotingService;
-import com.parabbits.tajniakiserver.game.models.Player;
-import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.game.models.WordColor;
-import com.parabbits.words_utils.TeamsRandom;
+import com.parabbits.tajniakiserver.game.models.*;
+import com.parabbits.words_utils.WordColorRandom;
 import com.parabbits.words_utils.WordsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,11 +28,9 @@ public class Game {
     private final VotingService redVoting = new VotingService(Team.RED);
 
     private Team firstTeam;
-    private String[] words;
-    private WordColor[] wordsColor;
-
-    private GameState state = new GameState();
-
+    private final GameState state = new GameState();
+    private final Board board = new Board();
+    // TODO: dodać oddzielną klasę do zarządzania graczami w grze
 
     public GameState getState(){
         return state;
@@ -44,12 +40,8 @@ public class Game {
         return firstTeam;
     }
 
-    public String[] getWords(){
-        return words;
-    }
-
-    public WordColor[] getWordsColors(){
-        return wordsColor;
+    public Board getBoard(){
+        return board;
     }
 
     public Player addPlayer(String sessionId, String nickname){
@@ -134,13 +126,10 @@ public class Game {
     }
 
     public void initializeGame() throws IOException {
-        final int NUMBER_OF_WORDS = 25;
-        final int WORDS_IN_FIRST_TEAM = 9;
         if(firstTeam == null){
             firstTeam = randomFirstGroup();
-            words = getRandomWords();
-            wordsColor = TeamsRandom.randomTeamsForWords(NUMBER_OF_WORDS, WORDS_IN_FIRST_TEAM, firstTeam);
-            state.initState(firstTeam, WORDS_IN_FIRST_TEAM);
+            board.init(firstTeam);
+            state.initState(firstTeam, BoardCreator.WORDS_IN_FIRST_TEAM);
         }
     }
 
@@ -148,31 +137,4 @@ public class Game {
         int randValue = new Random().nextInt(100);
         return randValue < 50 ? Team.BLUE : Team.RED;
     }
-
-    private String[] getRandomWords() throws IOException {
-        List<String> allWords = WordsHelper.readWords(WORDS_PATH);
-        List<String> randomWords = WordsHelper.randomWords(allWords, 25);
-        return randomWords.toArray(new String[0]);
-    }
-
-    public WordColor getWordColor(String word){
-        int index = getWordIndex(word);
-        WordColor color = wordsColor[index];
-        return color;
-    }
-
-    private int getWordIndex(String word){
-        for(int i=0; i<words.length; i++){
-            if(words[i].equals(word)){
-                return i;
-            }
-        }
-        return -1;
-    }
-
-
-
-
-
-
 }

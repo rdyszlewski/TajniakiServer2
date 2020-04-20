@@ -1,18 +1,16 @@
 package com.parabbits.tajniakiserver.game.messages;
 
-import com.parabbits.tajniakiserver.game.models.Role;
-import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.game.models.WordColor;
+import com.parabbits.tajniakiserver.game.GameState;
+import com.parabbits.tajniakiserver.game.models.*;
+
+import java.util.List;
 
 public class AnswerResult {
 
     private String word;
     private WordColor correctColor;
     private boolean correct;
-    private int remainingAnswers;
-    private Team currentTeam;
-    private Role currentRole;
-
+    private GameState gameState;
 
     public AnswerResult(String word, WordColor correctColor) {
         this.word = word;
@@ -43,27 +41,11 @@ public class AnswerResult {
         this.correct = correct;
     }
 
-    public int getRemainingAnswers() {
-        return remainingAnswers;
+    public GameState getGameState() {
+        return gameState;
     }
 
-    public void setRemainingAnswers(int remainingAnswers) {
-        this.remainingAnswers = remainingAnswers;
-    }
-
-    public Team getCurrentTeam(){
-        return currentTeam;
-    }
-
-    public void setCurrentTeam(Team team){
-        this.currentTeam = team;
-    }
-
-    public Role getCurrentRole(){
-        return currentRole;
-    }
-
-    public void setCurrentRole(Role role){
-        this.currentRole = role;
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
     }
 }

@@ -1,9 +1,9 @@
 package com.parabbits.tajniakiserver.lobby;
 
-import com.parabbits.tajniakiserver.connection.HeaderUtils;
 import com.parabbits.tajniakiserver.game.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -12,11 +12,17 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
 public class LobbyController {
+
+    private final String LOBBY_START = "/lobby/players";
+    private final String LOBBY_CONNECT = "/queque/connect";
+    private final String LOBBY_END = "/queue/lobby/start";
+    private final String LOBBY_READY = "/lobby/ready"; // TODO: zmienić to w aplikacji
 
     @Autowired
     public Game game;
@@ -24,25 +30,19 @@ public class LobbyController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    private MessageManager messageManager;
+
+    @PostConstruct
+    private void init(){
+        messageManager = new MessageManager(messagingTemplate);
+    }
+
     @MessageMapping("/lobby/connect")
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         String sessionId = headerAccessor.getSessionId();
         Player player = game.addPlayer(sessionId, nickname);
-        game.testPrint();
-
-        if (player != null) {
-            sendToAllExcept(player, "/queue/connect", player.getNickname());
-        }
-        messagingTemplate.convertAndSendToUser(player.getSessionId(), "/lobby/players", getAllPlayersInLobby(), HeaderUtils.createHeaders(player.getSessionId()));
-    }
-
-    private void sendToAllExcept(Player player, String path, Object message) {
-        for (Player p : game.getPlayers()) {
-            if (!p.getSessionId().equals(player.getSessionId())) {
-                System.out.println("Wysyłam wiadomość o podłączeniu do " + p.getNickname());
-                messagingTemplate.convertAndSendToUser(p.getSessionId(), path, message, HeaderUtils.createHeaders(p.getSessionId()));
-            }
-        }
+        messageManager.sendToAll(player.getNickname(), LOBBY_CONNECT, game);
+        messageManager.send(getAllPlayersInLobby(), player.getSessionId(), LOBBY_START);
     }
 
     private List<Player> getAllPlayersInLobby() {
@@ -66,6 +66,7 @@ public class LobbyController {
         return true;
     }
 
+    // TODO: to powinno być w innym miejscu
     private Team getTeam(String team) {
         switch (team) {
             case "RED":
@@ -78,8 +79,8 @@ public class LobbyController {
     }
 
     @MessageMapping("/lobby/ready")
-    @SendTo("/topic/lobby/ready")
-    public ReadyMessage changeReady(@Payload boolean ready, SimpMessageHeaderAccessor headerAccessor) {
+    public void changeReady(@Payload boolean ready, SimpMessageHeaderAccessor headerAccessor) {
+        // TODO: sprawdzić jak działa SendTo
         System.out.println("Zmiana gotowości");
         String sessionId = headerAccessor.getSessionId();
         Player player = game.getPlayer(sessionId);
@@ -87,7 +88,7 @@ public class LobbyController {
         if (areAllReady()) {
             finishChoosing();
         }
-        return new ReadyMessage(player.getNickname(), ready);
+        messageManager.sendToAll(player.getNickname(), LOBBY_READY, game);
     }
 
     private void finishChoosing(){
@@ -96,9 +97,7 @@ public class LobbyController {
                 new java.util.TimerTask() {
                     @Override
                     public void run() {
-                        for (Player p : game.getPlayers()) {
-                            messagingTemplate.convertAndSend("/queue/lobby/start", "START");
-                        }
+                        messageManager.sendToAll("START", LOBBY_END, game);
                     }
                 },
                 TIME
