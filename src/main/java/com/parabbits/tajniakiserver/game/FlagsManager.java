@@ -3,19 +3,25 @@ package com.parabbits.tajniakiserver.game;
 import com.parabbits.tajniakiserver.game.models.Card;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.utils.MapList;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class FlagsManager {
-    
+
     private final Map<Card, Set<Player>> flagsMap = new HashMap<>();
 
     public void addFlag(Player player, Card card){
         if(!flagsMap.containsKey(card)){
             flagsMap.put(card, new HashSet<>());
         }
-        flagsMap.get(card).add(player);
+
+        if(!flagsMap.get(card).contains(player)){
+            flagsMap.get(card).add(player);
+        } else {
+            flagsMap.get(card).remove(player);
+        }
     }
 
     public void removeFlag(Player player, Card card){

@@ -16,9 +16,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Controller
 public class GameController{
@@ -82,11 +80,6 @@ public class GameController{
         } else {
             handleClickMessage(player);
         }
-//        if(game.getBoard().getAnswerManager().isValidAnswer(game.getTeamSize(player.getTeam())-1)){
-//            handleAnswerMessage(player, card);
-//        } else {
-//            handleClickMessage(player);
-//        }
     }
 
     private void handleAnswerMessage(Player player, Card card) {
@@ -111,11 +104,16 @@ public class GameController{
 
     private void handleClickMessage(Player player){
         System.out.println("Wysyłanie informacji o kliknięciu");
-        List<Card> editedCards = game.getBoard().getAnswerManager().popCardsToUpdate();
-        List<ClientCard> clientCards = prepareClientCards(editedCards, player);
-        ClickMessage message = new ClickMessage(clientCards);
+        ClickMessage message = buildClickMessage(player);
         messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
     }
+
+    private ClickMessage buildClickMessage(Player player) {
+        List<Card> editedCards = game.getBoard().getAnswerManager().popCardsToUpdate(player);
+        List<ClientCard> clientCards = prepareClientCards(editedCards, player);
+        return new ClickMessage(clientCards);
+    }
+
 
     private List<ClientCard> prepareClientCards(List<Card> cards, Player player){
         List<ClientCard> clientCards = new ArrayList<>();
@@ -161,13 +159,19 @@ public class GameController{
         return message;
     }
 
-    // TODO: zaznaczanie słowa
-    // TODO: wybieranie słowa
-
-    @MessageMapping("/game/select")
-    public void selectCard(@Payload String word, SimpMessageHeaderAccessor headerAccessor){
+    @MessageMapping("/game/flag")
+    public void setFlag(@Payload String word, SimpMessageHeaderAccessor headerAccessor){
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        // TODO: daj gre, daj plansze, zaznacz
+        // TODO: sprawdzanie, czy gracz może w tym momencie wykonać ruch
+        Card card = game.getBoard().getCard(word);
+        game.getBoard().getFlagsManager().addFlag(player, card);
+        ClickMessage message = buildFlagMessage(player, card);
+        messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
     }
 
+    private ClickMessage buildFlagMessage(Player player, Card card) {
+        List<Card> editedCards = Collections.singletonList(card);
+        List<ClientCard> clientCards = prepareClientCards(editedCards, player);
+        return new ClickMessage(clientCards);
+    }
 }
