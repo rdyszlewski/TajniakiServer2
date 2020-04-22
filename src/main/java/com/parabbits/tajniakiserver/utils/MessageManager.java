@@ -35,6 +35,14 @@ public class MessageManager {
         }
     }
 
+    public void sendToRoleFromTeam(Object message, Role role, Team team, String path, Game game){
+        for(Player player: game.getPlayers(team)){
+            if(player.getRole() == role){
+                send(message, player.getSessionId(), path);
+            }
+        }
+    }
+
     public void send(Object message, String sessionId, String path){
         messagingTemplate.convertAndSendToUser(sessionId, path, message, HeaderUtils.createHeaders(sessionId));
     }

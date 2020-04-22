@@ -1,7 +1,6 @@
 package com.parabbits.tajniakiserver.game.messages;
 import com.parabbits.tajniakiserver.game.GameState;
-import com.parabbits.tajniakiserver.game.models.Board;
-import com.parabbits.tajniakiserver.game.models.Card;
+import com.parabbits.tajniakiserver.game.models.ClientCard;
 import com.parabbits.tajniakiserver.game.models.Role;
 
 import java.util.List;
@@ -10,7 +9,7 @@ public class StartGameMessage {
 
     private Role playerRole;
     private GameState gameState;
-    private List<Card> cards;
+    private List<ClientCard> cards;
 
     public Role getPlayerRole(){
         return playerRole;
@@ -28,11 +27,11 @@ public class StartGameMessage {
         this.gameState = gameState;
     }
 
-    public List<Card> getCards() {
+    public List<ClientCard> getCards() {
         return cards;
     }
 
-    public void setCards(List<Card> cards) {
+    public void setCards(List<ClientCard> cards) {
         this.cards = cards;
     }
 }

@@ -6,8 +6,6 @@ public class Card {
     private String word;
     private WordColor color;
     private boolean checked;
-    // TODO: dorobić informacje o tym, kto zaznaczył które karty i tak dalej
-
 
     public Card(int index, String word, WordColor color, boolean checked) {
         this.index = index;

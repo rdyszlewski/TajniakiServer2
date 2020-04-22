@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class LobbyController {
 
     private final String LOBBY_START = "/lobby/players";
-    private final String LOBBY_CONNECT = "/queque/connect";
+    private final String LOBBY_CONNECT = "/queue/connect";
     private final String LOBBY_END = "/queue/lobby/start";
     private final String LOBBY_READY = "/lobby/ready"; // TODO: zmienić to w aplikacji
 

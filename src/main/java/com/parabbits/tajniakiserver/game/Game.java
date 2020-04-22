@@ -58,6 +58,10 @@ public class Game {
         players.put(player.getSessionId(), player);
     }
 
+    public int getTeamSize(Team team){
+        return getPlayers(team).size();
+    }
+
     public void testPrint(){
         for(Map.Entry<String, Player> entry: players.entrySet()){
             Player player = entry.getValue();

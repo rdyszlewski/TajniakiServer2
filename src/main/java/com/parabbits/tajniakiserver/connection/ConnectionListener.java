@@ -36,7 +36,7 @@ public class ConnectionListener {
     private void needToTest(String sessionId) {
         Player player  = new Player(sessionId, counter, "g"+connectedSessions.size());
         player.setTeam(Team.BLUE);
-        if(player.getId()%2==0){
+        if(player.getId()%3==0){
             player.setRole(Role.BOSS);
         } else {
             player.setRole(Role.PLAYER);
