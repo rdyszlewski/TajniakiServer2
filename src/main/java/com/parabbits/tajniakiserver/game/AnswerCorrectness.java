@@ -20,4 +20,8 @@ public class AnswerCorrectness {
         }
         return Correctness.INCORRECT;
     }
+
+    public static boolean isCorrect(WordColor color, Team team){
+        return (color == WordColor.BLUE && team == Team.BLUE) || (color == WordColor.RED && team == Team.RED);
+    }
 }

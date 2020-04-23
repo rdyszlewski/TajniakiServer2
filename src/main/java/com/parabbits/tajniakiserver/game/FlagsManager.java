@@ -30,6 +30,16 @@ public class FlagsManager {
         }
     }
 
+    public void removeFlags(Card card){
+        flagsMap.remove(card);
+    }
+
+    public void removeFlags(Player player){
+        for(Map.Entry<Card, Set<Player>> entry: flagsMap.entrySet()){
+            entry.getValue().remove(player);
+        }
+    }
+
     public Set<Player> getFlagsOwners(Card card, Team team){
         if(flagsMap.containsKey(card)){
             return flagsMap.get(card).stream().filter(x->x.getTeam()==team).collect(Collectors.toSet());

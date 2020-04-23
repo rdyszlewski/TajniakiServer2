@@ -34,6 +34,11 @@ public class AnswerManager {
         editedCards.add(player, answers.get(player));
     }
 
+    public void reset(){
+        // TODO: dodanie wszystkich kart do edytowanych
+        answers.clear();
+    }
+
     public int getCounter(Card card){
         return counter.getCounter(card);
     }

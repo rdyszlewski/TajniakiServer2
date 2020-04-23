@@ -3,34 +3,24 @@ package com.parabbits.tajniakiserver.game.messages;
 import com.parabbits.tajniakiserver.game.GameState;
 import com.parabbits.tajniakiserver.game.models.*;
 
-import java.util.List;
+public class AnswerMessage {
 
-public class AnswerResult {
-
-    private String word;
-    private WordColor correctColor;
+    private ClientCard card;
     private boolean correct;
     private GameState gameState;
 
-    public AnswerResult(String word, WordColor correctColor) {
-        this.word = word;
-        this.correctColor = correctColor;
+    public AnswerMessage(ClientCard card, boolean correct, GameState gameState) {
+        this.card = card;
+        this.correct = correct;
+        this.gameState = gameState;
     }
 
-    public String getWord() {
-        return word;
+    public ClientCard getCard() {
+        return card;
     }
 
-    public void setWord(String word) {
-        this.word = word;
-    }
-
-    public WordColor getCorrectColor() {
-        return correctColor;
-    }
-
-    public void setCorrectColor(WordColor correctColor) {
-        this.correctColor = correctColor;
+    public void setCard(ClientCard card) {
+        this.card = card;
     }
 
     public boolean isCorrect() {

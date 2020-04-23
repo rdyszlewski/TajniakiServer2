@@ -23,6 +23,10 @@ public class ConnectionListener {
     private long counter = 0;
     private List<String> connectedSessions = new ArrayList<>();
 
+    // TODO: po przetestowaniu usunąć
+    private static int teamCounter = 0;
+    private static Team currentTeam = Team.BLUE;
+
     @EventListener(SessionConnectEvent.class)
     public void handleWebsocketConnectListener(SessionConnectEvent event){
         String sessionId = event.getMessage().getHeaders().get("simpSessionId").toString();
@@ -34,9 +38,15 @@ public class ConnectionListener {
     }
 
     private void needToTest(String sessionId) {
+        // ustawianie graczy, tak, aby można było przetestować działanie aplikacji
         Player player  = new Player(sessionId, counter, "g"+connectedSessions.size());
-        player.setTeam(Team.BLUE);
-        if(player.getId()%3==0){
+        teamCounter++;
+        if(teamCounter == 3){
+            currentTeam = currentTeam==Team.BLUE? Team.RED : Team.BLUE;
+            teamCounter = 0;
+        }
+        player.setTeam(currentTeam);
+        if(player.getId()%2==0){
             player.setRole(Role.BOSS);
         } else {
             player.setRole(Role.PLAYER);

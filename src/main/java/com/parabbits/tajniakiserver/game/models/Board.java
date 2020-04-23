@@ -39,24 +39,8 @@ public class Board {
         return null;
     }
 
-    public List<Card> getCards(Role role){
-        // TODO: refaktoryzacja
-        if(role == Role.BOSS){
-            return new ArrayList<>(cards.values());
-        } else if (role == Role.PLAYER){
-            List<Card> cardsList = new ArrayList<>();
-            for(Card card: cards.values()){
-                Card newCard = new Card(card.getIndex(), card.getWord(), WordColor.LACK, card.isChecked());
-                cardsList.add(newCard);
-            }
-            return cardsList;
-        }
-        return null;
-    }
-
-    public void addFlagToCard(String string, Player player){
-        Card card = getCard(string);
-
+    public List<Card> getCards(){
+        return new ArrayList<>(cards.values());
     }
 
 }

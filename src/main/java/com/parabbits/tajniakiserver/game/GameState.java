@@ -1,17 +1,20 @@
 package com.parabbits.tajniakiserver.game;
 
+import com.parabbits.tajniakiserver.game.models.Card;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.game.models.WordColor;
 
 public class GameState {
 
+    private boolean active;
     private Team currentTeam;
     private Role currentPlayer;
     private int remainingBlue;
     private int remainingRed;
     private String currentWord;
     private int remainingAnswers;
+
     // TODO: można dodać informacje o czasie
 
     public Team getCurrentTeam() {
@@ -39,6 +42,7 @@ public class GameState {
     }
 
     public void initState(Team firstTeam, int wordsInFirstTeam){
+        active = true;
         currentTeam = firstTeam;
         currentPlayer = Role.BOSS;
         remainingAnswers = -1;
@@ -46,50 +50,55 @@ public class GameState {
         remainingRed = firstTeam == Team.RED? wordsInFirstTeam: wordsInFirstTeam - 1;
     }
 
-    public void nextTeam(){
-        currentTeam = currentTeam == Team.BLUE? Team.RED: Team.BLUE;
-        currentPlayer = Role.BOSS;
-        remainingAnswers = -1;
-    }
-
     public void setAnswerState(String word, int remainingAnswers){
-        this.remainingAnswers = remainingAnswers;
-        this.currentWord = word;
-        this.currentPlayer = Role.PLAYER;
-
+        if(active){
+            this.remainingAnswers = remainingAnswers;
+            this.currentWord = word;
+            this.currentPlayer = Role.PLAYER;
+        }
     }
 
-    public boolean useCard(WordColor cardColor){
-        // TODO: refaktoryzacja
-        // TODO: w przypadku złej odpowiedzi ustawiać odpowiednio stan
-        if(cardColor==WordColor.BLUE){
-            remainingBlue--;
-            if(currentTeam==Team.BLUE){
-                remainingAnswers--;
-                return true;
-            } else {
-                remainingAnswers = -1;
-                changeTeams();
-                return false;
-            }
-        } else if(cardColor == WordColor.RED){
-            remainingRed--;
-            if(currentTeam == Team.RED){
-                remainingAnswers--;
-                return true;
-            } else {
-                remainingAnswers = -1;
-                changeTeams();
-                return false;
-            }
+    public void useCard(Card card){
+        if(!active){
+            return;
         }
-        changeTeams();
-        return false;
+        card.setChecked(true);
+        WordColor cardColor = card.getColor();
+        boolean correct = AnswerCorrectness.isCorrect(cardColor, getCurrentTeam());
+        handleUsingCard(correct, cardColor);
+        // TODO: usunąć jakoś wszystkie znaczniki
+    }
+
+    private void handleUsingCard(boolean correct, WordColor color){
+        switch (color) {
+            case KILLER:
+                active = false;
+                break;
+            case BLUE:
+                remainingBlue--;
+                break;
+            case RED:
+                remainingRed--;
+                break;
+        }
+        if (correct) {
+            remainingAnswers--;
+        } else {
+            changeTeams();
+        }
+        if(correct && remainingAnswers <=0){
+            changeTeams();
+        }
     }
 
     private void changeTeams(){
-        System.out.println("Zmieniam drużynę");
+        // TODO: zmianę drużyny dodać do oodzielnej kllasy
+        remainingAnswers = -1;
         currentTeam = currentTeam == Team.BLUE? Team.RED : Team.BLUE;
         currentPlayer = Role.BOSS;
+    }
+
+    public boolean isGameActive(){
+        return active;
     }
 }

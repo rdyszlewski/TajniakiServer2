@@ -32,18 +32,16 @@ public class ClientCardCreator {
     }
 
     private static ClientCard createCardForPlayer(Card card, Game game, Team team) {
-        ClientCard clientCard = new ClientCard(card.getIndex(), card.getWord(), WordColor.LACK, card.isChecked());
-        if (card.isChecked()) {
-            clientCard.setColor(card.getColor());
-        }
-        Set<String> playerWhoAnswer = getPlayerFromAnswer(game, card);
-        clientCard.setAnswers(playerWhoAnswer);
-
-        // TODO: przetestować, czy druzyna jest odpowiednio ustawiona
-        Set<String> playersWhoFlag = getPlayerFromFlags(game, card, team);
-        clientCard.setFlags(playersWhoFlag);
+        WordColor color = getPlayerCardColor(card);
+        ClientCard clientCard = new ClientCard(card.getIndex(), card.getWord(), color, card.isChecked());
+        clientCard.setAnswers(getPlayerFromAnswer(game, card));
+        clientCard.setFlags(getPlayerFromFlags(game, card, team));
 
         return clientCard;
+    }
+
+    private static WordColor getPlayerCardColor(Card card) {
+        return card.isChecked()? card.getColor() : WordColor.LACK;
     }
 
     private static Set<String> getPlayerFromAnswer(Game game, Card card){

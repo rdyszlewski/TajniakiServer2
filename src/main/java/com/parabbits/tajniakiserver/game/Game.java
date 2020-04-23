@@ -141,4 +141,10 @@ public class Game {
         int randValue = new Random().nextInt(100);
         return randValue < 50 ? Team.BLUE : Team.RED;
     }
+
+    public void useCard(Card card){
+        board.getAnswerManager().reset();
+        board.getFlagsManager().removeFlags(card);
+        state.useCard(card);
+    }
 }

@@ -2,10 +2,7 @@ package com.parabbits.tajniakiserver.game;
 
 import com.google.gson.Gson;
 
-import com.parabbits.tajniakiserver.game.messages.AnswerResult;
-import com.parabbits.tajniakiserver.game.messages.BossMessage;
-import com.parabbits.tajniakiserver.game.messages.ClickMessage;
-import com.parabbits.tajniakiserver.game.messages.StartGameMessage;
+import com.parabbits.tajniakiserver.game.messages.*;
 import com.parabbits.tajniakiserver.game.models.*;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +16,13 @@ import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Controller
-public class GameController{
+public class GameController {
 
     private final String START_MESSAGE_RESPONSE = "/queue/game/start";
     private final String ANSWER_MESSAGE_RESPONSE = "/queue/game/answer";
     private final String CLICK_MESSAGE_RESPONSE = "/queue/game/click";
     private final String QUESTION_MESSAGE_RESPONSE = "/queue/game/question";
+    private final String END_MESSAGE_RESPONSE = "/queue/game/question";
     @Autowired
     private Game game;
 
@@ -34,17 +32,15 @@ public class GameController{
     private MessageManager messageManager;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         messageManager = new MessageManager(messagingTemplate);
     }
 
     @MessageMapping("/game/start")
-    public void startGame(@Payload  String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception{
+    public void startGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         game.initializeGame();
-
-        // TODO: w jakiś sposób kontrolować, że wszyscy pobrali wiadomośc i można rozpocząć grę
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        if(player.getRole() == Role.BOSS){
+        if (player.getRole() == Role.BOSS) {
             StartGameMessage bossMessage = createStartGameMessage(Role.BOSS, player.getTeam());
             messageManager.send(bossMessage, player.getSessionId(), START_MESSAGE_RESPONSE);
         } else {
@@ -54,55 +50,79 @@ public class GameController{
     }
 
     // TODO: można przenieść do oodzielnej klasy
-    private StartGameMessage createStartGameMessage(Role role, Team team){
+    private StartGameMessage createStartGameMessage(Role role, Team team) {
         StartGameMessage message = new StartGameMessage();
         message.setPlayerRole(role);
+        message.setPlayerTeam(team);
         message.setGameState(game.getState());
-        List<ClientCard> cards = ClientCardCreator.createCards(game.getBoard().getCards(role), game, role, team);
+        List<ClientCard> cards = ClientCardCreator.createCards(game.getBoard().getCards(), game, role, team);
         message.setCards(cards);
         return message;
     }
 
     @MessageMapping("/game/click")
-    public void servePlayersAnswer(@Payload String word, SimpMessageHeaderAccessor headerAccessor){
-        // TODO: przerobić to na kliknięcie
+    public void servePlayersAnswer(@Payload String word, SimpMessageHeaderAccessor headerAccessor) {
         Player player = game.getPlayer(headerAccessor.getSessionId());
-//        if(!isPlayerTurn(player)){ // TODO: odkomentować to
-//            return;
-//        }
+        if (!isPlayerTurn(player)) {
+            return;
+        }
         Card card = game.getBoard().getCard(word);
         game.getBoard().getAnswerManager().setAnswer(card, player);
-        // TODO: trzeba to skrócić. Czy wszyscy odpowiedzieli tak samo
         int answerForCard = game.getBoard().getAnswerManager().getCounter(card);
-        System.out.println(answerForCard);
-        if(answerForCard == game.getTeamSize(player.getTeam())- 1){
+        if (isAllPlayersAnswer(player, answerForCard)) {
             handleAnswerMessage(player, card);
         } else {
             handleClickMessage(player);
         }
     }
 
+    private boolean isAllPlayersAnswer(Player player, int answerForCard) {
+        return answerForCard == game.getTeamSize(player.getTeam()) - 1;
+    }
+
     private void handleAnswerMessage(Player player, Card card) {
+        // TODO: refaktoryzacja
+        game.useCard(card);
+        // TODO: zlikwidować to jakoś
         AnswerCorrectness.Correctness correctness = AnswerCorrectness.checkCorrectness(card.getColor(), player.getTeam());
-        AnswerResult answerResult;
-        switch(correctness){
+        switch (correctness) {
             case CORRECT:
-                answerResult = buildAnswerMessage(card, true);
-                messageManager.sendToAll(answerResult, ANSWER_MESSAGE_RESPONSE, game);
+                handleCorrectMessage(card, true, player);
+                break;
             case INCORRECT:
-                // TODO: poinformowanie gry o błędnym wyborze
-                game.getState().nextTeam(); // TODO: to raczej nie powinno być w tym miejscu
-                answerResult = buildAnswerMessage(card, false);
-                messageManager.sendToAll(answerResult, ANSWER_MESSAGE_RESPONSE, game);
+                handleIncorrectMessage(card, player);
                 break;
             case KILLER:
-                // TODO: wysłać komunikat o końcu gry
+                handleEndGameMessage(player, EndGameCause.KILLER, player.getTeam() == Team.BLUE ? Team.RED : Team.BLUE);
                 break;
-
+        }
+        if (!game.getState().isGameActive()) {
+            handleEndGameMessage(player, EndGameCause.ALL, player.getTeam());
         }
     }
 
-    private void handleClickMessage(Player player){
+    private void handleIncorrectMessage(Card card, Player player) {
+        // TODO: poinformowanie gry o błędnym wyborze
+        handleCorrectMessage(card, false, player);
+    }
+
+    private void handleCorrectMessage(Card card, boolean correct, Player player) {
+        AnswerMessage answerResult = buildAnswerMessage(card, correct, player);
+        messageManager.sendToAll(answerResult, ANSWER_MESSAGE_RESPONSE, game);
+    }
+
+    private void handleEndGameMessage(Player player, EndGameCause cause, Team winnerTeam) {
+        EndGameMessage message = new EndGameMessage();
+//        Team winner = player.getTeam() == Team.BLUE? Team.RED : Team.BLUE;
+        message.setWinner(winnerTeam);
+        message.setCause(cause);
+        message.setRemainingBlue(game.getState().getRemainingBlue());
+        message.setRemainingRed(game.getState().getRemainingRed());
+        messageManager.sendToAll(message, END_MESSAGE_RESPONSE, game);
+        // TODO: zrobić komunikat o zakończeniu gry
+    }
+
+    private void handleClickMessage(Player player) {
         System.out.println("Wysyłanie informacji o kliknięciu");
         ClickMessage message = buildClickMessage(player);
         messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
@@ -115,35 +135,30 @@ public class GameController{
     }
 
 
-    private List<ClientCard> prepareClientCards(List<Card> cards, Player player){
+    private List<ClientCard> prepareClientCards(List<Card> cards, Player player) {
         List<ClientCard> clientCards = new ArrayList<>();
-        for(Card card: cards){
+        for (Card card : cards) {
             ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
             clientCards.add(clientCard);
         }
         return clientCards;
     }
 
-    private AnswerResult buildAnswerMessage(Card card, boolean correct) {
-        AnswerResult result = new AnswerResult(card.getWord(), card.getColor());
-        result.setCorrect(correct);
-        game.getState().useCard(card.getColor());
-        card.setChecked(true);
+    private AnswerMessage buildAnswerMessage(Card card, boolean correct, Player player) {
+        ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
+        return new AnswerMessage(clientCard, correct, game.getState());
 
-        result.setGameState(game.getState());
-        return result;
     }
 
-    private boolean isPlayerTurn(Player player){
+    private boolean isPlayerTurn(Player player) {
         return player.getTeam() == game.getState().getCurrentTeam() && player.getRole() == game.getState().getCurrentStage();
     }
 
     @MessageMapping("/game/question")
-    public void setQuestion(@Payload String messsageText, SimpMessageHeaderAccessor headerAccessor){
+    public void setQuestion(@Payload String messsageText, SimpMessageHeaderAccessor headerAccessor) {
         // TODO: można dodać jakąś historię podawanych haseł
-        // TODO: pomyśleć, co będzie w przypadku, jeżeli szef nie zdąży podać hasła w wyznaczonym terminie
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        if(player.getRole()==Role.PLAYER || player.getTeam() != game.getState().getCurrentTeam()){
+        if (!isPlayerTurn(player)) {
             return;
         }
         Gson gson = new Gson();
@@ -154,15 +169,17 @@ public class GameController{
 
     private BossMessage buildBossMessage(@Payload String messsageText, Gson gson) {
         BossMessage message = gson.fromJson(messsageText, BossMessage.class);
-        game.getState().setAnswerState(message.getWord(),message.getNumber());
+        game.getState().setAnswerState(message.getWord(), message.getNumber());
         message.setGameState(game.getState());
         return message;
     }
 
     @MessageMapping("/game/flag")
-    public void setFlag(@Payload String word, SimpMessageHeaderAccessor headerAccessor){
+    public void setFlag(@Payload String word, SimpMessageHeaderAccessor headerAccessor) {
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        // TODO: sprawdzanie, czy gracz może w tym momencie wykonać ruch
+        if (!isPlayerTurn(player)) {
+            return;
+        }
         Card card = game.getBoard().getCard(word);
         game.getBoard().getFlagsManager().addFlag(player, card);
         ClickMessage message = buildFlagMessage(player, card);
