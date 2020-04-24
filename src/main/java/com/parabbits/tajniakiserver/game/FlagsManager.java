@@ -3,7 +3,6 @@ package com.parabbits.tajniakiserver.game;
 import com.parabbits.tajniakiserver.game.models.Card;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.utils.MapList;
 
 import java.util.*;
 import java.util.stream.Collectors;

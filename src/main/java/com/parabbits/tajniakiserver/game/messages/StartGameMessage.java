@@ -8,10 +8,20 @@ import java.util.List;
 
 public class StartGameMessage {
 
+    // TODO: nazwa gracza nie jest tutaj potrzebna. Wykorzystywana jest wyłącznie do testowania. Później to usunąć.
+    private String nickname;
     private Role playerRole;
     private Team playerTeam;
     private GameState gameState;
     private List<ClientCard> cards;
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
 
     public Role getPlayerRole(){
         return playerRole;

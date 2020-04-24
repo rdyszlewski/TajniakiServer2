@@ -18,11 +18,14 @@ import java.util.*;
 @Controller
 public class GameController {
 
+    // TODO: refaktoryzacja tego
+
     private final String START_MESSAGE_RESPONSE = "/queue/game/start";
     private final String ANSWER_MESSAGE_RESPONSE = "/queue/game/answer";
     private final String CLICK_MESSAGE_RESPONSE = "/queue/game/click";
     private final String QUESTION_MESSAGE_RESPONSE = "/queue/game/question";
     private final String END_MESSAGE_RESPONSE = "/queue/game/question";
+
     @Autowired
     private Game game;
 
@@ -41,21 +44,22 @@ public class GameController {
         game.initializeGame();
         Player player = game.getPlayer(headerAccessor.getSessionId());
         if (player.getRole() == Role.BOSS) {
-            StartGameMessage bossMessage = createStartGameMessage(Role.BOSS, player.getTeam());
+            StartGameMessage bossMessage = createStartGameMessage(Role.BOSS, player);
             messageManager.send(bossMessage, player.getSessionId(), START_MESSAGE_RESPONSE);
         } else {
-            StartGameMessage playersMessage = createStartGameMessage(Role.PLAYER, player.getTeam());
+            StartGameMessage playersMessage = createStartGameMessage(Role.PLAYER, player);
             messageManager.send(playersMessage, player.getSessionId(), START_MESSAGE_RESPONSE);
         }
     }
 
     // TODO: można przenieść do oodzielnej klasy
-    private StartGameMessage createStartGameMessage(Role role, Team team) {
+    private StartGameMessage createStartGameMessage(Role role, Player player) {
         StartGameMessage message = new StartGameMessage();
+        message.setNickname(player.getNickname());
         message.setPlayerRole(role);
-        message.setPlayerTeam(team);
+        message.setPlayerTeam(player.getTeam());
         message.setGameState(game.getState());
-        List<ClientCard> cards = ClientCardCreator.createCards(game.getBoard().getCards(), game, role, team);
+        List<ClientCard> cards = ClientCardCreator.createCards(game.getBoard().getCards(), game, role, player.getTeam());
         message.setCards(cards);
         return message;
     }
@@ -63,10 +67,10 @@ public class GameController {
     @MessageMapping("/game/click")
     public void servePlayersAnswer(@Payload String word, SimpMessageHeaderAccessor headerAccessor) {
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        if (!isPlayerTurn(player)) {
+        Card card = game.getBoard().getCard(word);
+        if (!isPlayerTurn(player) || card.isChecked()) {
             return;
         }
-        Card card = game.getBoard().getCard(word);
         game.getBoard().getAnswerManager().setAnswer(card, player);
         int answerForCard = game.getBoard().getAnswerManager().getCounter(card);
         if (isAllPlayersAnswer(player, answerForCard)) {
@@ -147,7 +151,6 @@ public class GameController {
     private AnswerMessage buildAnswerMessage(Card card, boolean correct, Player player) {
         ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
         return new AnswerMessage(clientCard, correct, game.getState());
-
     }
 
     private boolean isPlayerTurn(Player player) {
@@ -177,10 +180,10 @@ public class GameController {
     @MessageMapping("/game/flag")
     public void setFlag(@Payload String word, SimpMessageHeaderAccessor headerAccessor) {
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        if (!isPlayerTurn(player)) {
+        Card card = game.getBoard().getCard(word);
+        if (!isPlayerTurn(player) || card.isChecked()) {
             return;
         }
-        Card card = game.getBoard().getCard(word);
         game.getBoard().getFlagsManager().addFlag(player, card);
         ClickMessage message = buildFlagMessage(player, card);
         messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
