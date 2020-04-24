@@ -68,7 +68,7 @@ public class GameController {
     public void servePlayersAnswer(@Payload String word, SimpMessageHeaderAccessor headerAccessor) {
         Player player = game.getPlayer(headerAccessor.getSessionId());
         Card card = game.getBoard().getCard(word);
-        if (!isPlayerTurn(player) || card.isChecked()) {
+        if (!isPlayerTurn(player) || card.isChecked() || player.getRole()==Role.BOSS) {
             return;
         }
         game.getBoard().getAnswerManager().setAnswer(card, player);
@@ -161,13 +161,14 @@ public class GameController {
     public void setQuestion(@Payload String messsageText, SimpMessageHeaderAccessor headerAccessor) {
         // TODO: można dodać jakąś historię podawanych haseł
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        if (!isPlayerTurn(player)) {
+        if (!isPlayerTurn(player) || player.getRole()==Role.PLAYER) {
             return;
         }
-        Gson gson = new Gson();
-        BossMessage message = buildBossMessage(messsageText, gson);
+        BossMessage message = buildBossMessage(messsageText, new Gson());
+        if(!WordValidator.validate(message.getWord())){
+            return;
+        }
         messageManager.sendToAll(message, QUESTION_MESSAGE_RESPONSE, game);
-
     }
 
     private BossMessage buildBossMessage(@Payload String messsageText, Gson gson) {
@@ -181,7 +182,7 @@ public class GameController {
     public void setFlag(@Payload String word, SimpMessageHeaderAccessor headerAccessor) {
         Player player = game.getPlayer(headerAccessor.getSessionId());
         Card card = game.getBoard().getCard(word);
-        if (!isPlayerTurn(player) || card.isChecked()) {
+        if (card.isChecked() || player.getRole()==Role.BOSS) {
             return;
         }
         game.getBoard().getFlagsManager().addFlag(player, card);
