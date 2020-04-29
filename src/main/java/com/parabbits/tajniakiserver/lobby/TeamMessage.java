@@ -2,20 +2,20 @@ package com.parabbits.tajniakiserver.lobby;
 
 public class TeamMessage {
 
-    private String nickname;
+    private long id;
     private String team;
 
-    public TeamMessage(String nickname, String team){
-        this.nickname = nickname;
+    public TeamMessage(long id, String team){
+        this.id = id;
         this.team = team;
     }
 
-    public String getNickname() {
-        return nickname;
+    public long getId() {
+        return id;
     }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getTeam() {

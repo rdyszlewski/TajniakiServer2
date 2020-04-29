@@ -27,9 +27,11 @@ public class Game {
     private final VotingService blueVoting = new VotingService(Team.BLUE);
     private final VotingService redVoting = new VotingService(Team.RED);
 
+
     private Team firstTeam;
     private final GameState state = new GameState();
     private final Board board = new Board();
+    private int playerCounter = 0;
     // TODO: dodać oddzielną klasę do zarządzania graczami w grze
 
     public GameState getState(){
@@ -48,14 +50,17 @@ public class Game {
         if (players.size() < MAX_PLAYERS){
             System.out.println("Dodanie gracza");
             Player player = new Player(sessionId, nickname);
-            players.put(sessionId, player);
+            addPlayer(player);
             return player;
         }
         return null;
     }
 
     public void addPlayer(Player player){
+        player.setId(playerCounter);
+        playerCounter++;
         players.put(player.getSessionId(), player);
+
     }
 
     public int getTeamSize(Team team){

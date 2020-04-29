@@ -13,6 +13,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
+import javax.swing.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,25 +42,43 @@ public class LobbyController {
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         String sessionId = headerAccessor.getSessionId();
         Player player = game.addPlayer(sessionId, nickname);
-        messageManager.sendToAll(player.getNickname(), LOBBY_CONNECT, game);
         messageManager.send(getAllPlayersInLobby(), player.getSessionId(), LOBBY_START);
+        messageManager.sendToAll(player, LOBBY_CONNECT, game);
     }
 
     private List<Player> getAllPlayersInLobby() {
         return game.getPlayers();
     }
 
-    @MessageMapping("lobby/team")
-    @SendTo("/topic/lobby/team")
-    public TeamMessage changeTeam(@Payload String teamText, SimpMessageHeaderAccessor headerAccessor) {
+    @MessageMapping("/lobby/team")
+    public void changeTeam(@Payload String teamText, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Player player = game.getPlayer(sessionId);
         Team team = getTeam(teamText);
-        if (canChangeTeam(team)) {
+        changePlayerTeam(player, team);
+    }
+
+    private void changePlayerTeam(Player player, Team team){
+        if(canChangeTeam(team)){
             player.setTeam(team);
         }
-        return new TeamMessage(player.getNickname(), player.getTeam().toString());
+        TeamMessage message = new TeamMessage(player.getId(), player.getTeam().toString());
+        messageManager.sendToAll(message, "/lobby/team", game);
     }
+
+    @MessageMapping("/lobby/auto_team")
+    public void joinAuto(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
+        Player player = game.getPlayer(headerAccessor.getSessionId());
+        Team smallerTeam = getSmallerTeam();
+        changePlayerTeam(player, smallerTeam);
+    }
+
+    private Team getSmallerTeam(){
+        int blueTeamSize = game.getTeamSize(Team.BLUE);
+        int redTeamSize = game.getTeamSize(Team.RED);
+        return blueTeamSize<redTeamSize? Team.BLUE: Team.RED;
+    }
+
 
     private boolean canChangeTeam(Team team) {
         // TODO: zrobić sprawdzenie, czy gracz możę dołączyć do tej drużyny
@@ -80,15 +99,13 @@ public class LobbyController {
 
     @MessageMapping("/lobby/ready")
     public void changeReady(@Payload boolean ready, SimpMessageHeaderAccessor headerAccessor) {
-        // TODO: sprawdzić jak działa SendTo
-        System.out.println("Zmiana gotowości");
         String sessionId = headerAccessor.getSessionId();
         Player player = game.getPlayer(sessionId);
         player.setReady(ready);
+        messageManager.sendToAll(player.getId(), LOBBY_READY, game);
         if (areAllReady()) {
             finishChoosing();
         }
-        messageManager.sendToAll(player.getNickname(), LOBBY_READY, game);
     }
 
     private void finishChoosing(){

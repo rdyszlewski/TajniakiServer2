@@ -34,7 +34,7 @@ public class ConnectionListener {
         connectedSessions.add(sessionId);
 
         // TODO: wyłącznie do testów
-        needToTest(sessionId);
+//        needToTest(sessionId);
     }
 
     private void needToTest(String sessionId) {

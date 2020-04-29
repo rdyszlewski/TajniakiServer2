@@ -127,7 +127,6 @@ public class GameController {
     }
 
     private void handleClickMessage(Player player) {
-        System.out.println("Wysyłanie informacji o kliknięciu");
         ClickMessage message = buildClickMessage(player);
         messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
     }
@@ -137,7 +136,6 @@ public class GameController {
         List<ClientCard> clientCards = prepareClientCards(editedCards, player);
         return new ClickMessage(clientCards);
     }
-
 
     private List<ClientCard> prepareClientCards(List<Card> cards, Player player) {
         List<ClientCard> clientCards = new ArrayList<>();
