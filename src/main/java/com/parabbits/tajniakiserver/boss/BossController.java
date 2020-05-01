@@ -1,7 +1,6 @@
 package com.parabbits.tajniakiserver.boss;
 
-import com.parabbits.tajniakiserver.connection.HeaderUtils;
-import com.parabbits.tajniakiserver.game.Game;
+import com.parabbits.tajniakiserver.shared.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;

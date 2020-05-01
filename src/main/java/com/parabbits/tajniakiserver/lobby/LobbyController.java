@@ -1,19 +1,17 @@
 package com.parabbits.tajniakiserver.lobby;
 
-import com.parabbits.tajniakiserver.game.Game;
+import com.parabbits.tajniakiserver.shared.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
-import javax.swing.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +40,9 @@ public class LobbyController {
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         String sessionId = headerAccessor.getSessionId();
         Player player = game.addPlayer(sessionId, nickname);
-        messageManager.send(getAllPlayersInLobby(), player.getSessionId(), LOBBY_START);
+        // TODO: wysłąć do podłączonego gracza informacje o ustawieniach rozgrywki
+        StartLobbyMessage message = new StartLobbyMessage(getAllPlayersInLobby(), game.getSettings());
+        messageManager.send(message, player.getSessionId(), LOBBY_START);
         messageManager.sendToAll(player, LOBBY_CONNECT, game);
     }
 
@@ -81,8 +81,11 @@ public class LobbyController {
 
 
     private boolean canChangeTeam(Team team) {
-        // TODO: zrobić sprawdzenie, czy gracz możę dołączyć do tej drużyny
-        return true;
+        if(team == Team.OBSERVER){
+            return true;
+        }
+        int teamSize = game.getPlayers(team).size();
+        return teamSize < game.getSettings().getMaxTeamSize();
     }
 
     // TODO: to powinno być w innym miejscu
@@ -101,11 +104,18 @@ public class LobbyController {
     public void changeReady(@Payload boolean ready, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Player player = game.getPlayer(sessionId);
-        player.setReady(ready);
-        messageManager.sendToAll(player.getId(), LOBBY_READY, game);
+        if (canSetReady(player)){
+            player.setReady(ready);
+            LobbyReadyMessage message = new LobbyReadyMessage(player.getId(), ready);
+            messageManager.sendToAll(message, LOBBY_READY, game);
+        }
         if (areAllReady()) {
             finishChoosing();
         }
+    }
+
+    private boolean canSetReady(Player player){
+        return player.getTeam() == Team.BLUE || player.getTeam() == Team.RED;
     }
 
     private void finishChoosing(){
@@ -122,8 +132,7 @@ public class LobbyController {
     }
 
     private boolean areAllReady() {
-        int numPlayers = game.getPlayers().size();
         List<Player> readyPlayers = game.getPlayers().stream().filter(Player::isReady).collect(Collectors.toList());
-        return numPlayers == readyPlayers.size();
+        return readyPlayers.size() == game.getPlayers().size();
     }
 }

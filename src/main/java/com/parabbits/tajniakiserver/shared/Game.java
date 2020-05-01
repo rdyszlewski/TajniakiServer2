@@ -1,10 +1,9 @@
-package com.parabbits.tajniakiserver.game;
+package com.parabbits.tajniakiserver.shared;
 
 import com.parabbits.tajniakiserver.boss.BossController;
 import com.parabbits.tajniakiserver.boss.VotingService;
+import com.parabbits.tajniakiserver.game.GameState;
 import com.parabbits.tajniakiserver.game.models.*;
-import com.parabbits.words_utils.WordColorRandom;
-import com.parabbits.words_utils.WordsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,21 +14,18 @@ import java.util.stream.Collectors;
 @Service
 public class Game {
 
-    private final String WORDS_PATH = "resources/words.txt";
     // TODO: pomyśleć, jak rozwiązać to inaczej
     @Autowired
     private BossController bossController;
-
-    public static final int MAX_PLAYERS = 10;
 
     private final Map<String, Player> players = new HashMap<>();
 
     private final VotingService blueVoting = new VotingService(Team.BLUE);
     private final VotingService redVoting = new VotingService(Team.RED);
 
-
     private Team firstTeam;
     private final GameState state = new GameState();
+    private final GameSettings settings = new GameSettings();
     private final Board board = new Board();
     private int playerCounter = 0;
     // TODO: dodać oddzielną klasę do zarządzania graczami w grze
@@ -47,7 +43,7 @@ public class Game {
     }
 
     public Player addPlayer(String sessionId, String nickname){
-        if (players.size() < MAX_PLAYERS){
+        if (players.size() < settings.getMaxTeamSize()*2){
             System.out.println("Dodanie gracza");
             Player player = new Player(sessionId, nickname);
             addPlayer(player);
@@ -137,8 +133,8 @@ public class Game {
     public void initializeGame() throws IOException {
         if(firstTeam == null){
             firstTeam = randomFirstGroup();
-            board.init(firstTeam);
-            state.initState(firstTeam, BoardCreator.WORDS_IN_FIRST_TEAM);
+            board.init(firstTeam, settings);
+            state.initState(firstTeam, settings.getFirstTeamWords());
         }
     }
 
@@ -151,5 +147,9 @@ public class Game {
         board.getAnswerManager().reset();
         board.getFlagsManager().removeFlags(card);
         state.useCard(card);
+    }
+
+    public GameSettings getSettings() {
+        return settings;
     }
 }

@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.connection;
 
 
-import com.parabbits.tajniakiserver.game.Game;
+import com.parabbits.tajniakiserver.shared.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;

@@ -1,6 +1,6 @@
 package com.parabbits.tajniakiserver.game.models;
 
-import com.parabbits.tajniakiserver.game.Game;
+import com.parabbits.tajniakiserver.shared.Game;
 
 import java.util.ArrayList;
 import java.util.List;

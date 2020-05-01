@@ -1,5 +1,6 @@
 package com.parabbits.tajniakiserver.game.models;
 
+import com.parabbits.tajniakiserver.shared.GameSettings;
 import com.parabbits.words_utils.WordColorRandom;
 import com.parabbits.words_utils.WordsHelper;
 
@@ -10,13 +11,11 @@ import java.util.List;
 public class BoardCreator {
 
     // TODO: przenieść to do jakieś konfiguracji gry
-    private final static int NUMBER_OF_CARDS = 25;
-    public final static int WORDS_IN_FIRST_TEAM = 9;
     private final static String WORDS_PATH = "resources/words.txt";
 
-    public static List<Card> createCards(Team firstTeam) throws IOException {
+    public static List<Card> createCards(Team firstTeam, GameSettings settings) throws IOException {
         List<String> words = getRandomWords();
-        List<WordColor> colors = WordColorRandom.randomTeamsForWords(NUMBER_OF_CARDS, WORDS_IN_FIRST_TEAM, firstTeam);
+        List<WordColor> colors = WordColorRandom.randomTeamsForWords(settings.getNumbersOfCards(), settings.getFirstTeamWords(), firstTeam);
 
         return buildWordCards(words, colors);
     }

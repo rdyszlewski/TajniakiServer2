@@ -2,6 +2,7 @@ package com.parabbits.tajniakiserver.game.models;
 
 import com.parabbits.tajniakiserver.game.FlagsManager;
 import com.parabbits.tajniakiserver.game.AnswerManager;
+import com.parabbits.tajniakiserver.shared.GameSettings;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,8 +25,8 @@ public class Board {
         return flagsManager;
     }
 
-    public void init(Team firstTeam) throws IOException {
-        List<Card> cardsList = BoardCreator.createCards(firstTeam);
+    public void init(Team firstTeam, GameSettings settings) throws IOException {
+        List<Card> cardsList = BoardCreator.createCards(firstTeam, settings);
         cards = new HashMap<>();
         for(Card card: cardsList){
             cards.put(card.getWord(), card);
