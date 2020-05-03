@@ -1,4 +1,4 @@
-package com.parabbits.tajniakiserver.boss;
+package com.parabbits.tajniakiserver.voting;
 
 import com.parabbits.tajniakiserver.shared.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
@@ -16,7 +16,7 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Controller
-public class BossController {
+public class VotingController {
 
     private final String VOTING_START = "/boss/start";
     private final String VOTING_VOTE = "/boss/vote";
@@ -38,11 +38,11 @@ public class BossController {
     @MessageMapping("/boss/start")
     public void startVoting(@Payload String message, SimpMessageHeaderAccessor headerAccessor) {
         game.startVoting(); // TODO: zrobić to lepiej, żeby wykonywało się to tylko raz
-//        Team team = player.getTeam(); // TODO: odkomencić to później
-        Team team = Team.BLUE;
+        Player player = game.getPlayer(headerAccessor.getSessionId());
+        Team team = player.getTeam();
 
-        List<BossCandidatePlayer> candidate = game.getVotingService(team).getCandidates();
-        messageManager.sendToTeam(candidate, team, VOTING_START, game);
+        List<VotingPlayer> candidates = game.getVotingService(team).getCandidates();
+        messageManager.sendToTeam(candidates, team, VOTING_START, game);
     }
 
     @MessageMapping("/boss/vote")
@@ -50,10 +50,10 @@ public class BossController {
         Player player = game.getPlayer(headerAccessor.getSessionId());
         Player votedPlayer = game.getPlayerById(id);
         VotingService voting = game.getVotingService(player.getTeam());
-        voting.vote(player.getSessionId(), votedPlayer.getSessionId());
-
-        List<BossCandidatePlayer> candidates = voting.getCandidates();
-        messageManager.sendToTeam(candidates, player.getTeam(), VOTING_VOTE, game);
+        List<VotingPlayer> playersToUpdate = voting.vote(player.getSessionId(), votedPlayer.getSessionId());
+        if(playersToUpdate != null){
+            messageManager.sendToTeam(playersToUpdate, player.getTeam(), VOTING_VOTE, game);
+        }
     }
 
     public void endVoting(){
@@ -64,8 +64,8 @@ public class BossController {
 
     // TODO: przenieść to do innej klasy
     private void setRoles(){
-        BossCandidatePlayer redBoss = game.getVotingService(Team.RED).getWinner();
-        BossCandidatePlayer blueBoss = game.getVotingService(Team.BLUE).getWinner();
+        VotingPlayer redBoss = game.getVotingService(Team.RED).getWinner();
+        VotingPlayer blueBoss = game.getVotingService(Team.BLUE).getWinner();
 
         for(Player player: game.getPlayers()){
             if(player.getId()==redBoss.getId() || player.getId()==blueBoss.getId()){

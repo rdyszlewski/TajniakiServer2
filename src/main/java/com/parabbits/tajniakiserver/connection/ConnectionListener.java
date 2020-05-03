@@ -34,18 +34,19 @@ public class ConnectionListener {
         connectedSessions.add(sessionId);
 
         // TODO: wyłącznie do testów
-//        needToTest(sessionId);
+        needToTest(sessionId);
     }
 
     private void needToTest(String sessionId) {
         // ustawianie graczy, tak, aby można było przetestować działanie aplikacji
         Player player  = new Player(sessionId, counter, "g"+connectedSessions.size());
         teamCounter++;
-        if(teamCounter == 3){
-            currentTeam = currentTeam==Team.BLUE? Team.RED : Team.BLUE;
-            teamCounter = 0;
-        }
-        player.setTeam(currentTeam);
+//        if(teamCounter == 3){
+//            currentTeam = currentTeam==Team.BLUE? Team.RED : Team.BLUE;
+//            teamCounter = 0;
+//        }
+//        player.setTeam(currentTeam);
+        player.setTeam(Team.BLUE);
         if(player.getId()%2==0){
             player.setRole(Role.BOSS);
         } else {

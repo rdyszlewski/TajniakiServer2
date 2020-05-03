@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.shared;
 
-import com.parabbits.tajniakiserver.boss.BossController;
-import com.parabbits.tajniakiserver.boss.VotingService;
+import com.parabbits.tajniakiserver.voting.VotingController;
+import com.parabbits.tajniakiserver.voting.VotingService;
 import com.parabbits.tajniakiserver.game.GameState;
 import com.parabbits.tajniakiserver.game.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ public class Game {
 
     // TODO: pomyśleć, jak rozwiązać to inaczej
     @Autowired
-    private BossController bossController;
+    private VotingController bossController;
 
     private final Map<String, Player> players = new HashMap<>();
 
@@ -94,7 +94,7 @@ public class Game {
             blueVoting.init(players);
             redVoting.init(players);
             // TODO: z uruchomieniem licznika można poczekać, aż wszyscy się załadują
-            startTimer();
+//            startTimer();
         }
     }
 
