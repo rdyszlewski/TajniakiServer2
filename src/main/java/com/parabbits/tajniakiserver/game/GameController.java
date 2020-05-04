@@ -62,6 +62,8 @@ public class GameController {
         message.setGameState(game.getState());
         List<ClientCard> cards = ClientCardCreator.createCards(game.getBoard().getCards(), game, role, player.getTeam());
         message.setCards(cards);
+        message.setPlayers(new ArrayList<>(game.getPlayers()));
+
         return message;
     }
 

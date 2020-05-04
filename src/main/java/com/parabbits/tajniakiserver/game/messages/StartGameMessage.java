@@ -1,8 +1,6 @@
 package com.parabbits.tajniakiserver.game.messages;
 import com.parabbits.tajniakiserver.game.GameState;
-import com.parabbits.tajniakiserver.game.models.ClientCard;
-import com.parabbits.tajniakiserver.game.models.Role;
-import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.game.models.*;
 
 import java.util.List;
 
@@ -14,6 +12,7 @@ public class StartGameMessage {
     private Team playerTeam;
     private GameState gameState;
     private List<ClientCard> cards;
+    private List<GamePlayer> players;
 
     public String getNickname() {
         return nickname;
@@ -53,5 +52,13 @@ public class StartGameMessage {
 
     public void setCards(List<ClientCard> cards) {
         this.cards = cards;
+    }
+
+    public List<GamePlayer> getPlayers() {
+        return players;
+    }
+
+    public void setPlayers(List<GamePlayer> players) {
+        this.players = players;
     }
 }

@@ -1,9 +1,6 @@
 package com.parabbits.tajniakiserver.game;
 
-import com.parabbits.tajniakiserver.game.models.Card;
-import com.parabbits.tajniakiserver.game.models.Role;
-import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.game.models.WordColor;
+import com.parabbits.tajniakiserver.game.models.*;
 
 public class GameState {
 
@@ -14,8 +11,6 @@ public class GameState {
     private int remainingRed;
     private String currentWord;
     private int remainingAnswers;
-
-    // TODO: można dodać informacje o czasie
 
     public Team getCurrentTeam() {
         return currentTeam;

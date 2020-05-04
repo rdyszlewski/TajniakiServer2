@@ -50,6 +50,14 @@ public class LobbyController {
         return game.getPlayers();
     }
 
+    // TODO: przenieść to do gdzieś
+    @MessageMapping("lobby/disconnect")
+    public void disconnectPlayer(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor){
+        System.out.println("Disconnect event");
+        Player player = game.getPlayer(headerAccessor.getSessionId());
+        messageManager.sendToAll(player, "/queue/lobby/disconnect", game);
+    }
+
     @MessageMapping("/lobby/team")
     public void changeTeam(@Payload String teamText, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
