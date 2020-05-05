@@ -47,16 +47,16 @@ public class GameController {
         game.initializeGame();
         Player player = game.getPlayer(headerAccessor.getSessionId());
         if (player.getRole() == Role.BOSS) {
-            StartGameMessage bossMessage = createStartGameMessage(Role.BOSS, player);
+            StartGameMessage bossMessage = createStartGameMessage(Role.BOSS, player, game);
             messageManager.send(bossMessage, player.getSessionId(), START_MESSAGE_RESPONSE);
         } else {
-            StartGameMessage playersMessage = createStartGameMessage(Role.PLAYER, player);
+            StartGameMessage playersMessage = createStartGameMessage(Role.PLAYER, player, game);
             messageManager.send(playersMessage, player.getSessionId(), START_MESSAGE_RESPONSE);
         }
     }
 
     // TODO: można przenieść do oodzielnej klasy
-    private StartGameMessage createStartGameMessage(Role role, Player player) {
+    public static StartGameMessage createStartGameMessage(Role role, Player player, Game game) {
         StartGameMessage message = new StartGameMessage();
         message.setNickname(player.getNickname());
         message.setPlayerRole(role);

@@ -1,6 +1,8 @@
 package com.parabbits.tajniakiserver.connection;
 
 
+import com.parabbits.tajniakiserver.game.GameController;
+import com.parabbits.tajniakiserver.game.messages.StartGameMessage;
 import com.parabbits.tajniakiserver.shared.DisconnectMessage;
 import com.parabbits.tajniakiserver.shared.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
@@ -58,17 +60,25 @@ public class ConnectionListener {
         // ustawianie graczy, tak, aby można było przetestować działanie aplikacji
         Player player  = new Player(sessionId, counter, "g"+connectedSessions.size());
         teamCounter++;
+        // TODO: trzeba zrobić tak, że by był tylko jeden szef w dużynie
         if(teamCounter == 3){
             currentTeam = currentTeam==Team.BLUE? Team.RED : Team.BLUE;
             teamCounter = 0;
         }
         player.setTeam(currentTeam);
 //        player.setTeam(Team.BLUE);
-        if(player.getId()%2==0){
+        List<Player> teamPlayers = game.getPlayers(currentTeam);
+        if(teamPlayers.stream().filter(x->x.getRole()==Role.BOSS).count() == 0){
             player.setRole(Role.BOSS);
         } else {
             player.setRole(Role.PLAYER);
         }
+
+//        if(player.getId()%2==0){
+//            player.setRole(Role.BOSS);
+//        } else {
+//            player.setRole(Role.PLAYER);
+//        }
         game.addPlayer(player);
         counter++;
     }
@@ -127,12 +137,13 @@ public class ConnectionListener {
     private void sendDisconnectFromGame(Player player, Game game){
         if(player.getRole() == Role.BOSS){
             if(game.getPlayers(player.getTeam()).size() >= 2){
-                // TODO: w jakiś sposó” wybrać nowego kapitana
                 Player newBoss = game.getPlayers(player.getTeam()).get(0);
                 newBoss.setRole(Role.BOSS);
                 DisconnectMessage message = createDisconnectMessage(player, GameStep.GAME);
                 message.setPlayers(new ArrayList<>(game.getPlayers()));
                 messageManager.sendToAll(message, DISCONNECT_PATH, game);
+                StartGameMessage messageForNewBoss =  GameController.createStartGameMessage(Role.BOSS, newBoss, game);
+                messageManager.send(messageForNewBoss, newBoss.getSessionId(), "/queue/game/start"); // TODO: przenieść gdzieś ścieżkę
             }
         } else if(player.getRole() == Role.PLAYER){
             if(game.getPlayers(player.getTeam()).size() < 2){
