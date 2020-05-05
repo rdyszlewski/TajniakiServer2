@@ -1,9 +1,11 @@
 package com.parabbits.tajniakiserver.game;
 
 import com.parabbits.tajniakiserver.game.models.*;
+import com.parabbits.tajniakiserver.shared.GameStep;
 
 public class GameState {
 
+    private GameStep currentStep;
     private boolean active;
     private Team currentTeam;
     private Role currentPlayer;
@@ -11,6 +13,14 @@ public class GameState {
     private int remainingRed;
     private String currentWord;
     private int remainingAnswers;
+
+    public GameStep getCurrentStep(){
+        return currentStep;
+    }
+
+    public void setCurrentStep(GameStep currentStep){
+        this.currentStep = currentStep;
+    }
 
     public Team getCurrentTeam() {
         return currentTeam;

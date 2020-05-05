@@ -2,7 +2,7 @@ package com.parabbits.tajniakiserver.shared;
 
 public class GameSettings {
 
-    private int maxTeamSize = 2;
+    private int maxTeamSize = 5;
     private int firstTeamWords = 9;
     private int numbersOfCards = 25;
 

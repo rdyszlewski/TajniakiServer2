@@ -3,6 +3,7 @@ package com.parabbits.tajniakiserver.lobby;
 import com.parabbits.tajniakiserver.shared.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.shared.GameStep;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -38,6 +39,7 @@ public class LobbyController {
 
     @MessageMapping("/lobby/connect")
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
+        game.getState().setCurrentStep(GameStep.LOBBY); // TODO: może to powinno znadjować się w innym miejscu
         String sessionId = headerAccessor.getSessionId();
         Player player = game.addPlayer(sessionId, nickname);
         // TODO: wysłąć do podłączonego gracza informacje o ustawieniach rozgrywki

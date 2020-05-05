@@ -28,8 +28,10 @@ public class VotingService {
     private Map<String, VotingPlayer> createCandidates(Map<String, Player> players){
         Map<String, VotingPlayer> candidates = new HashMap<>();
         for(Player player: players.values()){
-            VotingPlayer candidate = new VotingPlayer(player.getId(), player.getNickname());
-            candidates.put(player.getSessionId(), candidate);
+            if(player.getTeam() == team){
+                VotingPlayer candidate = new VotingPlayer(player.getId(), player.getNickname());
+                candidates.put(player.getSessionId(), candidate);
+            }
         }
         return candidates;
     }

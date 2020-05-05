@@ -4,6 +4,7 @@ import com.parabbits.tajniakiserver.shared.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.shared.GameStep;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -37,12 +38,14 @@ public class VotingController {
 
     @MessageMapping("/boss/start")
     public void startVoting(@Payload String message, SimpMessageHeaderAccessor headerAccessor) {
+        game.getState().setCurrentStep(GameStep.VOTING); // TODO: to też może znajdować się w innym miejscu
         game.startVoting(); // TODO: zrobić to lepiej, żeby wykonywało się to tylko raz
         Player player = game.getPlayer(headerAccessor.getSessionId());
         Team team = player.getTeam();
 
         List<VotingPlayer> candidates = game.getVotingService(team).getCandidates();
-        messageManager.sendToTeam(candidates, team, VOTING_START, game);
+//        messageManager.sendToTeam(candidates, team, VOTING_START, game);
+        messageManager.send(candidates, player.getSessionId(), VOTING_START);
     }
 
     @MessageMapping("/boss/vote")

@@ -1,10 +1,12 @@
 package com.parabbits.tajniakiserver.connection;
 
 
+import com.parabbits.tajniakiserver.shared.DisconnectMessage;
 import com.parabbits.tajniakiserver.shared.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.shared.GameStep;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +21,8 @@ import java.util.List;
 
 @Configuration
 public class ConnectionListener {
+
+    private final String DISCONNECT_PATH = "/queue/common/disconnect"; // TODO: przenieść to do klasy zawierającej wszystkie ścieżki
 
     @Autowired
     private Game game;
@@ -71,16 +75,71 @@ public class ConnectionListener {
 
     @EventListener(SessionDisconnectEvent.class)
     public void handleWebsocketDisconnectListener(SessionDisconnectEvent event){
+        // TODO: można zrobić oddzielną klasę odpowiedzialną za rozłączenia
         String sessionId = event.getMessage().getHeaders().get("simpSessionId").toString();
         System.out.println("Rozłączono gracza " + sessionId);
         connectedSessions.remove(sessionId);
         Player player = game.getPlayer(sessionId);
         game.removePlayer(sessionId);
-        sendDisconnectMessage(player);
+
+        sendDisconnectMessage(player, game);
     }
 
-    private void sendDisconnectMessage(Player player){
-        messageManager.sendToAll(player, "/common/disconnect", game);
+    private void sendDisconnectMessage(Player player, Game game){
+        switch (game.getState().getCurrentStep()){
+            case LOBBY:
+                sendDisconnectFromLobby(player, game);
+                break;
+            case VOTING:
+                sendDisconnectFromVoting(player, game);
+                break;
+            case GAME:
+                sendDisconnectFromGame(player, game);
+                break;
+        }
+    }
+
+    private void sendDisconnectFromLobby(Player player, Game game){
+        DisconnectMessage message = createDisconnectMessage(player, GameStep.LOBBY);
+        messageManager.sendToAll(message, DISCONNECT_PATH, game);
+    }
+
+    private DisconnectMessage createDisconnectMessage(Player player, GameStep step){
+        DisconnectMessage message = new DisconnectMessage();
+        message.setDisconnectedPlayer(player);
+        message.setCurrentStep(step);
+        return message;
+    }
+
+    private void sendDisconnectFromVoting(Player player, Game game){
+        GameStep currentStep = isTeamCorrect(player.getTeam(), game) ? GameStep.VOTING : GameStep.LOBBY;
+        DisconnectMessage message = createDisconnectMessage(player, currentStep);
+        messageManager.sendToAll(message, DISCONNECT_PATH, game);
+    }
+
+    private boolean isTeamCorrect(Team team, Game game){
+        List<Player> teamPlayers = game.getPlayers(team);
+        long bosses = teamPlayers.stream().filter(x-> x.getRole() == Role.BOSS).count();
+        long players = teamPlayers.stream().filter(x->x.getRole() == Role.PLAYER).count();
+        return bosses == 1 && players >= 1;
+    }
+
+    private void sendDisconnectFromGame(Player player, Game game){
+        if(player.getRole() == Role.BOSS){
+            if(game.getPlayers(player.getTeam()).size() >= 2){
+                // TODO: w jakiś sposó” wybrać nowego kapitana
+                Player newBoss = game.getPlayers(player.getTeam()).get(0);
+                newBoss.setRole(Role.BOSS);
+                DisconnectMessage message = createDisconnectMessage(player, GameStep.GAME);
+                message.setPlayers(new ArrayList<>(game.getPlayers()));
+                messageManager.sendToAll(message, DISCONNECT_PATH, game);
+            }
+        } else if(player.getRole() == Role.PLAYER){
+            if(game.getPlayers(player.getTeam()).size() < 2){
+                DisconnectMessage message = createDisconnectMessage(player, GameStep.LOBBY);
+                messageManager.sendToAll(message, DISCONNECT_PATH, game);
+            }
+        }
     }
 
     public List<String> getSessions(){

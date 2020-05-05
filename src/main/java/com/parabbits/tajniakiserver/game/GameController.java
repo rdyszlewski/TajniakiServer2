@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.parabbits.tajniakiserver.game.messages.*;
 import com.parabbits.tajniakiserver.game.models.*;
 import com.parabbits.tajniakiserver.shared.Game;
+import com.parabbits.tajniakiserver.shared.GameStep;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -42,6 +43,7 @@ public class GameController {
 
     @MessageMapping("/game/start")
     public void startGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
+        game.getState().setCurrentStep(GameStep.GAME); // TODO: to też powinno znajdować się w innym miejscu
         game.initializeGame();
         Player player = game.getPlayer(headerAccessor.getSessionId());
         if (player.getRole() == Role.BOSS) {
