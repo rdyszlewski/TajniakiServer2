@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class GameController {
@@ -53,6 +54,18 @@ public class GameController {
             StartGameMessage playersMessage = createStartGameMessage(Role.PLAYER, player, game);
             messageManager.send(playersMessage, player.getSessionId(), START_MESSAGE_RESPONSE);
         }
+
+        initHistory(game);
+    }
+
+    private void initHistory(Game game){
+        game.getHistory().setWords(getWordsFromCards(WordColor.BLUE, game), Team.BLUE);
+        game.getHistory().setWords(getWordsFromCards(WordColor.RED, game), Team.RED);
+        game.getHistory().setKiller(getWordsFromCards(WordColor.KILLER, game).get(0));
+    }
+
+    private List<String> getWordsFromCards(WordColor color, Game game){
+        return game.getBoard().getCards().stream().filter(card -> card.getColor() == color).map(Card::getWord).collect(Collectors.toList());
     }
 
     // TODO: można przenieść do oodzielnej klasy
@@ -71,14 +84,17 @@ public class GameController {
 
     @MessageMapping("/game/click")
     public void servePlayersAnswer(@Payload String word, SimpMessageHeaderAccessor headerAccessor) {
+        // TODO: dodać obsługę rezygnacji z odpowiedzi
         Player player = game.getPlayer(headerAccessor.getSessionId());
         Card card = game.getBoard().getCard(word);
+        // TODO: zrobić refaktoryzację z tym
         if (!isPlayerTurn(player) || card.isChecked() || player.getRole()==Role.BOSS) {
             return;
         }
         game.getBoard().getAnswerManager().setAnswer(card, player);
         int answerForCard = game.getBoard().getAnswerManager().getCounter(card);
         if (isAllPlayersAnswer(player, answerForCard)) {
+            game.getHistory().addAnswer(card.getWord());
             handleAnswerMessage(player, card);
         } else {
             handleClickMessage(player);
@@ -105,13 +121,12 @@ public class GameController {
                 handleEndGameMessage(player, EndGameCause.KILLER, player.getTeam() == Team.BLUE ? Team.RED : Team.BLUE);
                 break;
         }
-        if (!game.getState().isGameActive()) {
+        if (!game.getState().isGameActive()) { // TODO: zrobić lepsze zakończenie gry
             handleEndGameMessage(player, EndGameCause.ALL, player.getTeam());
         }
     }
 
     private void handleIncorrectMessage(Card card, Player player) {
-        // TODO: poinformowanie gry o błędnym wyborze
         handleCorrectMessage(card, false, player);
     }
 
@@ -128,7 +143,6 @@ public class GameController {
         message.setRemainingBlue(game.getState().getRemainingBlue());
         message.setRemainingRed(game.getState().getRemainingRed());
         messageManager.sendToAll(message, END_MESSAGE_RESPONSE, game);
-        // TODO: zrobić komunikat o zakończeniu gry
     }
 
     private void handleClickMessage(Player player) {
@@ -162,12 +176,12 @@ public class GameController {
 
     @MessageMapping("/game/question")
     public void setQuestion(@Payload String messsageText, SimpMessageHeaderAccessor headerAccessor) {
-        // TODO: można dodać jakąś historię podawanych haseł
         Player player = game.getPlayer(headerAccessor.getSessionId());
         if (!isPlayerTurn(player) || player.getRole()==Role.PLAYER) {
             return;
         }
         BossMessage message = buildBossMessage(messsageText, new Gson());
+        game.getHistory().addQuestion(message.getWord(), message.getNumber(), player.getTeam());
         if(!WordValidator.validate(message.getWord())){
             return;
         }

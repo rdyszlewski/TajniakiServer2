@@ -1,5 +1,6 @@
 package com.parabbits.tajniakiserver.shared;
 
+import com.parabbits.tajniakiserver.history.GameHistory;
 import com.parabbits.tajniakiserver.voting.VotingController;
 import com.parabbits.tajniakiserver.voting.VotingService;
 import com.parabbits.tajniakiserver.game.GameState;
@@ -22,6 +23,7 @@ public class Game {
 
     private final VotingService blueVoting = new VotingService(Team.BLUE);
     private final VotingService redVoting = new VotingService(Team.RED);
+    private final GameHistory history = new GameHistory();
 
     private Team firstTeam;
     private final GameState state = new GameState();
@@ -151,5 +153,9 @@ public class Game {
 
     public GameSettings getSettings() {
         return settings;
+    }
+
+    public GameHistory getHistory(){
+        return history;
     }
 }
