@@ -67,6 +67,11 @@ public class GameState {
         if(!active){
             return;
         }
+        if(card.getIndex() < 0){
+            // TODO: sprawdzić to
+            changeTeams();
+            return;
+        }
         card.setChecked(true);
         WordColor cardColor = card.getColor();
         boolean correct = AnswerCorrectness.isCorrect(cardColor, getCurrentTeam());
@@ -101,6 +106,7 @@ public class GameState {
         remainingAnswers = -1;
         currentTeam = currentTeam == Team.BLUE? Team.RED : Team.BLUE;
         currentPlayer = Role.BOSS;
+        currentWord = "";
     }
 
     public boolean isGameActive(){

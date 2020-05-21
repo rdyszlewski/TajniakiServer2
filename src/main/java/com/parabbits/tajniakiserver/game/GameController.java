@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 
 import com.parabbits.tajniakiserver.game.messages.*;
 import com.parabbits.tajniakiserver.game.models.*;
+import com.parabbits.tajniakiserver.history.HistoryEntry;
 import com.parabbits.tajniakiserver.shared.Game;
 import com.parabbits.tajniakiserver.shared.GameStep;
 import com.parabbits.tajniakiserver.utils.MessageManager;
@@ -84,9 +85,8 @@ public class GameController {
 
     @MessageMapping("/game/click")
     public void servePlayersAnswer(@Payload String word, SimpMessageHeaderAccessor headerAccessor) {
-        // TODO: dodać obsługę rezygnacji z odpowiedzi
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        Card card = game.getBoard().getCard(word);
+        Card card = findCard(word);
         // TODO: zrobić refaktoryzację z tym
         if (!isPlayerTurn(player) || card.isChecked() || player.getRole()==Role.BOSS) {
             return;
@@ -94,11 +94,21 @@ public class GameController {
         game.getBoard().getAnswerManager().setAnswer(card, player);
         int answerForCard = game.getBoard().getAnswerManager().getCounter(card);
         if (isAllPlayersAnswer(player, answerForCard)) {
-            game.getHistory().addAnswer(card.getWord());
+            game.getHistory().addAnswer(card.getWord(), card.getColor());
             handleAnswerMessage(player, card);
         } else {
             handleClickMessage(player);
         }
+    }
+
+    private Card findCard(String word){
+        Card card = null;
+        if(word.equals("--PASS--")){
+            card = new Card(-1, "", WordColor.LACK, false);
+        } else {
+            card = game.getBoard().getCard(word);
+        }
+        return card;
     }
 
     private boolean isAllPlayersAnswer(Player player, int answerForCard) {
@@ -153,14 +163,23 @@ public class GameController {
     private ClickMessage buildClickMessage(Player player) {
         List<Card> editedCards = game.getBoard().getAnswerManager().popCardsToUpdate(player);
         List<ClientCard> clientCards = prepareClientCards(editedCards, player);
-        return new ClickMessage(clientCards);
+        ClickMessage message = new ClickMessage(clientCards);
+        List<Card> passCard = editedCards.stream().filter(x->x.getIndex() < 0).collect(Collectors.toList());
+        if(!passCard.isEmpty()){
+            ClientCard passClientCard = ClientCardCreator.createCard(passCard.get(0), game, player.getRole(), player.getTeam());
+            message.setPass(passClientCard.getAnswers().size());
+        }
+        // TODO: dodac liczbę pominiętych
+        return message;
     }
 
     private List<ClientCard> prepareClientCards(List<Card> cards, Player player) {
         List<ClientCard> clientCards = new ArrayList<>();
         for (Card card : cards) {
-            ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
-            clientCards.add(clientCard);
+            if(card.getIndex() >= 0){
+                ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
+                clientCards.add(clientCard);
+            }
         }
         return clientCards;
     }
@@ -211,5 +230,53 @@ public class GameController {
         List<Card> editedCards = Collections.singletonList(card);
         List<ClientCard> clientCards = prepareClientCards(editedCards, player);
         return new ClickMessage(clientCards);
+    }
+
+    @MessageMapping("/game/summary")
+    public void getSummary(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
+//        if(!game.isStarted()){ // TODO: później to odkomentować
+//            return;
+//        } // TODO: spróbować zrobić to jakoś lepiej
+        SummaryMessage summary = new SummaryMessage();
+        // TODO: powstawiać odpowiednie wartości
+        summary.setWinner(Team.BLUE);
+        summary.setBlueRemaining(0);
+        summary.setRedRemaining(4);
+//        List<HistoryEntry> blueHistory = game.getHistory().getEntries().stream().filter(x->x.getTeam() == Team.BLUE).collect(Collectors.toList());
+//        List<HistoryEntry> redHistory = game.getHistory().getEntries().stream().filter(x->x.getTeam() == Team.RED).collect(Collectors.toList());
+//        List<HistoryEntry> blueHistory = getBlueHistory();
+//        List<HistoryEntry> redHistory = getRedHistory();
+
+        summary.setProcess(getHistory());
+        summary.setCause(WinnerCause.ALL_FOUND);
+
+        messageManager.sendToAll(summary, "queue/game/summary", game);
+
+        // po utworzeniu
+        game.reset();
+    }
+
+    private List<HistoryEntry> getHistory(){
+        HistoryEntry entry1 = new HistoryEntry();
+        entry1.setQuestion("Kaszanka");
+        entry1.setNumber(3);
+        entry1.addAnswer("Osioł", WordColor.BLUE);
+        entry1.addAnswer("Kaszana", WordColor.NEUTRAL);
+        entry1.setTeam(Team.BLUE);
+
+        HistoryEntry entry2 = new HistoryEntry();
+        entry2.setQuestion("Osiem");
+        entry2.setNumber(2);
+        entry2.addAnswer("Jeden", WordColor.RED);
+        entry2.addAnswer("Dwa", WordColor.BLUE);
+        entry2.setTeam(Team.RED);
+
+        HistoryEntry entry3 = new HistoryEntry();
+        entry3.setQuestion("Radar");
+        entry3.setNumber(1);
+        entry3.addAnswer("Talerz", WordColor.RED);
+        entry3.setTeam(Team.BLUE);
+
+        return Arrays.asList(entry1, entry2, entry3);
     }
 }

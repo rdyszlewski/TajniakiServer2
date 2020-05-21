@@ -1,13 +1,14 @@
 package com.parabbits.tajniakiserver.history;
 
 import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.game.models.WordColor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameHistory {
 
-    private List<HistoryEntry> history;
+    private List<HistoryEntry> history = new ArrayList<>();
     private List<String> blueWords;
     private List<String> redWords;
     private String killer;
@@ -25,8 +26,8 @@ public class GameHistory {
 
     }
 
-    public void addAnswer(String answer){
-        currentEntry.addAnswer(answer);
+    public void addAnswer(String answer, WordColor color){
+        currentEntry.addAnswer(answer, color);
         System.out.println(answer);
     }
 

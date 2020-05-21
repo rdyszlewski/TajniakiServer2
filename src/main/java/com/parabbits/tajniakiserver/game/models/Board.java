@@ -37,7 +37,7 @@ public class Board {
         if(cards.containsKey(word)){
             return cards.get(word);
         }
-        return null;
+        return null; // pominięcie
     }
 
     public List<Card> getCards(){

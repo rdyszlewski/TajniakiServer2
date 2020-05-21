@@ -1,5 +1,6 @@
 package com.parabbits.tajniakiserver.history;
 
+import com.parabbits.tajniakiserver.game.models.SummaryAnswer;
 import com.parabbits.tajniakiserver.game.models.Team;
 
 import java.io.FileNotFoundException;
@@ -43,8 +44,10 @@ public class HistorySaver {
             writer.write("-");
             writer.write(entry.getNumber());
             writer.write(":");
-            for(String answer: entry.getAnswers()){
-                writer.write(answer);
+            for(SummaryAnswer answer: entry.getAnswers()){
+                writer.write(answer.getWord());
+                writer.write("|");
+                writer.write(answer.getColor().toString());
                 writer.write(",");
             }
         }

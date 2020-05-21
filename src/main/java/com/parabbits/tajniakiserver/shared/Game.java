@@ -21,16 +21,35 @@ public class Game {
 
     private final Map<String, Player> players = new HashMap<>();
 
-    private final VotingService blueVoting = new VotingService(Team.BLUE);
-    private final VotingService redVoting = new VotingService(Team.RED);
-    private final GameHistory history = new GameHistory();
+    private  VotingService blueVoting = new VotingService(Team.BLUE);
+    private  VotingService redVoting = new VotingService(Team.RED);
+    private  GameHistory history = new GameHistory();
 
     private Team firstTeam;
-    private final GameState state = new GameState();
-    private final GameSettings settings = new GameSettings();
-    private final Board board = new Board();
+    private  GameState state = new GameState();
+    private  GameSettings settings = new GameSettings();
+    private  Board board = new Board();
     private int playerCounter = 0;
     // TODO: dodać oddzielną klasę do zarządzania graczami w grze
+
+    private boolean started = false;
+
+    public boolean isStarted(){
+        return started;
+    }
+
+    public void reset(){
+        players.clear();
+        blueVoting = new VotingService(Team.BLUE);
+        redVoting = new VotingService(Team.RED);
+        history = new GameHistory();
+        firstTeam = null;
+        state = new GameState();
+        settings = new GameSettings();
+        board = new Board();
+        playerCounter = 0;
+        started = false;
+    }
 
     public GameState getState(){
         return state;
@@ -138,6 +157,7 @@ public class Game {
             board.init(firstTeam, settings);
             state.initState(firstTeam, settings.getFirstTeamWords());
         }
+        started = true;
     }
 
     private Team randomFirstGroup(){
@@ -146,6 +166,7 @@ public class Game {
     }
 
     public void useCard(Card card){
+        // TODO: prawdopodobnie tutaj wystarczy word
         board.getAnswerManager().reset();
         board.getFlagsManager().removeFlags(card);
         state.useCard(card);

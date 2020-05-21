@@ -1,6 +1,8 @@
 package com.parabbits.tajniakiserver.history;
 
+import com.parabbits.tajniakiserver.game.models.SummaryAnswer;
 import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.game.models.WordColor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,13 +11,9 @@ public class HistoryEntry {
 
     private String question;
     private int number;
-    private List<String> answers = new ArrayList<>();
+    private List<SummaryAnswer> answers = new ArrayList<>();
     private boolean omitted;
     private Team team;
-
-    public void addAnswer(String answer){
-        answers.add(answer);
-    }
 
     public String getQuestion() {
         return question;
@@ -33,12 +31,16 @@ public class HistoryEntry {
         this.number = number;
     }
 
-    public List<String> getAnswers() {
+    public List<SummaryAnswer> getAnswers() {
         return answers;
     }
 
-    public void setAnswers(List<String> answers) {
+    public void setAnswers(List<SummaryAnswer> answers) {
         this.answers = answers;
+    }
+
+    public void addAnswer(String answer, WordColor color){
+        answers.add(new SummaryAnswer(answer, color));
     }
 
     public boolean isOmitted() {

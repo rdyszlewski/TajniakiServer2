@@ -15,6 +15,7 @@ public class AnswerManager {
 
     public void setAnswer(Card card, Player player){
         // TODO: refaktoryzacja
+        // TODO: sprawdzić, jak to się będzie zachowywać z nullem
         Card previousCard=null;
         if(answers.containsKey(player)){
             previousCard = answers.get(player);
