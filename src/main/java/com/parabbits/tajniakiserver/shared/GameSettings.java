@@ -2,9 +2,18 @@ package com.parabbits.tajniakiserver.shared;
 
 public class GameSettings {
 
-    private int maxTeamSize = 5;
+    private int minTeamSize = 2;
+    private int maxTeamSize = 3;
     private int firstTeamWords = 9;
     private int numbersOfCards = 25;
+
+    public int getMinTeamSize() {
+        return minTeamSize;
+    }
+
+    public void setMinTeamSize(int minTeamSize) {
+        this.minTeamSize = minTeamSize;
+    }
 
     public int getMaxTeamSize() {
         return maxTeamSize;

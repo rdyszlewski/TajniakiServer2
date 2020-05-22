@@ -7,12 +7,30 @@ import java.util.List;
 
 public class StartLobbyMessage {
 
+    private int minPlayersInTeam;
+    private int maxPlayersInTeam;
     private List<Player> players;
     private GameSettings settings;
 
     public StartLobbyMessage(List<Player> player, GameSettings settings) {
         this.players = player;
         this.settings = settings;
+    }
+
+    public int getMinPlayersInTeam() {
+        return minPlayersInTeam;
+    }
+
+    public void setMinPlayersInTeam(int minPlayersInTeam) {
+        this.minPlayersInTeam = minPlayersInTeam;
+    }
+
+    public int getMaxPlayersInTeam() {
+        return maxPlayersInTeam;
+    }
+
+    public void setMaxPlayersInTeam(int maxPlayersInTeam) {
+        this.maxPlayersInTeam = maxPlayersInTeam;
     }
 
     public List<Player> getPlayers() {

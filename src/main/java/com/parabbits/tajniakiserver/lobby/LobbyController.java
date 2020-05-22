@@ -44,6 +44,8 @@ public class LobbyController {
         Player player = game.addPlayer(sessionId, nickname);
         // TODO: wysłąć do podłączonego gracza informacje o ustawieniach rozgrywki
         StartLobbyMessage message = new StartLobbyMessage(getAllPlayersInLobby(), game.getSettings());
+        message.setMinPlayersInTeam(game.getSettings().getMinTeamSize());
+        message.setMaxPlayersInTeam(game.getSettings().getMaxTeamSize());
         messageManager.send(message, player.getSessionId(), LOBBY_START);
         messageManager.sendToAll(player, LOBBY_CONNECT, game);
     }
@@ -74,6 +76,9 @@ public class LobbyController {
         }
         TeamMessage message = new TeamMessage(player.getId(), player.getTeam().toString());
         messageManager.sendToAll(message, "/lobby/team", game);
+        if (areAllReady()) {
+            finishChoosing();
+        }
     }
 
     @MessageMapping("/lobby/auto_team")
