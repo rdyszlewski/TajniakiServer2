@@ -15,6 +15,9 @@ import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class VotingController {
@@ -22,6 +25,7 @@ public class VotingController {
     private final String VOTING_START = "/boss/start";
     private final String VOTING_VOTE = "/boss/vote";
     private final String VOTING_END = "/boss/end";
+    private final String VOTING_TIMER = "/boss/timer";
 
     @Autowired
     private Game game;
@@ -44,9 +48,36 @@ public class VotingController {
         Team team = player.getTeam();
 
         List<VotingPlayer> candidates = game.getVotingService(team).getCandidates();
-//        messageManager.sendToTeam(candidates, team, VOTING_START, game);
         messageManager.send(candidates, player.getSessionId(), VOTING_START);
+
+        if(!game.isVotingTimerStarted()){
+            game.setVotingTimerStarted(true);
+            startTimer();
+        }
+        // TODO: uruchomienie licznika
     }
+
+    private void startTimer(){
+        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        int time = 15; // TODO: ustawić poprawny czas
+        scheduler.scheduleAtFixedRate(new Runnable() {
+
+            private int votingTime = time;
+
+            @Override
+            public void run() {
+                messageManager.sendToAll(votingTime, VOTING_TIMER, game);
+                System.out.println(votingTime);
+                votingTime --;
+                if(votingTime==-1){
+//                    endVoting(); // TODO: koniecznie to odkomentować
+                    scheduler.shutdown();
+                }
+            }
+        }, 1,1, TimeUnit.SECONDS);
+    }
+
+
 
     @MessageMapping("/boss/vote")
     public void vote(@Payload long id, SimpMessageHeaderAccessor headerAccessor) {

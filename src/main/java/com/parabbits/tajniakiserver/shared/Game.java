@@ -24,6 +24,7 @@ public class Game {
     private  VotingService blueVoting = new VotingService(Team.BLUE);
     private  VotingService redVoting = new VotingService(Team.RED);
     private  GameHistory history = new GameHistory();
+    private boolean votingTimerStared = false; // TODO: przemyśleć, czy to powinno być w tym miejscu
 
     private Team firstTeam;
     private  GameState state = new GameState();
@@ -36,6 +37,14 @@ public class Game {
 
     public boolean isStarted(){
         return started;
+    }
+
+    public boolean isVotingTimerStarted(){
+        return votingTimerStared;
+    }
+
+    public void setVotingTimerStarted(boolean started){
+        votingTimerStared = started;
     }
 
     public void reset(){

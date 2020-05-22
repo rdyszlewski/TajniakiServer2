@@ -52,8 +52,16 @@ public class ConnectionListener {
         System.out.println("Połączono " + sessionId);
         connectedSessions.add(sessionId);
 
+        preparePlayerForVotingTest(sessionId);
         // TODO: wyłącznie do testów
 //        needToTest(sessionId);
+    }
+
+    private void preparePlayerForVotingTest(String sessionId){
+        Player player = new Player(sessionId, counter, "g"+connectedSessions.size());
+        player.setTeam(Team.BLUE);
+        game.addPlayer(player);
+        counter++;
     }
 
     private void needToTest(String sessionId) {
