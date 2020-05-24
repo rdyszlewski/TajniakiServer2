@@ -27,6 +27,8 @@ public class VotingController {
     private final String VOTING_END = "/boss/end";
     private final String VOTING_TIMER = "/boss/timer";
 
+    private final int VOTING_TIME = 20; // TODO: przenieść to do odpowiedniego miejsca
+
     @Autowired
     private Game game;
 
@@ -47,8 +49,11 @@ public class VotingController {
         Player player = game.getPlayer(headerAccessor.getSessionId());
         Team team = player.getTeam();
 
-        List<VotingPlayer> candidates = game.getVotingService(team).getCandidates();
-        messageManager.send(candidates, player.getSessionId(), VOTING_START);
+        StartVotingMessage votingMessage = new StartVotingMessage();
+        // TODO: tutaj powinno być pobieranie aktualnego czasu. Być może nie będzie to konieczne
+        votingMessage.setTime(VOTING_TIME);
+        votingMessage.setPlayers(game.getVotingService(team).getCandidates());
+        messageManager.send(votingMessage, player.getSessionId(), VOTING_START);
 
         if(!game.isVotingTimerStarted()){
             game.setVotingTimerStarted(true);
@@ -59,25 +64,21 @@ public class VotingController {
 
     private void startTimer(){
         final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        int time = 15; // TODO: ustawić poprawny czas
+        // TODO: zrobić oddzielną klasę dziedziczącą po Runnable z tym zadaniem
         scheduler.scheduleAtFixedRate(new Runnable() {
-
-            private int votingTime = time;
+            private int votingTime = VOTING_TIME;
 
             @Override
             public void run() {
                 messageManager.sendToAll(votingTime, VOTING_TIMER, game);
-                System.out.println(votingTime);
                 votingTime --;
                 if(votingTime==-1){
-//                    endVoting(); // TODO: koniecznie to odkomentować
+                    endVoting();
                     scheduler.shutdown();
                 }
             }
         }, 1,1, TimeUnit.SECONDS);
     }
-
-
 
     @MessageMapping("/boss/vote")
     public void vote(@Payload long id, SimpMessageHeaderAccessor headerAccessor) {
@@ -85,6 +86,7 @@ public class VotingController {
         Player votedPlayer = game.getPlayerById(id);
         VotingService voting = game.getVotingService(player.getTeam());
         List<VotingPlayer> playersToUpdate = voting.vote(player.getSessionId(), votedPlayer.getSessionId());
+        // TODO: można zrobić tak, że graczowi wysyłany jest dodatkowo komunikat o zaznaczeniu
         if(playersToUpdate != null){
             messageManager.sendToTeam(playersToUpdate, player.getTeam(), VOTING_VOTE, game);
         }
@@ -100,13 +102,23 @@ public class VotingController {
     private void setRoles(){
         VotingPlayer redBoss = game.getVotingService(Team.RED).getWinner();
         VotingPlayer blueBoss = game.getVotingService(Team.BLUE).getWinner();
-
+        if(redBoss==null || blueBoss==null){
+            // TODO: to później usunąć
+            redBoss = blueBoss;
+            // TODO: wysłać informacje o błędzie
+//            return; // TODO: odkomentować to
+        }
         for(Player player: game.getPlayers()){
-            if(player.getId()==redBoss.getId() || player.getId()==blueBoss.getId()){
+            if(player.getId()==blueBoss.getId()){
                 player.setRole(Role.BOSS);
             } else {
                 player.setRole(Role.PLAYER);
             }
+//            if(player.getId()==redBoss.getId() || player.getId()==blueBoss.getId()){
+//                player.setRole(Role.BOSS);
+//            } else {
+//                player.setRole(Role.PLAYER);
+//            }
         }
     }
 }

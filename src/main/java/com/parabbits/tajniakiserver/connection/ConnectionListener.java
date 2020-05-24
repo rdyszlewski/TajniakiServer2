@@ -60,7 +60,9 @@ public class ConnectionListener {
     private void preparePlayerForVotingTest(String sessionId){
         Player player = new Player(sessionId, counter, "g"+connectedSessions.size());
         player.setTeam(Team.BLUE);
+        player.setId(counter);
         game.addPlayer(player);
+        messageManager.send(counter, player.getSessionId(), "/user/player/id");
         counter++;
     }
 

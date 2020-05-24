@@ -10,6 +10,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
@@ -46,6 +47,7 @@ public class LobbyController {
         StartLobbyMessage message = new StartLobbyMessage(getAllPlayersInLobby(), game.getSettings());
         message.setMinPlayersInTeam(game.getSettings().getMinTeamSize());
         message.setMaxPlayersInTeam(game.getSettings().getMaxTeamSize());
+        message.setPlayerId(player.getId());
         messageManager.send(message, player.getSessionId(), LOBBY_START);
         messageManager.sendToAll(player, LOBBY_CONNECT, game);
     }
@@ -149,5 +151,17 @@ public class LobbyController {
     private boolean areAllReady() {
         List<Player> readyPlayers = game.getPlayers().stream().filter(Player::isReady).collect(Collectors.toList());
         return readyPlayers.size() == game.getPlayers().size();
+    }
+
+    /**
+     * Metoda służy wyłącznie do testowania. Przydziela graczom numer id, który normalnie jest przydzielany podczas wejścia do lobby
+     * @param message
+     * @param headerAccessor
+     */
+    @MessageMapping("/test/getid")
+    public void getid(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
+
+        Player player = game.getPlayer(headerAccessor.getSessionId());
+        messageManager.send(player.getId(), player.getSessionId(), "/queue/lobby/id");
     }
 }

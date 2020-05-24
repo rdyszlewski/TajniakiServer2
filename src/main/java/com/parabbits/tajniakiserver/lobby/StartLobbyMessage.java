@@ -7,14 +7,23 @@ import java.util.List;
 
 public class StartLobbyMessage {
 
+    private long playerId;
     private int minPlayersInTeam;
     private int maxPlayersInTeam;
     private List<Player> players;
     private GameSettings settings;
 
-    public StartLobbyMessage(List<Player> player, GameSettings settings) {
-        this.players = player;
+    public StartLobbyMessage(List<Player> players, GameSettings settings) {
+        this.players = players;
         this.settings = settings;
+    }
+
+    public long getPlayerId(){
+        return playerId;
+    }
+
+    public void setPlayerId(long id){
+        playerId = id;
     }
 
     public int getMinPlayersInTeam() {

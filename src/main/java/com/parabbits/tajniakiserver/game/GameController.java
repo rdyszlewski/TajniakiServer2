@@ -44,9 +44,14 @@ public class GameController {
     }
 
     @MessageMapping("/game/start")
-    public void startGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
+    public void startGame(@Payload String message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         game.getState().setCurrentStep(GameStep.GAME); // TODO: to też powinno znajdować się w innym miejscu
-        game.initializeGame();
+        // TODO: prawdopodobnie chodzi o to, że gra ni kończy inicjalizacji dopóki gra się nie otrzowy
+        synchronized (this){
+            // TODO: to może zadziałać, ale może rodzić problemy w przypadku wielu gier. Wymyslić lepszy sposób
+            game.initializeGame();
+        }
+//        game.initializeGame();
         Player player = game.getPlayer(headerAccessor.getSessionId());
         if (player.getRole() == Role.BOSS) {
             StartGameMessage bossMessage = createStartGameMessage(Role.BOSS, player, game);
