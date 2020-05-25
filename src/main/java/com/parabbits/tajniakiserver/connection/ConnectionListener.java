@@ -52,7 +52,8 @@ public class ConnectionListener {
         System.out.println("Połączono " + sessionId);
         connectedSessions.add(sessionId);
 
-        preparePlayerForVotingTest(sessionId);
+//        preparePlayerForVotingTest(sessionId);
+        preparePlayersForGameTest(sessionId);
         // TODO: wyłącznie do testów
 //        needToTest(sessionId);
     }
@@ -61,6 +62,21 @@ public class ConnectionListener {
         Player player = new Player(sessionId, counter, "g"+connectedSessions.size());
         player.setTeam(Team.BLUE);
         player.setId(counter);
+        game.addPlayer(player);
+        messageManager.send(counter, player.getSessionId(), "/user/player/id");
+        counter++;
+    }
+
+    private void preparePlayersForGameTest(String sessionId){
+        Player player = new Player(sessionId, counter, "g"+connectedSessions.size());
+        Team team = counter % 2 ==0? Team.BLUE : Team.RED;
+        player.setTeam(team);
+        player.setId(counter);
+        if(game.getPlayers(team).size()==0){
+            player.setRole(Role.BOSS);
+        } else {
+            player.setRole(Role.PLAYER);
+        }
         game.addPlayer(player);
         messageManager.send(counter, player.getSessionId(), "/user/player/id");
         counter++;

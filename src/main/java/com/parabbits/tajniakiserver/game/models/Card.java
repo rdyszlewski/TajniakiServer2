@@ -14,7 +14,7 @@ public class Card {
         this.checked = checked;
     }
 
-    public int getIndex() {
+    public int getId() {
         return index;
     }
 

@@ -28,12 +28,12 @@ public class ClientCardCreator {
     }
 
     private static ClientCard createCardForBoss(Card card, Game game, Team team){
-        return new ClientCard(card.getIndex(), card.getWord(), card.getColor(), card.isChecked());
+        return new ClientCard(card.getId(), card.getWord(), card.getColor(), card.isChecked());
     }
 
     private static ClientCard createCardForPlayer(Card card, Game game, Team team) {
         WordColor color = getPlayerCardColor(card);
-        ClientCard clientCard = new ClientCard(card.getIndex(), card.getWord(), color, card.isChecked());
+        ClientCard clientCard = new ClientCard(card.getId(), card.getWord(), color, card.isChecked());
         clientCard.setAnswers(getPlayerFromAnswer(game, card));
         clientCard.setFlags(getPlayerFromFlags(game, card, team));
 
@@ -44,17 +44,21 @@ public class ClientCardCreator {
         return card.isChecked()? card.getColor() : WordColor.LACK;
     }
 
-    private static Set<String> getPlayerFromAnswer(Game game, Card card){
+    private static Set<Long> getPlayerFromAnswer(Game game, Card card){
         Set<Player> players = game.getBoard().getAnswerManager().getPlayers(card);
-        return getPlayersNicknames(players);
+        return getPlayersIds(players);
     }
 
     private static Set<String> getPlayersNicknames(Set<Player> players){
         return players.stream().map(Player::getNickname).collect(Collectors.toSet());
     }
 
-    private static Set<String> getPlayerFromFlags(Game game, Card card, Team team){
+    private static Set<Long> getPlayersIds(Set<Player> players){
+        return players.stream().map(Player::getId).collect(Collectors.toSet());
+    }
+
+    private static Set<Long> getPlayerFromFlags(Game game, Card card, Team team){
         Set<Player> players = game.getBoard().getFlagsManager().getFlagsOwners(card, team);
-        return getPlayersNicknames(players);
+        return getPlayersIds(players);
     }
 }

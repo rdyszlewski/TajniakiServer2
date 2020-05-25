@@ -49,6 +49,7 @@ public class GameController {
         // TODO: prawdopodobnie chodzi o to, że gra ni kończy inicjalizacji dopóki gra się nie otrzowy
         synchronized (this){
             // TODO: to może zadziałać, ale może rodzić problemy w przypadku wielu gier. Wymyslić lepszy sposób
+            // TODO: to może zadziałać, ale może rodzić problemy w przypadku wielu gier. Wymyslić lepszy sposób
             game.initializeGame();
         }
 //        game.initializeGame();
@@ -107,13 +108,14 @@ public class GameController {
     }
 
     private Card findCard(String word){
-        Card card = null;
-        if(word.equals("--PASS--")){
-            card = new Card(-1, "", WordColor.LACK, false);
-        } else {
-            card = game.getBoard().getCard(word);
-        }
+        Card card = game.getBoard().getCard(word);
         return card;
+//        if(word.equals("--PASS--")){
+//            card = new Card(-1, "", WordColor.LACK, false);
+//        } else {
+//            card = game.getBoard().getCard(word);
+//        }
+//        return card;
     }
 
     private boolean isAllPlayersAnswer(Player player, int answerForCard) {
@@ -169,7 +171,7 @@ public class GameController {
         List<Card> editedCards = game.getBoard().getAnswerManager().popCardsToUpdate(player);
         List<ClientCard> clientCards = prepareClientCards(editedCards, player);
         ClickMessage message = new ClickMessage(clientCards);
-        List<Card> passCard = editedCards.stream().filter(x->x.getIndex() < 0).collect(Collectors.toList());
+        List<Card> passCard = editedCards.stream().filter(x->x.getId() < 0).collect(Collectors.toList());
         if(!passCard.isEmpty()){
             ClientCard passClientCard = ClientCardCreator.createCard(passCard.get(0), game, player.getRole(), player.getTeam());
             message.setPass(passClientCard.getAnswers().size());
@@ -181,7 +183,7 @@ public class GameController {
     private List<ClientCard> prepareClientCards(List<Card> cards, Player player) {
         List<ClientCard> clientCards = new ArrayList<>();
         for (Card card : cards) {
-            if(card.getIndex() >= 0){
+            if(card.getId() >= 0){
                 ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
                 clientCards.add(clientCard);
             }
@@ -190,8 +192,10 @@ public class GameController {
     }
 
     private AnswerMessage buildAnswerMessage(Card card, boolean correct, Player player) {
-        ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
-        return new AnswerMessage(clientCard, correct, game.getState());
+//        ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
+        // TODO: sprawdzić po co jest rola i drużyna
+        List<ClientCard> cards = ClientCardCreator.createCards(game.getBoard().getAnswerManager().popCardsToUpdate(player), game, player.getRole(), player.getTeam());
+        return new AnswerMessage(cards, correct, game.getState());
     }
 
     private boolean isPlayerTurn(Player player) {

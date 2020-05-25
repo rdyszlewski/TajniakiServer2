@@ -40,6 +40,7 @@ public class Board {
         return null; // pominięcie
     }
 
+
     public List<Card> getCards(){
         return new ArrayList<>(cards.values());
     }

@@ -28,7 +28,13 @@ public class BoardCreator {
             Card card = new Card(i, word, color, false);
             cards.add(card);
         }
+//        cards.add(createPassCard());
         return cards;
+    }
+
+    private static Card createPassCard(){
+        Card passCard = new Card(-1, "--PASS--", WordColor.LACK, false);
+        return passCard;
     }
 
     private static List<String> getRandomWords() throws IOException {
