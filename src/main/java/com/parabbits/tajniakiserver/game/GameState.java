@@ -68,7 +68,6 @@ public class GameState {
             return;
         }
         if(card.getId() < 0){
-            // TODO: sprawdzić to
             changeTeams();
             return;
         }

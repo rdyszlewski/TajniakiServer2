@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class Board {
 
-    private Map<String, Card> cards;
+    private Map<Integer, Card> cards;
     private final AnswerManager answerManager = new AnswerManager();
     private final FlagsManager flagsManager = new FlagsManager();
 
@@ -29,13 +29,13 @@ public class Board {
         List<Card> cardsList = BoardCreator.createCards(firstTeam, settings);
         cards = new HashMap<>();
         for(Card card: cardsList){
-            cards.put(card.getWord(), card);
+            cards.put(card.getId(), card);
         }
     }
 
-    public Card getCard(String word){
-        if(cards.containsKey(word)){
-            return cards.get(word);
+    public Card getCard(Integer cardId){
+        if(cards.containsKey(cardId)){
+            return cards.get(cardId);
         }
         return null; // pominięcie
     }

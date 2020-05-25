@@ -28,7 +28,7 @@ public class BoardCreator {
             Card card = new Card(i, word, color, false);
             cards.add(card);
         }
-//        cards.add(createPassCard());
+        cards.add(createPassCard());
         return cards;
     }
 

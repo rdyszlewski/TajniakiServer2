@@ -90,9 +90,9 @@ public class GameController {
     }
 
     @MessageMapping("/game/click")
-    public void servePlayersAnswer(@Payload String word, SimpMessageHeaderAccessor headerAccessor) {
+    public void servePlayersAnswer(@Payload Integer cardId, SimpMessageHeaderAccessor headerAccessor) {
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        Card card = findCard(word);
+        Card card = findCard(cardId);
         // TODO: zrobić refaktoryzację z tym
         if (!isPlayerTurn(player) || card.isChecked() || player.getRole()==Role.BOSS) {
             return;
@@ -107,15 +107,9 @@ public class GameController {
         }
     }
 
-    private Card findCard(String word){
-        Card card = game.getBoard().getCard(word);
+    private Card findCard(Integer cardId){
+        Card card = game.getBoard().getCard(cardId);
         return card;
-//        if(word.equals("--PASS--")){
-//            card = new Card(-1, "", WordColor.LACK, false);
-//        } else {
-//            card = game.getBoard().getCard(word);
-//        }
-//        return card;
     }
 
     private boolean isAllPlayersAnswer(Player player, int answerForCard) {
@@ -183,10 +177,8 @@ public class GameController {
     private List<ClientCard> prepareClientCards(List<Card> cards, Player player) {
         List<ClientCard> clientCards = new ArrayList<>();
         for (Card card : cards) {
-            if(card.getId() >= 0){
-                ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
-                clientCards.add(clientCard);
-            }
+            ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
+            clientCards.add(clientCard);
         }
         return clientCards;
     }
@@ -224,15 +216,20 @@ public class GameController {
     }
 
     @MessageMapping("/game/flag")
-    public void setFlag(@Payload String word, SimpMessageHeaderAccessor headerAccessor) {
+    public void setFlag(@Payload Integer cardId, SimpMessageHeaderAccessor headerAccessor) {
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        Card card = game.getBoard().getCard(word);
-        if (card.isChecked() || player.getRole()==Role.BOSS) {
+        Card card = game.getBoard().getCard(cardId);
+        if (card.isChecked() || player.getRole()==Role.BOSS || isPassCard(card)) {
             return;
         }
         game.getBoard().getFlagsManager().addFlag(player, card);
         ClickMessage message = buildFlagMessage(player, card);
         messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
+    }
+
+    // TODO: metodę można przenieść w inne miejsce (np do karty)
+    private boolean isPassCard(Card card){
+        return card.getId() == -1;
     }
 
     private ClickMessage buildFlagMessage(Player player, Card card) {
