@@ -114,14 +114,17 @@ public class ConnectionListener {
         // TODO: można zrobić oddzielną klasę odpowiedzialną za rozłączenia
         String sessionId = event.getMessage().getHeaders().get("simpSessionId").toString();
         System.out.println("Rozłączono gracza " + sessionId);
-        connectedSessions.remove(sessionId);
         Player player = game.getPlayer(sessionId);
         game.removePlayer(sessionId);
 
         sendDisconnectMessage(player, game);
+        connectedSessions.remove(sessionId);
     }
 
+    // PRZERZUCIĆ DO INNEJ KLASY ==============================================================
+
     private void sendDisconnectMessage(Player player, Game game){
+        System.out.println("Wysyłąm komunikat o usunięciu gracza");
         switch (game.getState().getCurrentStep()){
             case LOBBY:
                 sendDisconnectFromLobby(player, game);
@@ -161,6 +164,7 @@ public class ConnectionListener {
     }
 
     private void sendDisconnectFromGame(Player player, Game game){
+        // TODO: refaktoryzacja
         if(player.getRole() == Role.BOSS){
             if(game.getPlayers(player.getTeam()).size() >= 2){
                 Player newBoss = game.getPlayers(player.getTeam()).get(0);
@@ -170,14 +174,21 @@ public class ConnectionListener {
                 messageManager.sendToAll(message, DISCONNECT_PATH, game);
                 StartGameMessage messageForNewBoss =  GameController.createStartGameMessage(Role.BOSS, newBoss, game);
                 messageManager.send(messageForNewBoss, newBoss.getSessionId(), "/queue/game/start"); // TODO: przenieść gdzieś ścieżkę
+            } else {
+                DisconnectMessage message = createDisconnectMessage(player, GameStep.LOBBY);
+                messageManager.sendToAll(message, DISCONNECT_PATH, game);
             }
         } else if(player.getRole() == Role.PLAYER){
-            if(game.getPlayers(player.getTeam()).size() < 2){
+            if(game.getPlayers(player.getTeam()).size() < game.getSettings().getMinTeamSize()){
                 DisconnectMessage message = createDisconnectMessage(player, GameStep.LOBBY);
+                messageManager.sendToAll(message, DISCONNECT_PATH, game);
+            } else {
+                DisconnectMessage message = createDisconnectMessage(player, GameStep.GAME);
                 messageManager.sendToAll(message, DISCONNECT_PATH, game);
             }
         }
     }
+    // ===================================================================================
 
     public List<String> getSessions(){
         return connectedSessions;

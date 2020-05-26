@@ -33,8 +33,7 @@ public class BoardCreator {
     }
 
     private static Card createPassCard(){
-        Card passCard = new Card(-1, "--PASS--", WordColor.LACK, false);
-        return passCard;
+        return new Card(-1, "--PASS--", WordColor.LACK, false);
     }
 
     private static List<String> getRandomWords() throws IOException {

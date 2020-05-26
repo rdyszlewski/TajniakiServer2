@@ -75,7 +75,15 @@ public class GameState {
         WordColor cardColor = card.getColor();
         boolean correct = AnswerCorrectness.isCorrect(cardColor, getCurrentTeam());
         handleUsingCard(correct, cardColor);
-        // TODO: usunąć jakoś wszystkie znaczniki
+
+        //TODO: jeśli zostanie tak, to będzie trzeba to sprawdzać 2 razy, później przy wyświetlaniu podsumowania. Możliwe jest także stworznie zmiennej, ale nie powinna ona być wysyłana teraz do klienta
+        if(card.getColor()==WordColor.KILLER){
+            active = false;
+            // TODO: ustawić zwycięzce na drużynę przeciwną
+        }
+        if(remainingRed==0 || remainingBlue==0){
+            active = false;
+        }
     }
 
     private void handleUsingCard(boolean correct, WordColor color){

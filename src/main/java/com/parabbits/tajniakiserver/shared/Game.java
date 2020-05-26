@@ -103,7 +103,6 @@ public class Game {
     public void removePlayer(String sessionId){
         System.out.println(players.size());
         if (players.containsKey(sessionId)){
-            System.out.println("Taki gracz jest podłączony do gry");
             players.remove(sessionId);
         }
     }

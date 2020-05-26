@@ -16,6 +16,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
+import java.awt.event.FocusEvent;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,7 +29,7 @@ public class GameController {
     private final String ANSWER_MESSAGE_RESPONSE = "/queue/game/answer";
     private final String CLICK_MESSAGE_RESPONSE = "/queue/game/click";
     private final String QUESTION_MESSAGE_RESPONSE = "/queue/game/question";
-    private final String END_MESSAGE_RESPONSE = "/queue/game/question";
+    private final String END_MESSAGE_RESPONSE = "/queue/game/end_game";
 
     @Autowired
     private Game game;
@@ -119,22 +120,31 @@ public class GameController {
     private void handleAnswerMessage(Player player, Card card) {
         // TODO: refaktoryzacja
         game.useCard(card);
+
         // TODO: zlikwidować to jakoś
-        AnswerCorrectness.Correctness correctness = AnswerCorrectness.checkCorrectness(card.getColor(), player.getTeam());
-        switch (correctness) {
-            case CORRECT:
-                handleCorrectMessage(card, true, player);
-                break;
-            case INCORRECT:
-                handleIncorrectMessage(card, player);
-                break;
-            case KILLER:
-                handleEndGameMessage(player, EndGameCause.KILLER, player.getTeam() == Team.BLUE ? Team.RED : Team.BLUE);
-                break;
-        }
+//        AnswerCorrectness.Correctness correctness = AnswerCorrectness.checkCorrectness(card.getColor(), player.getTeam());
+        AnswerMessage message = buildAnswerMessage(card, isCorrect(card, player), player);
+        messageManager.sendToAll(message, ANSWER_MESSAGE_RESPONSE, game);
+//        switch (correctness) {
+//            case CORRECT:
+//                handleCorrectMessage(card, true, player);
+//                break;
+//            case INCORRECT:
+//                handleIncorrectMessage(card, player);
+//                break;
+//            case KILLER:
+//                handleEndGameMessage(player, EndGameCause.KILLER, player.getTeam() == Team.BLUE ? Team.RED : Team.BLUE);
+//                break;
+//        }
         if (!game.getState().isGameActive()) { // TODO: zrobić lepsze zakończenie gry
-            handleEndGameMessage(player, EndGameCause.ALL, player.getTeam());
+//            handleEndGameMessage(EndGameCause.ALL, player.getTeam());
+                EndGameMessage endGameMessage = getEndGameMessage();
+                messageManager.sendToAll(endGameMessage, END_MESSAGE_RESPONSE, game);
         }
+    }
+
+    private boolean isCorrect(Card card, Player player){
+        return (card.getColor()==WordColor.BLUE && player.getTeam() == Team.BLUE) || (card.getColor() == WordColor.RED && player.getTeam() == Team.RED);
     }
 
     private void handleIncorrectMessage(Card card, Player player) {
@@ -146,15 +156,53 @@ public class GameController {
         messageManager.sendToAll(answerResult, ANSWER_MESSAGE_RESPONSE, game);
     }
 
-    private void handleEndGameMessage(Player player, EndGameCause cause, Team winnerTeam) {
+    // PRZENIEŚĆ W INNE MIEJSCE-----------------------------------------------------------------------
+
+    // TODO: przenieść do innej klasy. Można zrobić metodę, która zwraca powód i drużynę
+    private EndGameMessage getEndGameMessage(){
+        // TODO: sprawdzenie, powodu i drużyny
+        // 1. wszystko zgadnięte
+        System.out.println("Koniec gry panowie");
+       EndGameMessage message = new EndGameMessage();
+        if(game.getState().getRemainingBlue() == 0){
+            message.setCause(EndGameCause.ALL);
+            message.setWinner(Team.BLUE);
+        } else if(game.getState().getRemainingRed()==0){
+            message.setCause(EndGameCause.ALL);
+            message.setWinner(Team.RED);
+        } else if(isKillerChecked(game)){
+            message.setCause(EndGameCause.KILLER);
+            message.setWinner(game.getState().getCurrentTeam().opposite()); // TODO: sprawdzić, czy na pewno tak będzie
+        } else {
+            message.setCause(EndGameCause.UNKNOWN);
+            // TODO: zrobić jeszcze remis
+            message.setWinner(game.getState().getRemainingBlue() > game.getState().getRemainingRed()? Team.BLUE : Team.RED);
+        }
+        return message;
+        // TODO: tutaj można jeszcze
+    }
+
+    private boolean isKillerChecked(Game game){
+        for(Card card: game.getBoard().getCards()){
+            if(card.getColor()==WordColor.KILLER && card.isChecked()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void handleEndGameMessage(EndGameCause cause, Team winnerTeam) {
+        // TODO: trzeba poprawnie wyświetlić powód i wygranego
+        System.out.println("Koniec gry panowie");
         EndGameMessage message = new EndGameMessage();
-//        Team winner = player.getTeam() == Team.BLUE? Team.RED : Team.BLUE;
         message.setWinner(winnerTeam);
         message.setCause(cause);
         message.setRemainingBlue(game.getState().getRemainingBlue());
         message.setRemainingRed(game.getState().getRemainingRed());
         messageManager.sendToAll(message, END_MESSAGE_RESPONSE, game);
     }
+
+    //-------------------------------------------------------------------------------------
 
     private void handleClickMessage(Player player) {
         ClickMessage message = buildClickMessage(player);
