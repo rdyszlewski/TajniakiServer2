@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.parabbits.tajniakiserver.game.messages.*;
 import com.parabbits.tajniakiserver.game.models.*;
 import com.parabbits.tajniakiserver.history.HistoryEntry;
+import com.parabbits.tajniakiserver.history.HistorySaver;
 import com.parabbits.tajniakiserver.shared.Game;
 import com.parabbits.tajniakiserver.shared.GameStep;
 import com.parabbits.tajniakiserver.utils.MessageManager;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
 import java.awt.event.FocusEvent;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -287,10 +290,13 @@ public class GameController {
     }
 
     @MessageMapping("/game/summary")
-    public void getSummary(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
+    public void getSummary(@Payload String message, SimpMessageHeaderAccessor headerAccessor) throws IOException {
 //        if(!game.isStarted()){ // TODO: później to odkomentować
 //            return;
 //        } // TODO: spróbować zrobić to jakoś lepiej
+        if(game.getState().getCurrentStep()==GameStep.GAME){
+            game.getState().setCurrentStep(GameStep.SUMMARY);
+        }
         SummaryMessage summary = new SummaryMessage();
         // TODO: powstawiać odpowiednie wartości
         summary.setWinner(Team.BLUE);
@@ -305,8 +311,7 @@ public class GameController {
         summary.setCause(WinnerCause.ALL_FOUND);
 
         messageManager.sendToAll(summary, "queue/game/summary", game);
-
-        // po utworzeniu
+        HistorySaver.saveHistory(game.getHistory(), "/media/roman/414054776F940E4C/TajniakiOutput/" + new Date().toString() + ".txt");
         game.reset();
     }
 

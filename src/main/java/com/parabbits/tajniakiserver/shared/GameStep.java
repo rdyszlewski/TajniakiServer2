@@ -4,5 +4,6 @@ public enum GameStep {
     MENU,
     LOBBY,
     VOTING,
-    GAME
+    GAME,
+    SUMMARY
 }

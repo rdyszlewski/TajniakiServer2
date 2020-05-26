@@ -40,7 +40,9 @@ public class LobbyController {
 
     @MessageMapping("/lobby/connect")
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-        game.getState().setCurrentStep(GameStep.LOBBY); // TODO: może to powinno znadjować się w innym miejscu
+        if(game.getState().getCurrentStep() == GameStep.MENU){
+            game.getState().setCurrentStep(GameStep.LOBBY);
+        }
         String sessionId = headerAccessor.getSessionId();
         Player player = game.addPlayer(sessionId, nickname);
         // TODO: wysłąć do podłączonego gracza informacje o ustawieniach rozgrywki

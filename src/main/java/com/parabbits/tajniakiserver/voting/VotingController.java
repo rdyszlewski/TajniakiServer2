@@ -44,7 +44,9 @@ public class VotingController {
 
     @MessageMapping("/boss/start")
     public void startVoting(@Payload String message, SimpMessageHeaderAccessor headerAccessor) {
-        game.getState().setCurrentStep(GameStep.VOTING); // TODO: to też może znajdować się w innym miejscu
+        if(game.getState().getCurrentStep() == GameStep.LOBBY){
+            game.getState().setCurrentStep(GameStep.VOTING);
+        }
         game.startVoting(); // TODO: zrobić to lepiej, żeby wykonywało się to tylko raz
         Player player = game.getPlayer(headerAccessor.getSessionId());
         Team team = player.getTeam();

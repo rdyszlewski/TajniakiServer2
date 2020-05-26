@@ -24,7 +24,8 @@ import java.util.List;
 @Configuration
 public class ConnectionListener {
 
-    private final String DISCONNECT_PATH = "/queue/common/disconnect"; // TODO: przenieść to do klasy zawierającej wszystkie ścieżki
+    private final String DISCONNECT_PATH = "/queue/common/disconnect";
+    private final String NEW_BOSS_PATH = "/queue/game/new_boss";
 
     @Autowired
     private Game game;
@@ -164,29 +165,48 @@ public class ConnectionListener {
     }
 
     private void sendDisconnectFromGame(Player player, Game game){
-        // TODO: refaktoryzacja
         if(player.getRole() == Role.BOSS){
-            if(game.getPlayers(player.getTeam()).size() >= 2){
-                Player newBoss = game.getPlayers(player.getTeam()).get(0);
-                newBoss.setRole(Role.BOSS);
-                DisconnectMessage message = createDisconnectMessage(player, GameStep.GAME);
-                message.setPlayers(new ArrayList<>(game.getPlayers()));
-                messageManager.sendToAll(message, DISCONNECT_PATH, game);
-                StartGameMessage messageForNewBoss =  GameController.createStartGameMessage(Role.BOSS, newBoss, game);
-                messageManager.send(messageForNewBoss, newBoss.getSessionId(), "/queue/game/start"); // TODO: przenieść gdzieś ścieżkę
-            } else {
-                DisconnectMessage message = createDisconnectMessage(player, GameStep.LOBBY);
-                messageManager.sendToAll(message, DISCONNECT_PATH, game);
-            }
+            handleDisconnectBoss(player, game);
         } else if(player.getRole() == Role.PLAYER){
-            if(game.getPlayers(player.getTeam()).size() < game.getSettings().getMinTeamSize()){
-                DisconnectMessage message = createDisconnectMessage(player, GameStep.LOBBY);
-                messageManager.sendToAll(message, DISCONNECT_PATH, game);
-            } else {
-                DisconnectMessage message = createDisconnectMessage(player, GameStep.GAME);
-                messageManager.sendToAll(message, DISCONNECT_PATH, game);
-            }
+            handleDisconnectPlayer(player, game);
         }
+    }
+
+    private void handleDisconnectPlayer(Player player, Game game) {
+        if(!isEnoughPlayers(player, game)){
+            goToStep(player, GameStep.LOBBY, game);
+        } else {
+            goToStep(player, GameStep.GAME, game);
+        }
+    }
+
+    private void handleDisconnectBoss(Player player, Game game) {
+        if(isEnoughPlayers(player, game)){
+            setNewBoss(player, game);
+        } else {
+            goToStep(player, GameStep.LOBBY, game);
+        }
+    }
+
+    private boolean isEnoughPlayers(Player player, Game game) {
+        return game.getPlayers(player.getTeam()).size() >= game.getSettings().getMinTeamSize();
+    }
+
+    private void setNewBoss(Player player, Game game) {
+        Player newBoss = game.getPlayers(player.getTeam()).get(0);
+        newBoss.setRole(Role.BOSS);
+        DisconnectMessage message = createDisconnectMessage(player, GameStep.GAME);
+        message.setPlayers(new ArrayList<>(game.getPlayers()));
+        messageManager.sendToAll(message, DISCONNECT_PATH, game);
+        StartGameMessage messageForNewBoss =  GameController.createStartGameMessage(Role.BOSS, newBoss, game);
+        messageManager.send(messageForNewBoss, newBoss.getSessionId(), NEW_BOSS_PATH); // TODO: przenieść gdzieś ścieżkę
+    }
+
+
+    private void goToStep(Player player, GameStep step, Game game){
+        DisconnectMessage message = createDisconnectMessage(player, step);
+        messageManager.sendToAll(message, DISCONNECT_PATH, game);
+        game.getState().setCurrentStep(step);
     }
     // ===================================================================================
 
