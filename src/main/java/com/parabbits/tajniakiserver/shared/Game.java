@@ -1,6 +1,6 @@
 package com.parabbits.tajniakiserver.shared;
 
-import com.parabbits.tajniakiserver.history.GameHistory;
+import com.parabbits.tajniakiserver.summary.GameHistory;
 import com.parabbits.tajniakiserver.voting.VotingController;
 import com.parabbits.tajniakiserver.voting.VotingService;
 import com.parabbits.tajniakiserver.game.GameState;

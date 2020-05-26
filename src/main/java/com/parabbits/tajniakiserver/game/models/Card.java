@@ -4,10 +4,10 @@ public class Card {
 
     private int index;
     private String word;
-    private WordColor color;
+    private CardColor color;
     private boolean checked;
 
-    public Card(int index, String word, WordColor color, boolean checked) {
+    public Card(int index, String word, CardColor color, boolean checked) {
         this.index = index;
         this.word = word;
         this.color = color;
@@ -30,11 +30,11 @@ public class Card {
         this.word = word;
     }
 
-    public WordColor getColor() {
+    public CardColor getColor() {
         return color;
     }
 
-    public void setColor(WordColor color) {
+    public void setColor(CardColor color) {
         this.color = color;
     }
 

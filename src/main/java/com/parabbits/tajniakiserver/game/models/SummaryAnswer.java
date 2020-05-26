@@ -3,9 +3,9 @@ package com.parabbits.tajniakiserver.game.models;
 public class SummaryAnswer {
 
     private String word;
-    private WordColor color;
+    private CardColor color;
 
-    public SummaryAnswer(String word, WordColor color) {
+    public SummaryAnswer(String word, CardColor color) {
         this.word = word;
         this.color = color;
     }
@@ -18,11 +18,11 @@ public class SummaryAnswer {
         this.word = word;
     }
 
-    public WordColor getColor() {
+    public CardColor getColor() {
         return color;
     }
 
-    public void setColor(WordColor color) {
+    public void setColor(CardColor color) {
         this.color = color;
     }
 }

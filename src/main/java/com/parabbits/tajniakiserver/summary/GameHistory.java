@@ -1,23 +1,22 @@
-package com.parabbits.tajniakiserver.history;
+package com.parabbits.tajniakiserver.summary;
 
 import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.game.models.WordColor;
+import com.parabbits.tajniakiserver.game.models.CardColor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameHistory {
 
-    private List<HistoryEntry> history = new ArrayList<>();
+    private List<SummaryEntry> history = new ArrayList<>();
     private List<String> blueWords;
     private List<String> redWords;
     private String killer;
 
-    private HistoryEntry currentEntry;
-
+    private SummaryEntry currentEntry;
 
     public void addQuestion(String question, int number, Team team){
-        HistoryEntry entry = new HistoryEntry();
+        SummaryEntry entry = new SummaryEntry();
         entry.setQuestion(question);
         entry.setTeam(team);
         entry.setNumber(number);
@@ -26,7 +25,7 @@ public class GameHistory {
 
     }
 
-    public void addAnswer(String answer, WordColor color){
+    public void addAnswer(String answer, CardColor color){
         currentEntry.addAnswer(answer, color);
         System.out.println(answer);
     }
@@ -49,7 +48,7 @@ public class GameHistory {
         return new ArrayList<>();
     }
 
-    public List<HistoryEntry> getEntries(){
+    public List<SummaryEntry> getEntries(){
         return history;
     }
 
@@ -60,6 +59,4 @@ public class GameHistory {
     public void setKiller(String killer){
         this.killer = killer;
     }
-
-
 }

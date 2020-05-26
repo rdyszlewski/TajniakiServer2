@@ -15,16 +15,16 @@ public class BoardCreator {
 
     public static List<Card> createCards(Team firstTeam, GameSettings settings) throws IOException {
         List<String> words = getRandomWords();
-        List<WordColor> colors = WordColorRandom.randomTeamsForWords(settings.getNumbersOfCards(), settings.getFirstTeamWords(), firstTeam);
+        List<CardColor> colors = WordColorRandom.randomTeamsForWords(settings.getNumbersOfCards(), settings.getFirstTeamWords(), firstTeam);
 
         return buildWordCards(words, colors);
     }
 
-    private static List<Card> buildWordCards(List<String> words, List<WordColor> colors) {
+    private static List<Card> buildWordCards(List<String> words, List<CardColor> colors) {
         List<Card> cards = new ArrayList<>();
         for(int i=0; i<words.size(); i++){
             String word = words.get(i);
-            WordColor color = colors.get(i);
+            CardColor color = colors.get(i);
             Card card = new Card(i, word, color, false);
             cards.add(card);
         }
@@ -33,7 +33,7 @@ public class BoardCreator {
     }
 
     private static Card createPassCard(){
-        return new Card(-1, "--PASS--", WordColor.LACK, false);
+        return new Card(-1, "--PASS--", CardColor.LACK, false);
     }
 
     private static List<String> getRandomWords() throws IOException {

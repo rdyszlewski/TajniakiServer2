@@ -17,7 +17,7 @@ public class Player extends GamePlayer{
     private void init(String sessionid, String nickname){
         this.sessionId = sessionid;
         this.nickname = nickname;
-        this.team = Team.OBSERVER;
+        this.team = Team.LACK;
         this.ready = false;
     }
 

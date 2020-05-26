@@ -10,7 +10,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
@@ -100,7 +99,7 @@ public class LobbyController {
 
 
     private boolean canChangeTeam(Team team) {
-        if(team == Team.OBSERVER){
+        if(team == Team.LACK){
             return true;
         }
         int teamSize = game.getPlayers(team).size();
@@ -115,7 +114,7 @@ public class LobbyController {
             case "BLUE":
                 return Team.BLUE;
             default:
-                return Team.OBSERVER;
+                return Team.LACK;
         }
     }
 

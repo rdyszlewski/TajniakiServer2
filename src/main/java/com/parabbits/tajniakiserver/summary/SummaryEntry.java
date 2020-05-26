@@ -1,13 +1,13 @@
-package com.parabbits.tajniakiserver.history;
+package com.parabbits.tajniakiserver.summary;
 
 import com.parabbits.tajniakiserver.game.models.SummaryAnswer;
 import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.game.models.WordColor;
+import com.parabbits.tajniakiserver.game.models.CardColor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class HistoryEntry {
+public class SummaryEntry {
 
     private String question;
     private int number;
@@ -39,7 +39,7 @@ public class HistoryEntry {
         this.answers = answers;
     }
 
-    public void addAnswer(String answer, WordColor color){
+    public void addAnswer(String answer, CardColor color){
         answers.add(new SummaryAnswer(answer, color));
     }
 

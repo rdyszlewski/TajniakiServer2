@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.game;
 
 import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.game.models.WordColor;
+import com.parabbits.tajniakiserver.game.models.CardColor;
 
 public class AnswerCorrectness {
 
@@ -11,17 +11,17 @@ public class AnswerCorrectness {
         KILLER
     }
 
-    public static Correctness checkCorrectness(WordColor color, Team team){
-        if(color == WordColor.KILLER){
+    public static Correctness checkCorrectness(CardColor color, Team team){
+        if(color == CardColor.KILLER){
             return Correctness.KILLER;
         }
-        if((color == WordColor.BLUE && team == Team.BLUE) || (color == WordColor.RED && team == Team.RED)){
+        if((color == CardColor.BLUE && team == Team.BLUE) || (color == CardColor.RED && team == Team.RED)){
             return Correctness.CORRECT;
         }
         return Correctness.INCORRECT;
     }
 
-    public static boolean isCorrect(WordColor color, Team team){
-        return (color == WordColor.BLUE && team == Team.BLUE) || (color == WordColor.RED && team == Team.RED);
+    public static boolean isCorrect(CardColor color, Team team){
+        return (color == CardColor.BLUE && team == Team.BLUE) || (color == CardColor.RED && team == Team.RED);
     }
 }

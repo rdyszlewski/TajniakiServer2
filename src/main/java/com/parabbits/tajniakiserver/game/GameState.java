@@ -72,12 +72,12 @@ public class GameState {
             return;
         }
         card.setChecked(true);
-        WordColor cardColor = card.getColor();
+        CardColor cardColor = card.getColor();
         boolean correct = AnswerCorrectness.isCorrect(cardColor, getCurrentTeam());
         handleUsingCard(correct, cardColor);
 
         //TODO: jeśli zostanie tak, to będzie trzeba to sprawdzać 2 razy, później przy wyświetlaniu podsumowania. Możliwe jest także stworznie zmiennej, ale nie powinna ona być wysyłana teraz do klienta
-        if(card.getColor()==WordColor.KILLER){
+        if(card.getColor()== CardColor.KILLER){
             active = false;
             // TODO: ustawić zwycięzce na drużynę przeciwną
         }
@@ -86,7 +86,7 @@ public class GameState {
         }
     }
 
-    private void handleUsingCard(boolean correct, WordColor color){
+    private void handleUsingCard(boolean correct, CardColor color){
         switch (color) {
             case KILLER:
                 active = false;

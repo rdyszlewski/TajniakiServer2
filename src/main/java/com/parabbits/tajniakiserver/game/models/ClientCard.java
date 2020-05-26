@@ -1,7 +1,6 @@
 package com.parabbits.tajniakiserver.game.models;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class ClientCard extends Card{
@@ -10,7 +9,7 @@ public class ClientCard extends Card{
     private Set<Long> flags;
 
 
-    public ClientCard(int index, String word, WordColor color, boolean checked) {
+    public ClientCard(int index, String word, CardColor color, boolean checked) {
         super(index, word, color, checked);
         answers = new HashSet<>();
         flags = new HashSet<>();

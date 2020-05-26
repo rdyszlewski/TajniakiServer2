@@ -3,7 +3,7 @@ package com.parabbits.tajniakiserver.game.models;
 public enum Team {
     BLUE(0),
     RED(1),
-    OBSERVER(2);
+    LACK(2);
 
     private final int value;
 
@@ -17,6 +17,6 @@ public enum Team {
         } else if (value == RED.value){
             return BLUE;
         }
-        return OBSERVER;
+        return LACK;
     }
 }

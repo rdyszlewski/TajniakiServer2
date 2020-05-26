@@ -1,8 +1,9 @@
 package com.parabbits.tajniakiserver.game.models;
 
-public enum EndGameCause {
+public enum CardColor {
+    RED,
+    BLUE,
     KILLER,
-    ALL,
-    DISCONNECT,
-    UNKNOWN
+    NEUTRAL,
+    LACK
 }

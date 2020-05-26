@@ -2,10 +2,10 @@ package com.parabbits.tajniakiserver.game;
 
 import com.google.gson.Gson;
 
+import com.parabbits.tajniakiserver.game.end_game.EndGameHelper;
+import com.parabbits.tajniakiserver.game.end_game.EndGameInfo;
 import com.parabbits.tajniakiserver.game.messages.*;
 import com.parabbits.tajniakiserver.game.models.*;
-import com.parabbits.tajniakiserver.history.HistoryEntry;
-import com.parabbits.tajniakiserver.history.HistorySaver;
 import com.parabbits.tajniakiserver.shared.Game;
 import com.parabbits.tajniakiserver.shared.GameStep;
 import com.parabbits.tajniakiserver.utils.MessageManager;
@@ -17,9 +17,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
-import java.awt.event.FocusEvent;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,12 +67,12 @@ public class GameController {
     }
 
     private void initHistory(Game game){
-        game.getHistory().setWords(getWordsFromCards(WordColor.BLUE, game), Team.BLUE);
-        game.getHistory().setWords(getWordsFromCards(WordColor.RED, game), Team.RED);
-        game.getHistory().setKiller(getWordsFromCards(WordColor.KILLER, game).get(0));
+        game.getHistory().setWords(getWordsFromCards(CardColor.BLUE, game), Team.BLUE);
+        game.getHistory().setWords(getWordsFromCards(CardColor.RED, game), Team.RED);
+        game.getHistory().setKiller(getWordsFromCards(CardColor.KILLER, game).get(0));
     }
 
-    private List<String> getWordsFromCards(WordColor color, Game game){
+    private List<String> getWordsFromCards(CardColor color, Game game){
         return game.getBoard().getCards().stream().filter(card -> card.getColor() == color).map(Card::getWord).collect(Collectors.toList());
     }
 
@@ -105,6 +102,7 @@ public class GameController {
         int answerForCard = game.getBoard().getAnswerManager().getCounter(card);
         if (isAllPlayersAnswer(player, answerForCard)) {
             game.getHistory().addAnswer(card.getWord(), card.getColor());
+            game.useCard(card);
             handleAnswerMessage(player, card);
         } else {
             handleClickMessage(player);
@@ -112,8 +110,7 @@ public class GameController {
     }
 
     private Card findCard(Integer cardId){
-        Card card = game.getBoard().getCard(cardId);
-        return card;
+        return game.getBoard().getCard(cardId);
     }
 
     private boolean isAllPlayersAnswer(Player player, int answerForCard) {
@@ -121,33 +118,24 @@ public class GameController {
     }
 
     private void handleAnswerMessage(Player player, Card card) {
-        // TODO: refaktoryzacja
-        game.useCard(card);
-
-        // TODO: zlikwidować to jakoś
-//        AnswerCorrectness.Correctness correctness = AnswerCorrectness.checkCorrectness(card.getColor(), player.getTeam());
-        AnswerMessage message = buildAnswerMessage(card, isCorrect(card, player), player);
-        messageManager.sendToAll(message, ANSWER_MESSAGE_RESPONSE, game);
-//        switch (correctness) {
-//            case CORRECT:
-//                handleCorrectMessage(card, true, player);
-//                break;
-//            case INCORRECT:
-//                handleIncorrectMessage(card, player);
-//                break;
-//            case KILLER:
-//                handleEndGameMessage(player, EndGameCause.KILLER, player.getTeam() == Team.BLUE ? Team.RED : Team.BLUE);
-//                break;
-//        }
-        if (!game.getState().isGameActive()) { // TODO: zrobić lepsze zakończenie gry
-//            handleEndGameMessage(EndGameCause.ALL, player.getTeam());
-                EndGameMessage endGameMessage = getEndGameMessage();
-                messageManager.sendToAll(endGameMessage, END_MESSAGE_RESPONSE, game);
+        sendAnswerMessage(player, card, isCorrect(card, player));
+        if (!game.getState().isGameActive()) {
+            sendEndGameMessage();
         }
     }
 
+    private void sendEndGameMessage() {
+        EndGameMessage endGameMessage = getEndGameMessage();
+        messageManager.sendToAll(endGameMessage, END_MESSAGE_RESPONSE, game);
+    }
+
+    private void sendAnswerMessage(Player player, Card card, boolean correct) {
+        AnswerMessage message = buildAnswerMessage(card, correct, player);
+        messageManager.sendToAll(message, ANSWER_MESSAGE_RESPONSE, game);
+    }
+
     private boolean isCorrect(Card card, Player player){
-        return (card.getColor()==WordColor.BLUE && player.getTeam() == Team.BLUE) || (card.getColor() == WordColor.RED && player.getTeam() == Team.RED);
+        return (card.getColor()== CardColor.BLUE && player.getTeam() == Team.BLUE) || (card.getColor() == CardColor.RED && player.getTeam() == Team.RED);
     }
 
     private void handleIncorrectMessage(Card card, Player player) {
@@ -155,57 +143,16 @@ public class GameController {
     }
 
     private void handleCorrectMessage(Card card, boolean correct, Player player) {
-        AnswerMessage answerResult = buildAnswerMessage(card, correct, player);
-        messageManager.sendToAll(answerResult, ANSWER_MESSAGE_RESPONSE, game);
+        sendAnswerMessage(player, card, correct);
     }
 
-    // PRZENIEŚĆ W INNE MIEJSCE-----------------------------------------------------------------------
-
-    // TODO: przenieść do innej klasy. Można zrobić metodę, która zwraca powód i drużynę
     private EndGameMessage getEndGameMessage(){
-        // TODO: sprawdzenie, powodu i drużyny
-        // 1. wszystko zgadnięte
-        System.out.println("Koniec gry panowie");
-       EndGameMessage message = new EndGameMessage();
-        if(game.getState().getRemainingBlue() == 0){
-            message.setCause(EndGameCause.ALL);
-            message.setWinner(Team.BLUE);
-        } else if(game.getState().getRemainingRed()==0){
-            message.setCause(EndGameCause.ALL);
-            message.setWinner(Team.RED);
-        } else if(isKillerChecked(game)){
-            message.setCause(EndGameCause.KILLER);
-            message.setWinner(game.getState().getCurrentTeam().opposite()); // TODO: sprawdzić, czy na pewno tak będzie
-        } else {
-            message.setCause(EndGameCause.UNKNOWN);
-            // TODO: zrobić jeszcze remis
-            message.setWinner(game.getState().getRemainingBlue() > game.getState().getRemainingRed()? Team.BLUE : Team.RED);
-        }
-        return message;
-        // TODO: tutaj można jeszcze
-    }
-
-    private boolean isKillerChecked(Game game){
-        for(Card card: game.getBoard().getCards()){
-            if(card.getColor()==WordColor.KILLER && card.isChecked()){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void handleEndGameMessage(EndGameCause cause, Team winnerTeam) {
-        // TODO: trzeba poprawnie wyświetlić powód i wygranego
-        System.out.println("Koniec gry panowie");
         EndGameMessage message = new EndGameMessage();
-        message.setWinner(winnerTeam);
-        message.setCause(cause);
-        message.setRemainingBlue(game.getState().getRemainingBlue());
-        message.setRemainingRed(game.getState().getRemainingRed());
-        messageManager.sendToAll(message, END_MESSAGE_RESPONSE, game);
+        EndGameInfo info = EndGameHelper.getEndGameInfo(game);
+        message.setCause(info.getCause());
+        message.setWinner(info.getWinner());
+        return message;
     }
-
-    //-------------------------------------------------------------------------------------
 
     private void handleClickMessage(Player player) {
         ClickMessage message = buildClickMessage(player);
@@ -287,55 +234,5 @@ public class GameController {
         List<Card> editedCards = Collections.singletonList(card);
         List<ClientCard> clientCards = prepareClientCards(editedCards, player);
         return new ClickMessage(clientCards);
-    }
-
-    @MessageMapping("/game/summary")
-    public void getSummary(@Payload String message, SimpMessageHeaderAccessor headerAccessor) throws IOException {
-//        if(!game.isStarted()){ // TODO: później to odkomentować
-//            return;
-//        } // TODO: spróbować zrobić to jakoś lepiej
-        if(game.getState().getCurrentStep()==GameStep.GAME){
-            game.getState().setCurrentStep(GameStep.SUMMARY);
-        }
-        SummaryMessage summary = new SummaryMessage();
-        // TODO: powstawiać odpowiednie wartości
-        summary.setWinner(Team.BLUE);
-        summary.setBlueRemaining(0);
-        summary.setRedRemaining(4);
-//        List<HistoryEntry> blueHistory = game.getHistory().getEntries().stream().filter(x->x.getTeam() == Team.BLUE).collect(Collectors.toList());
-//        List<HistoryEntry> redHistory = game.getHistory().getEntries().stream().filter(x->x.getTeam() == Team.RED).collect(Collectors.toList());
-//        List<HistoryEntry> blueHistory = getBlueHistory();
-//        List<HistoryEntry> redHistory = getRedHistory();
-
-        summary.setProcess(getHistory());
-        summary.setCause(WinnerCause.ALL_FOUND);
-
-        messageManager.sendToAll(summary, "queue/game/summary", game);
-        HistorySaver.saveHistory(game.getHistory(), "/media/roman/414054776F940E4C/TajniakiOutput/" + new Date().toString() + ".txt");
-        game.reset();
-    }
-
-    private List<HistoryEntry> getHistory(){
-        HistoryEntry entry1 = new HistoryEntry();
-        entry1.setQuestion("Kaszanka");
-        entry1.setNumber(3);
-        entry1.addAnswer("Osioł", WordColor.BLUE);
-        entry1.addAnswer("Kaszana", WordColor.NEUTRAL);
-        entry1.setTeam(Team.BLUE);
-
-        HistoryEntry entry2 = new HistoryEntry();
-        entry2.setQuestion("Osiem");
-        entry2.setNumber(2);
-        entry2.addAnswer("Jeden", WordColor.RED);
-        entry2.addAnswer("Dwa", WordColor.BLUE);
-        entry2.setTeam(Team.RED);
-
-        HistoryEntry entry3 = new HistoryEntry();
-        entry3.setQuestion("Radar");
-        entry3.setNumber(1);
-        entry3.addAnswer("Talerz", WordColor.RED);
-        entry3.setTeam(Team.BLUE);
-
-        return Arrays.asList(entry1, entry2, entry3);
     }
 }

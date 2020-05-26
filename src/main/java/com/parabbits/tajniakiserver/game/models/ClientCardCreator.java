@@ -32,7 +32,7 @@ public class ClientCardCreator {
     }
 
     private static ClientCard createCardForPlayer(Card card, Game game, Team team) {
-        WordColor color = getPlayerCardColor(card);
+        CardColor color = getPlayerCardColor(card);
         ClientCard clientCard = new ClientCard(card.getId(), card.getWord(), color, card.isChecked());
         clientCard.setAnswers(getPlayerFromAnswer(game, card));
         clientCard.setFlags(getPlayerFromFlags(game, card, team));
@@ -40,8 +40,8 @@ public class ClientCardCreator {
         return clientCard;
     }
 
-    private static WordColor getPlayerCardColor(Card card) {
-        return card.isChecked()? card.getColor() : WordColor.LACK;
+    private static CardColor getPlayerCardColor(Card card) {
+        return card.isChecked()? card.getColor() : CardColor.LACK;
     }
 
     private static Set<Long> getPlayerFromAnswer(Game game, Card card){

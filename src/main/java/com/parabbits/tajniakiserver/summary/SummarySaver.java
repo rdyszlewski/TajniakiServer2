@@ -1,4 +1,4 @@
-package com.parabbits.tajniakiserver.history;
+package com.parabbits.tajniakiserver.summary;
 
 import com.parabbits.tajniakiserver.game.models.SummaryAnswer;
 import com.parabbits.tajniakiserver.game.models.Team;
@@ -6,7 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-public class HistorySaver {
+public class SummarySaver {
 
     public static void saveHistory(GameHistory history, String outputPath) throws IOException {
         FileWriter writer = new FileWriter(outputPath);
@@ -41,7 +41,7 @@ public class HistorySaver {
 
     private static void printProcess(FileWriter writer, GameHistory history) throws IOException {
         writer.write("Przebieg rozgrywki\n");
-        for(HistoryEntry entry: history.getEntries()){
+        for(SummaryEntry entry: history.getEntries()){
             writer.write(entry.getQuestion());
             writer.write("-");
             writer.write(String.valueOf(entry.getNumber()));
