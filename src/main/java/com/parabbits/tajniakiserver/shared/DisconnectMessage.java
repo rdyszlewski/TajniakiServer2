@@ -23,6 +23,7 @@ public class DisconnectMessage {
     }
 
     public void setCurrentStep(GameStep currentStep) {
+        System.out.println(currentStep);
         this.currentStep = currentStep;
     }
 

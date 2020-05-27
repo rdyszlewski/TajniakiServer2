@@ -40,8 +40,11 @@ public class LobbyController {
     @MessageMapping("/lobby/connect")
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         if(game.getState().getCurrentStep() == GameStep.MAIN){
+            System.out.println("Wykonywanie zmiany lobby");
             game.getState().setCurrentStep(GameStep.LOBBY);
         }
+        System.out.println("No teraz jest lobby");
+        // TODO: być może w tym miejscu będzie trzeba zrobić inicjalizacje gry
         String sessionId = headerAccessor.getSessionId();
         Player player = game.addPlayer(sessionId, nickname);
         // TODO: wysłąć do podłączonego gracza informacje o ustawieniach rozgrywki
@@ -69,6 +72,7 @@ public class LobbyController {
     public void changeTeam(@Payload String teamText, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         Player player = game.getPlayer(sessionId);
+        System.out.println("Gracz " + player.getId() + " mienia drużynę");
         Team team = getTeam(teamText);
         changePlayerTeam(player, team);
     }
@@ -161,7 +165,6 @@ public class LobbyController {
      */
     @MessageMapping("/test/getid")
     public void getid(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
-
         Player player = game.getPlayer(headerAccessor.getSessionId());
         if(player != null){
             messageManager.send(player.getId(), player.getSessionId(), "/queue/lobby/id");

@@ -92,9 +92,10 @@ public class Game {
         return board;
     }
 
+
+    // TODO: zobaczyć, czym różnią się te 2 metody
     public Player addPlayer(String sessionId, String nickname){
         if (players.size() < settings.getMaxTeamSize()*2){
-            System.out.println("Dodanie gracza");
             Player player = new Player(sessionId, nickname);
             addPlayer(player);
             return player;
@@ -102,8 +103,9 @@ public class Game {
         return null;
     }
 
-    public void addPlayer(Player player){
+    public synchronized void addPlayer(Player player){
         player.setId(playerCounter);
+        System.out.println("Id gracza " + player.getId());
         playerCounter++;
         players.put(player.getSessionId(), player);
 
@@ -186,6 +188,7 @@ public class Game {
             firstTeam = randomFirstGroup();
             board.init(firstTeam, settings);
             state.initState(firstTeam, settings.getFirstTeamWords());
+            state.setCurrentStep(GameStep.MAIN); // TODO: sprawdzić, czy ten stan na początek jest ok
         }
         started = true;
     }

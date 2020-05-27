@@ -54,7 +54,7 @@ public class ConnectionListener {
         connectedSessions.add(sessionId);
 
 //        preparePlayerForVotingTest(sessionId);
-        preparePlayersForGameTest(sessionId);
+//        preparePlayersForGameTest(sessionId);
         // TODO: wyłącznie do testów
 //        needToTest(sessionId);
     }
@@ -80,33 +80,6 @@ public class ConnectionListener {
         }
         game.addPlayer(player);
         messageManager.send(counter, player.getSessionId(), "/user/player/id");
-        counter++;
-    }
-
-    private void needToTest(String sessionId) {
-        // ustawianie graczy, tak, aby można było przetestować działanie aplikacji
-        Player player  = new Player(sessionId, counter, "g"+connectedSessions.size());
-        teamCounter++;
-        // TODO: trzeba zrobić tak, że by był tylko jeden szef w dużynie
-        if(teamCounter == 3){
-            currentTeam = currentTeam==Team.BLUE? Team.RED : Team.BLUE;
-            teamCounter = 0;
-        }
-        player.setTeam(currentTeam);
-//        player.setTeam(Team.BLUE);
-        List<Player> teamPlayers = game.getPlayers(currentTeam);
-        if(teamPlayers.stream().filter(x->x.getRole()==Role.BOSS).count() == 0){
-            player.setRole(Role.BOSS);
-        } else {
-            player.setRole(Role.PLAYER);
-        }
-
-//        if(player.getId()%2==0){
-//            player.setRole(Role.BOSS);
-//        } else {
-//            player.setRole(Role.PLAYER);
-//        }
-        game.addPlayer(player);
         counter++;
     }
 
