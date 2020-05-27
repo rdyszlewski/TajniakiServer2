@@ -31,6 +31,26 @@ public class Game {
     private  GameSettings settings = new GameSettings();
     private  Board board = new Board();
     private int playerCounter = 0;
+
+
+    // =====================================================
+    //  zbiór, który może być wykorzystywany np. do zliczania, ilu graczy wykonało jakąś akcję. Np. ile osób wyświetliło podsumowanie
+    // TODO: będzie można przenieść to do klasy zarządzającej graczami
+    private final Set<Long> usedPlayers = new HashSet<>();
+
+    public void usePlayer(Player player){
+        usedPlayers.add(player.getId());
+    }
+
+    public void removeUsePlayer(Player player){
+        usedPlayers.remove(player.getId());
+    }
+
+    public boolean areAllPlayerUsed(){
+        return usedPlayers.size() == players.size();
+    }
+    // =====================================================
+
     // TODO: dodać oddzielną klasę do zarządzania graczami w grze
 
     private boolean started = false;
@@ -103,6 +123,8 @@ public class Game {
     public void removePlayer(String sessionId){
         System.out.println(players.size());
         if (players.containsKey(sessionId)){
+            Player player = players.get(sessionId);
+            removeUsePlayer(player);
             players.remove(sessionId);
         }
     }

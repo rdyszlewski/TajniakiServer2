@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.shared;
 
 public enum GameStep {
-    MENU,
+    MAIN,
     LOBBY,
     VOTING,
     GAME,

@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 @Controller
 public class SummaryController {
 
+    private final String SUMMARY_PATH = "/queue/summary/summary";
+
     @Autowired
     private Game game;
 
@@ -45,12 +47,19 @@ public class SummaryController {
         if(game.getState().getCurrentStep()== GameStep.GAME){
             game.getState().setCurrentStep(GameStep.SUMMARY);
         }
-
+        Player player = game.getPlayer(headerAccessor.getSessionId());
+        game.usePlayer(player);
 //        SummaryMessage summaryMessage = getMockSummaryMessage();
         SummaryMessage summaryMessage = createSummaryMessage(game);
-        messageManager.sendToAll(summaryMessage, "queue/summary/summary", game);
-        SummarySaver.saveHistory(game.getHistory(), "/media/roman/414054776F940E4C/TajniakiOutput/" + new Date().toString() + ".txt");
-        game.reset();
+        messageManager.send(summaryMessage, player.getSessionId(), SUMMARY_PATH);
+
+        if(game.areAllPlayerUsed()){
+            game.getState().setCurrentStep(GameStep.MAIN);
+            game.reset();
+            // TODO: użycie tego w tym miejscu może powodować niezapisanie się podsumowania. np. jeżeli jakiś gracz zamknie aplikacje
+            SummarySaver.saveHistory(game.getHistory(), "/media/roman/414054776F940E4C/TajniakiOutput/" + new Date().toString() + ".txt");
+        }
+
     }
 
     private SummaryMessage createSummaryMessage(Game game){

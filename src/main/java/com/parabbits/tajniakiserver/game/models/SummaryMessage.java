@@ -9,6 +9,8 @@ public class SummaryMessage {
     private Team winner;
     private int blueRemaining;
     private int redRemaining;
+    private int blueFound;
+    private int redFound;
     private List<SummaryEntry> process;
     private EndGameCause cause;
     private List<SummaryCard> cards;
@@ -35,6 +37,22 @@ public class SummaryMessage {
 
     public void setRedRemaining(int redRemaining) {
         this.redRemaining = redRemaining;
+    }
+
+    public int getBlueFound() {
+        return blueFound;
+    }
+
+    public void setBlueFound(int blueFound) {
+        this.blueFound = blueFound;
+    }
+
+    public int getRedFound() {
+        return redFound;
+    }
+
+    public void setRedFound(int redFound) {
+        this.redFound = redFound;
     }
 
     public List<SummaryEntry> getProcess() {

@@ -24,6 +24,7 @@ public class MessageManager {
     public void sendToPlayersWithRole(Object message, Role role, String path, Game game){
         for(Player player: game.getPlayers()){
             if(player.getRole()== role){
+                System.out.println("Wysyłanie do użytkownika " + player.getNickname());
                 send(message, player.getSessionId(), path);
             }
         }

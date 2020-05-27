@@ -23,13 +23,12 @@ import java.util.stream.Collectors;
 @Controller
 public class GameController {
 
-    // TODO: refaktoryzacja tego
-
     private final String START_MESSAGE_RESPONSE = "/queue/game/start";
     private final String ANSWER_MESSAGE_RESPONSE = "/queue/game/answer";
     private final String CLICK_MESSAGE_RESPONSE = "/queue/game/click";
     private final String QUESTION_MESSAGE_RESPONSE = "/queue/game/question";
     private final String END_MESSAGE_RESPONSE = "/queue/game/end_game";
+    private final String POSSIBLE_MESSAGE_RESPONSE = "/queue/game/possible_game";
 
     @Autowired
     private Game game;
@@ -130,8 +129,11 @@ public class GameController {
     }
 
     private void sendAnswerMessage(Player player, Card card, boolean correct) {
-        AnswerMessage message = buildAnswerMessage(card, correct, player);
-        messageManager.sendToAll(message, ANSWER_MESSAGE_RESPONSE, game);
+        List<Card> cardsToUpdate = game.getBoard().getAnswerManager().popCardsToUpdate(player);
+        AnswerMessage bossMessage = buildAnswerMessage(cardsToUpdate, correct, player, Role.BOSS);
+        messageManager.sendToPlayersWithRole(bossMessage, Role.BOSS, ANSWER_MESSAGE_RESPONSE, game);
+        AnswerMessage playerMessage = buildAnswerMessage(cardsToUpdate, correct, player, Role.PLAYER);
+        messageManager.sendToPlayersWithRole(playerMessage, Role.PLAYER, ANSWER_MESSAGE_RESPONSE, game);
     }
 
     private boolean isCorrect(Card card, Player player){
@@ -181,10 +183,10 @@ public class GameController {
         return clientCards;
     }
 
-    private AnswerMessage buildAnswerMessage(Card card, boolean correct, Player player) {
+    private AnswerMessage buildAnswerMessage(List<Card> cardsToUpdate, boolean correct, Player player,Role role) {
 //        ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
         // TODO: sprawdzić po co jest rola i drużyna
-        List<ClientCard> cards = ClientCardCreator.createCards(game.getBoard().getAnswerManager().popCardsToUpdate(player), game, player.getRole(), player.getTeam());
+        List<ClientCard> cards = ClientCardCreator.createCards( cardsToUpdate, game, role, player.getTeam());
         return new AnswerMessage(cards, correct, game.getState());
     }
 
@@ -234,5 +236,13 @@ public class GameController {
         List<Card> editedCards = Collections.singletonList(card);
         List<ClientCard> clientCards = prepareClientCards(editedCards, player);
         return new ClickMessage(clientCards);
+    }
+
+    @MessageMapping("/game/possible_game")
+    public void checkFreeGame(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
+        boolean value = game.getState().getCurrentStep() == null
+                || game.getState().getCurrentStep() == GameStep.MAIN
+                || game.getState().getCurrentStep() == GameStep.LOBBY;
+        messageManager.send(value, headerAccessor.getSessionId(), POSSIBLE_MESSAGE_RESPONSE);
     }
 }

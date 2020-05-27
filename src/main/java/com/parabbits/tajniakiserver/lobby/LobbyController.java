@@ -39,7 +39,7 @@ public class LobbyController {
 
     @MessageMapping("/lobby/connect")
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-        if(game.getState().getCurrentStep() == GameStep.MENU){
+        if(game.getState().getCurrentStep() == GameStep.MAIN){
             game.getState().setCurrentStep(GameStep.LOBBY);
         }
         String sessionId = headerAccessor.getSessionId();
@@ -163,6 +163,8 @@ public class LobbyController {
     public void getid(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
 
         Player player = game.getPlayer(headerAccessor.getSessionId());
-        messageManager.send(player.getId(), player.getSessionId(), "/queue/lobby/id");
+        if(player != null){
+            messageManager.send(player.getId(), player.getSessionId(), "/queue/lobby/id");
+        }
     }
 }
