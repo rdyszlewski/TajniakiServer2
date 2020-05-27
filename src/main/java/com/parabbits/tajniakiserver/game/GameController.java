@@ -45,14 +45,20 @@ public class GameController {
 
     @MessageMapping("/game/start")
     public void startGame(@Payload String message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-        game.getState().setCurrentStep(GameStep.GAME); // TODO: to też powinno znajdować się w innym miejscu
-        // TODO: prawdopodobnie chodzi o to, że gra ni kończy inicjalizacji dopóki gra się nie otrzowy
+        if(!isCorrectStep(game)){
+            return;
+        }
+        setGameStep(game);
         synchronized (this){
-            // TODO: to może zadziałać, ale może rodzić problemy w przypadku wielu gier. Wymyslić lepszy sposób
             // TODO: to może zadziałać, ale może rodzić problemy w przypadku wielu gier. Wymyslić lepszy sposób
             game.initializeGame();
         }
-//        game.initializeGame();
+        sendStartGameMessage(headerAccessor);
+
+        initHistory(game);
+    }
+
+    private void sendStartGameMessage(SimpMessageHeaderAccessor headerAccessor) {
         Player player = game.getPlayer(headerAccessor.getSessionId());
         if (player.getRole() == Role.BOSS) {
             StartGameMessage bossMessage = createStartGameMessage(Role.BOSS, player, game);
@@ -61,9 +67,16 @@ public class GameController {
             StartGameMessage playersMessage = createStartGameMessage(Role.PLAYER, player, game);
             messageManager.send(playersMessage, player.getSessionId(), START_MESSAGE_RESPONSE);
         }
-
-        initHistory(game);
     }
+
+    private boolean isCorrectStep(Game game){
+        return game.getState().getCurrentStep().equals(GameStep.VOTING) || game.getState().getCurrentStep().equals(GameStep.GAME);
+    }
+
+    private void setGameStep(Game game){
+        game.getState().setCurrentStep(GameStep.GAME);
+    }
+
 
     private void initHistory(Game game){
         game.getHistory().setWords(getWordsFromCards(CardColor.BLUE, game), Team.BLUE);

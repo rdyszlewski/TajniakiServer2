@@ -44,24 +44,37 @@ public class VotingController {
 
     @MessageMapping("/boss/start")
     public void startVoting(@Payload String message, SimpMessageHeaderAccessor headerAccessor) {
-        if(game.getState().getCurrentStep() == GameStep.LOBBY){
-            game.getState().setCurrentStep(GameStep.VOTING);
+        if(!isCorrectStep()){
+            return;
         }
+        setVotingStep(game);
         game.startVoting(); // TODO: zrobić to lepiej, żeby wykonywało się to tylko raz
         Player player = game.getPlayer(headerAccessor.getSessionId());
         Team team = player.getTeam();
 
-        StartVotingMessage votingMessage = new StartVotingMessage();
-        // TODO: tutaj powinno być pobieranie aktualnego czasu. Być może nie będzie to konieczne
-        votingMessage.setTime(VOTING_TIME);
-        votingMessage.setPlayers(game.getVotingService(team).getCandidates());
+        StartVotingMessage votingMessage = createStartVotingMessage(team);
         messageManager.send(votingMessage, player.getSessionId(), VOTING_START);
 
         if(!game.isVotingTimerStarted()){
             game.setVotingTimerStarted(true);
             startTimer();
         }
-        // TODO: uruchomienie licznika
+    }
+
+    private StartVotingMessage createStartVotingMessage(Team team) {
+        StartVotingMessage votingMessage = new StartVotingMessage();
+        // TODO: tutaj powinno być pobieranie aktualnego czasu. Być może nie będzie to konieczne
+        votingMessage.setTime(VOTING_TIME);
+        votingMessage.setPlayers(game.getVotingService(team).getCandidates());
+        return votingMessage;
+    }
+
+    private boolean isCorrectStep(){
+        return game.getState().getCurrentStep().equals(GameStep.LOBBY) || game.getState().getCurrentStep().equals(GameStep.VOTING);
+    }
+
+    private void setVotingStep(Game game ){
+        game.getState().setCurrentStep(GameStep.VOTING);
     }
 
     private void startTimer(){
@@ -105,7 +118,7 @@ public class VotingController {
         VotingPlayer redBoss = game.getVotingService(Team.RED).getWinner();
         VotingPlayer blueBoss = game.getVotingService(Team.BLUE).getWinner();
         if(redBoss==null || blueBoss==null){
-            // TODO: to później usunąć
+            // TODO: to później usunąć. Potrzebne do testowania widoku
             redBoss = blueBoss;
             // TODO: wysłać informacje o błędzie
 //            return; // TODO: odkomentować to
@@ -116,11 +129,12 @@ public class VotingController {
             } else {
                 player.setRole(Role.PLAYER);
             }
-//            if(player.getId()==redBoss.getId() || player.getId()==blueBoss.getId()){
-//                player.setRole(Role.BOSS);
-//            } else {
-//                player.setRole(Role.PLAYER);
-//            }
+
+            if(player.getId()==redBoss.getId() || player.getId()==blueBoss.getId()){
+                player.setRole(Role.BOSS);
+            } else {
+                player.setRole(Role.PLAYER);
+            }
         }
     }
 }

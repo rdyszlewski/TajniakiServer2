@@ -37,8 +37,6 @@ public class VotingService {
     }
 
     public List<VotingPlayer> vote(String sessionId, String vote){
-
-
         if(votes.containsKey(sessionId) && votes.get(sessionId).equals(vote)){
             return null;
         }

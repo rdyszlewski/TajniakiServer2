@@ -18,8 +18,11 @@ public class GameState {
         return currentStep;
     }
 
-    public void setCurrentStep(GameStep currentStep){
-        this.currentStep = currentStep;
+    public synchronized void setCurrentStep(GameStep currentStep){
+        if(this.currentStep == null || !this.currentStep.equals(currentStep)){
+            System.out.println(currentStep);
+            this.currentStep = currentStep;
+        }
     }
 
     public Team getCurrentTeam() {

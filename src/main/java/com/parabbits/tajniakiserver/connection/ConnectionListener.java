@@ -55,8 +55,7 @@ public class ConnectionListener {
 
 //        preparePlayerForVotingTest(sessionId);
 //        preparePlayersForGameTest(sessionId);
-        // TODO: wyłącznie do testów
-//        needToTest(sessionId);
+
     }
 
     private void preparePlayerForVotingTest(String sessionId){

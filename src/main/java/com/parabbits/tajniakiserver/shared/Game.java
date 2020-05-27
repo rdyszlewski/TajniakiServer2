@@ -32,7 +32,9 @@ public class Game {
     private  Board board = new Board();
     private int playerCounter = 0;
 
-
+    public Game(){
+        getState().setCurrentStep(GameStep.MAIN);
+    }
     // =====================================================
     //  zbiór, który może być wykorzystywany np. do zliczania, ilu graczy wykonało jakąś akcję. Np. ile osób wyświetliło podsumowanie
     // TODO: będzie można przenieść to do klasy zarządzającej graczami
@@ -48,6 +50,10 @@ public class Game {
 
     public boolean areAllPlayerUsed(){
         return usedPlayers.size() == players.size();
+    }
+
+    public void clearUsedPlayer(){
+        usedPlayers.clear();
     }
     // =====================================================
 
@@ -68,7 +74,6 @@ public class Game {
     }
 
     public void reset(){
-        players.clear();
         blueVoting = new VotingService(Team.BLUE);
         redVoting = new VotingService(Team.RED);
         history = new GameHistory();
@@ -78,6 +83,11 @@ public class Game {
         board = new Board();
         playerCounter = 0;
         started = false;
+
+        for(Map.Entry<String, Player> entry: players.entrySet()){
+            entry.getValue().setReady(false);
+        }
+        getState().setCurrentStep(GameStep.LOBBY);
     }
 
     public GameState getState(){
@@ -105,7 +115,6 @@ public class Game {
 
     public synchronized void addPlayer(Player player){
         player.setId(playerCounter);
-        System.out.println("Id gracza " + player.getId());
         playerCounter++;
         players.put(player.getSessionId(), player);
 
@@ -188,7 +197,6 @@ public class Game {
             firstTeam = randomFirstGroup();
             board.init(firstTeam, settings);
             state.initState(firstTeam, settings.getFirstTeamWords());
-            state.setCurrentStep(GameStep.MAIN); // TODO: sprawdzić, czy ten stan na początek jest ok
         }
         started = true;
     }

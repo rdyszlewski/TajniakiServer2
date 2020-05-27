@@ -39,21 +39,39 @@ public class LobbyController {
 
     @MessageMapping("/lobby/connect")
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-        if(game.getState().getCurrentStep() == GameStep.MAIN){
-            System.out.println("Wykonywanie zmiany lobby");
-            game.getState().setCurrentStep(GameStep.LOBBY);
+        if(!isCorrectStep(game)){
+            return;
         }
-        System.out.println("No teraz jest lobby");
-        // TODO: być może w tym miejscu będzie trzeba zrobić inicjalizacje gry
+        setLobbyStep(game);
         String sessionId = headerAccessor.getSessionId();
-        Player player = game.addPlayer(sessionId, nickname);
+        Player player = game.getPlayer(sessionId);
+        if(game.getPlayer(sessionId)==null){
+            player = game.addPlayer(headerAccessor.getSessionId(), nickname);
+        }
         // TODO: wysłąć do podłączonego gracza informacje o ustawieniach rozgrywki
+        StartLobbyMessage message = createStartLobbyMessage(player);
+        sendStartLobbyMessage(player, message);
+    }
+
+    private void sendStartLobbyMessage(Player player, StartLobbyMessage message) {
+        messageManager.send(message, player.getSessionId(), LOBBY_START);
+        messageManager.sendToAll(player, LOBBY_CONNECT, game);
+    }
+
+    private StartLobbyMessage createStartLobbyMessage(Player player) {
         StartLobbyMessage message = new StartLobbyMessage(getAllPlayersInLobby(), game.getSettings());
         message.setMinPlayersInTeam(game.getSettings().getMinTeamSize());
         message.setMaxPlayersInTeam(game.getSettings().getMaxTeamSize());
         message.setPlayerId(player.getId());
-        messageManager.send(message, player.getSessionId(), LOBBY_START);
-        messageManager.sendToAll(player, LOBBY_CONNECT, game);
+        return message;
+    }
+
+    private boolean isCorrectStep(Game game){
+        return game.getState().getCurrentStep().equals(GameStep.MAIN) || game.getState().getCurrentStep().equals(GameStep.LOBBY);
+    }
+
+    private void setLobbyStep(Game game){
+        game.getState().setCurrentStep(GameStep.LOBBY);
     }
 
     private List<Player> getAllPlayersInLobby() {

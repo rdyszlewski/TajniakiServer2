@@ -12,6 +12,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -41,12 +42,11 @@ public class SummaryController {
 
     @MessageMapping("/summary/summary")
     public void getSummary(@Payload String message, SimpMessageHeaderAccessor headerAccessor) throws IOException {
-        if(!game.isStarted()){
+        if(!isCorrectStep(game)){
             return;
         }
-        if(game.getState().getCurrentStep()== GameStep.GAME){
-            game.getState().setCurrentStep(GameStep.SUMMARY);
-        }
+        setSummaryStep(game);
+
         Player player = game.getPlayer(headerAccessor.getSessionId());
         game.usePlayer(player);
 //        SummaryMessage summaryMessage = getMockSummaryMessage();
@@ -54,13 +54,22 @@ public class SummaryController {
         messageManager.send(summaryMessage, player.getSessionId(), SUMMARY_PATH);
 
         if(game.areAllPlayerUsed()){
-            game.getState().setCurrentStep(GameStep.MAIN);
-            game.reset();
-            // TODO: użycie tego w tym miejscu może powodować niezapisanie się podsumowania. np. jeżeli jakiś gracz zamknie aplikacje
             SummarySaver.saveHistory(game.getHistory(), "/media/roman/414054776F940E4C/TajniakiOutput/" + new Date().toString() + ".txt");
+            game.getState().setCurrentStep(GameStep.LOBBY);
+            game.reset();
+            game.clearUsedPlayer();
+            // TODO: użycie tego w tym miejscu może powodować niezapisanie się podsumowania. np. jeżeli jakiś gracz zamknie aplikacje
         }
-
     }
+
+    private boolean isCorrectStep(Game game){
+        return game.getState().getCurrentStep().equals(GameStep.GAME) || game.getState().getCurrentStep().equals(GameStep.SUMMARY);
+    }
+
+    private void setSummaryStep(Game game){
+        game.getState().setCurrentStep(GameStep.SUMMARY);
+    }
+
 
     private SummaryMessage createSummaryMessage(Game game){
         SummaryMessage message = new SummaryMessage();
