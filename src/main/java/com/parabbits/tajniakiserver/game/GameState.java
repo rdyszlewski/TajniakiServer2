@@ -9,6 +9,8 @@ public class GameState {
     private boolean active;
     private Team currentTeam;
     private Role currentPlayer;
+    private int pointsBlue;
+    private int pointsRed;
     private int remainingBlue;
     private int remainingRed;
     private String currentWord;
@@ -31,6 +33,14 @@ public class GameState {
 
     public Role getCurrentStage() {
         return currentPlayer;
+    }
+
+    public int getPointsBlue(){
+        return pointsBlue;
+    }
+
+    public int getPointsRed(){
+        return pointsRed;
     }
 
     public int getRemainingBlue() {
@@ -90,6 +100,7 @@ public class GameState {
     }
 
     private void handleUsingCard(boolean correct, CardColor color){
+        // TODO: refaktoryzacja
         switch (color) {
             case KILLER:
                 active = false;
@@ -103,6 +114,11 @@ public class GameState {
         }
         if (correct) {
             remainingAnswers--;
+            if(color==CardColor.BLUE){
+                pointsBlue++;
+            } else {
+                pointsRed++;
+            }
         } else {
             changeTeams();
         }

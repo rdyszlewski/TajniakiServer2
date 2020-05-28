@@ -76,6 +76,8 @@ public class SummaryController {
         EndGameInfo info = EndGameHelper.getEndGameInfo(game);
         message.setWinner(info.getWinner());
         message.setCause(info.getCause());
+        message.setBluePoints(game.getState().getPointsBlue());
+        message.setRedPoints(game.getState().getPointsRed());
         message.setBlueRemaining(game.getState().getRemainingBlue());
         message.setRedRemaining(game.getState().getRemainingRed());
         message.setProcess(game.getHistory().getEntries());

@@ -7,6 +7,8 @@ import java.util.List;
 
 public class SummaryMessage {
     private Team winner;
+    private int bluePoints;
+    private int redPoints;
     private int blueRemaining;
     private int redRemaining;
     private int blueFound;
@@ -21,6 +23,22 @@ public class SummaryMessage {
 
     public void setWinner(Team winner) {
         this.winner = winner;
+    }
+
+    public int getBluePoints() {
+        return bluePoints;
+    }
+
+    public void setBluePoints(int bluePoints) {
+        this.bluePoints = bluePoints;
+    }
+
+    public int getRedPoints() {
+        return redPoints;
+    }
+
+    public void setRedPoints(int redPoints) {
+        this.redPoints = redPoints;
     }
 
     public int getBlueRemaining() {
