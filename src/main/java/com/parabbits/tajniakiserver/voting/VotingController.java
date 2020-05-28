@@ -85,9 +85,10 @@ public class VotingController {
 
             @Override
             public void run() {
+                System.out.println(votingTime);
                 messageManager.sendToAll(votingTime, VOTING_TIMER, game);
                 votingTime --;
-                if(votingTime==-1){
+                if(votingTime==-1 || !game.isVotingTimerStarted()){
                     endVoting();
                     scheduler.shutdown();
                 }

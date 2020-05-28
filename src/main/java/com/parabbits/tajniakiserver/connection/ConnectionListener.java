@@ -126,6 +126,8 @@ public class ConnectionListener {
     private void sendDisconnectFromVoting(Player player, Game game){
         GameStep currentStep = isTeamCorrect(player.getTeam(), game) ? GameStep.VOTING : GameStep.LOBBY;
         DisconnectMessage message = createDisconnectMessage(player, currentStep);
+        game.getState().setCurrentStep(currentStep);
+        game.reset();
         messageManager.sendToAll(message, DISCONNECT_PATH, game);
     }
 
@@ -179,6 +181,7 @@ public class ConnectionListener {
         DisconnectMessage message = createDisconnectMessage(player, step);
         messageManager.sendToAll(message, DISCONNECT_PATH, game);
         game.getState().setCurrentStep(step);
+        game.reset();
     }
     // ===================================================================================
 

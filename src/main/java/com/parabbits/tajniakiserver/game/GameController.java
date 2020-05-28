@@ -253,6 +253,7 @@ public class GameController {
 
     @MessageMapping("/game/possible_game")
     public void checkFreeGame(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
+        System.out.println(game.getState().getCurrentStep());
         boolean value = game.getState().getCurrentStep() == null
                 || game.getState().getCurrentStep() == GameStep.MAIN
                 || game.getState().getCurrentStep() == GameStep.LOBBY;

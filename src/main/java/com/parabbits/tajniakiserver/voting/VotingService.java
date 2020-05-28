@@ -62,7 +62,7 @@ public class VotingService {
         for (VotingPlayer candidate: candidates.values()){
             // TODO: pomyśleć, co w przypadku remisu
             int votes = candidate.getVotes().size();
-            if(votes > maxVotes){
+            if(votes >= maxVotes){
                 bestCandidate = candidate;
                 maxVotes = votes;
             }

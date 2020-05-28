@@ -48,6 +48,7 @@ public class LobbyController {
         if(game.getPlayer(sessionId)==null){
             player = game.addPlayer(headerAccessor.getSessionId(), nickname);
         }
+
         // TODO: wysłąć do podłączonego gracza informacje o ustawieniach rozgrywki
         StartLobbyMessage message = createStartLobbyMessage(player);
         sendStartLobbyMessage(player, message);
@@ -116,6 +117,8 @@ public class LobbyController {
     private Team getSmallerTeam(){
         int blueTeamSize = game.getTeamSize(Team.BLUE);
         int redTeamSize = game.getTeamSize(Team.RED);
+        System.out.println("Niebiescy " + blueTeamSize);
+        System.out.println("Czerwoni " + redTeamSize);
         return blueTeamSize<redTeamSize? Team.BLUE: Team.RED;
     }
 

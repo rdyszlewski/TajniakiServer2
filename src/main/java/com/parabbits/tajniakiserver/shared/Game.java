@@ -81,9 +81,10 @@ public class Game {
         state = new GameState();
         settings = new GameSettings();
         board = new Board();
-        playerCounter = 0;
+//        playerCounter = 0;
         started = false;
 
+        setVotingTimerStarted(false);
         for(Map.Entry<String, Player> entry: players.entrySet()){
             entry.getValue().setReady(false);
         }
