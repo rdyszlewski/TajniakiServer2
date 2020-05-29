@@ -2,6 +2,7 @@ package com.parabbits.tajniakiserver.game;
 
 import com.google.gson.Gson;
 
+import com.parabbits.tajniakiserver.connection.DisconnectController;
 import com.parabbits.tajniakiserver.game.end_game.EndGameHelper;
 import com.parabbits.tajniakiserver.game.end_game.EndGameInfo;
 import com.parabbits.tajniakiserver.game.messages.*;
@@ -258,5 +259,14 @@ public class GameController {
                 || game.getState().getCurrentStep() == GameStep.MAIN
                 || game.getState().getCurrentStep() == GameStep.LOBBY;
         messageManager.send(value, headerAccessor.getSessionId(), POSSIBLE_MESSAGE_RESPONSE);
+    }
+
+    @MessageMapping("/game/quit")
+    public void quit(@Payload String messsage, SimpMessageHeaderAccessor headerAccessor){
+        System.out.println("Player quit");
+        Player player = game.getPlayer(headerAccessor.getSessionId());
+        game.removePlayer(player.getSessionId());
+        DisconnectController.disconnectPlayer(player, game, messageManager);
+        // TODO: sprawdzić, czy wszystkie komunikaty wyświetlają się poprawnie
     }
 }
