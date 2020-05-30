@@ -102,9 +102,13 @@ public class LobbyController {
         }
         TeamMessage message = new TeamMessage(player.getId(), player.getTeam().toString());
         messageManager.sendToAll(message, "/lobby/team", game);
-        if (areAllReady()) {
+        if (isEndChoosing()) {
             finishChoosing();
         }
+    }
+
+    private boolean isEndChoosing(){
+        return areAllReady() && isMinNumberOfPlayers();
     }
 
     @MessageMapping("/lobby/auto_team")
@@ -152,7 +156,7 @@ public class LobbyController {
             LobbyReadyMessage message = new LobbyReadyMessage(player.getId(), ready);
             messageManager.sendToAll(message, LOBBY_READY, game);
         }
-        if (areAllReady()) {
+        if (isEndChoosing()) {
             finishChoosing();
         }
     }
@@ -177,6 +181,12 @@ public class LobbyController {
     private boolean areAllReady() {
         List<Player> readyPlayers = game.getPlayers().stream().filter(Player::isReady).collect(Collectors.toList());
         return readyPlayers.size() == game.getPlayers().size();
+    }
+
+    private boolean isMinNumberOfPlayers(){
+        int bluePlayers = game.getPlayers(Team.BLUE).size();
+        int redPlayers = game.getPlayers(Team.RED).size();
+        return bluePlayers >= game.getSettings().getMinTeamSize() && redPlayers >= game.getSettings().getMinTeamSize();
     }
 
     /**
