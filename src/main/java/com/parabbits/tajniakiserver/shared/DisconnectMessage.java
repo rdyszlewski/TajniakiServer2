@@ -1,6 +1,7 @@
 package com.parabbits.tajniakiserver.shared;
 
 import com.parabbits.tajniakiserver.game.models.GamePlayer;
+import com.parabbits.tajniakiserver.shared.game.GameStep;
 
 import java.util.List;
 

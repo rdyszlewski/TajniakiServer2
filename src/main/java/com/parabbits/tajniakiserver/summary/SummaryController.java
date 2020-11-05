@@ -3,8 +3,8 @@ package com.parabbits.tajniakiserver.summary;
 import com.parabbits.tajniakiserver.game.end_game.EndGameHelper;
 import com.parabbits.tajniakiserver.game.end_game.EndGameInfo;
 import com.parabbits.tajniakiserver.game.models.*;
-import com.parabbits.tajniakiserver.shared.Game;
-import com.parabbits.tajniakiserver.shared.GameStep;
+import com.parabbits.tajniakiserver.shared.game.Game;
+import com.parabbits.tajniakiserver.shared.game.GameStep;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -12,7 +12,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -47,7 +46,7 @@ public class SummaryController {
         }
         setSummaryStep(game);
 
-        Player player = game.getPlayer(headerAccessor.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         game.usePlayer(player);
 //        SummaryMessage summaryMessage = getMockSummaryMessage();
         SummaryMessage summaryMessage = createSummaryMessage(game);

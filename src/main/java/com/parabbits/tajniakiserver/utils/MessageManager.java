@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.utils;
 
 import com.parabbits.tajniakiserver.connection.HeaderUtils;
-import com.parabbits.tajniakiserver.shared.Game;
+import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
@@ -16,13 +16,13 @@ public class MessageManager {
     }
 
     public void sendToAll(Object message, String path, Game game){
-        for(Player player: game.getPlayers()){
+        for(Player player: game.getPlayers().getAllPlayers()){
             send(message, player.getSessionId(), path);
         }
     }
 
     public void sendToPlayersWithRole(Object message, Role role, String path, Game game){
-        for(Player player: game.getPlayers()){
+        for(Player player: game.getPlayers().getAllPlayers()){
             if(player.getRole()== role){
                 System.out.println("Wysyłanie do użytkownika " + player.getNickname());
                 send(message, player.getSessionId(), path);
@@ -31,13 +31,13 @@ public class MessageManager {
     }
 
     public void sendToTeam(Object message, Team team, String path, Game game){
-        for(Player player: game.getPlayers(team)){
+        for(Player player: game.getPlayers().getPlayers(team)){
             send(message, player.getSessionId(), path);
         }
     }
 
     public void sendToRoleFromTeam(Object message, Role role, Team team, String path, Game game){
-        for(Player player: game.getPlayers(team)){
+        for(Player player: game.getPlayers().getPlayers(team)){
             if(player.getRole() == role){
                 send(message, player.getSessionId(), path);
             }

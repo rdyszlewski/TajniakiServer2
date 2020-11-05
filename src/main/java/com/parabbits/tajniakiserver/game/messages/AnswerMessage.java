@@ -19,15 +19,6 @@ public class AnswerMessage {
         this.gameState = gameState;
     }
 
-//    public ClientCard getCard() {
-//        return card;
-//    }
-//
-//    public void setCard(ClientCard card) {
-//        this.card = card;
-//    }
-
-
     public List<ClientCard> getCardsToUpdate() {
         return cardsToUpdate;
     }

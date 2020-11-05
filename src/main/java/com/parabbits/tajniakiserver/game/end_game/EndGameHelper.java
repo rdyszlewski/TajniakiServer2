@@ -4,7 +4,7 @@ import com.parabbits.tajniakiserver.game.models.Card;
 import com.parabbits.tajniakiserver.game.models.EndGameCause;
 import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.game.models.CardColor;
-import com.parabbits.tajniakiserver.shared.Game;
+import com.parabbits.tajniakiserver.shared.game.Game;
 
 public class EndGameHelper {
 

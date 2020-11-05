@@ -69,3 +69,10 @@ kierownik
 ochraniacz
 kieszeń
 zoo
+szynka
+szklanka
+kubek
+kawa
+herbata
+termos
+lampka

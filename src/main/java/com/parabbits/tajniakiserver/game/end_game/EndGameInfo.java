@@ -3,7 +3,6 @@ package com.parabbits.tajniakiserver.game.end_game;
 import com.parabbits.tajniakiserver.game.models.EndGameCause;
 import com.parabbits.tajniakiserver.game.models.Team;
 
-
 public class EndGameInfo {
 
     private Team winner;

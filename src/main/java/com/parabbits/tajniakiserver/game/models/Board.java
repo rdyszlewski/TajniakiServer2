@@ -2,7 +2,7 @@ package com.parabbits.tajniakiserver.game.models;
 
 import com.parabbits.tajniakiserver.game.FlagsManager;
 import com.parabbits.tajniakiserver.game.AnswerManager;
-import com.parabbits.tajniakiserver.shared.GameSettings;
+import com.parabbits.tajniakiserver.shared.game.GameSettings;
 
 import java.io.IOException;
 import java.util.ArrayList;

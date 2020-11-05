@@ -1,6 +1,6 @@
 package com.parabbits.tajniakiserver.game.models;
 
-import com.parabbits.tajniakiserver.shared.GameSettings;
+import com.parabbits.tajniakiserver.shared.game.GameSettings;
 import com.parabbits.words_utils.WordColorRandom;
 import com.parabbits.words_utils.WordsHelper;
 

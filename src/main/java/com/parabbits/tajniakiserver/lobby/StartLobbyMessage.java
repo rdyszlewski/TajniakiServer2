@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.lobby;
 
 import com.parabbits.tajniakiserver.game.models.Player;
-import com.parabbits.tajniakiserver.shared.GameSettings;
+import com.parabbits.tajniakiserver.shared.game.GameSettings;
 
 import java.util.List;
 

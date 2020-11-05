@@ -7,8 +7,8 @@ import com.parabbits.tajniakiserver.game.end_game.EndGameHelper;
 import com.parabbits.tajniakiserver.game.end_game.EndGameInfo;
 import com.parabbits.tajniakiserver.game.messages.*;
 import com.parabbits.tajniakiserver.game.models.*;
-import com.parabbits.tajniakiserver.shared.Game;
-import com.parabbits.tajniakiserver.shared.GameStep;
+import com.parabbits.tajniakiserver.shared.game.Game;
+import com.parabbits.tajniakiserver.shared.game.GameStep;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -46,9 +46,6 @@ public class GameController {
 
     @MessageMapping("/game/start")
     public void startGame(@Payload String message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-        if(!isCorrectStep(game)){
-            return;
-        }
         setGameStep(game);
         synchronized (this){
             // TODO: to może zadziałać, ale może rodzić problemy w przypadku wielu gier. Wymyslić lepszy sposób
@@ -60,7 +57,7 @@ public class GameController {
     }
 
     private void sendStartGameMessage(SimpMessageHeaderAccessor headerAccessor) {
-        Player player = game.getPlayer(headerAccessor.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         if (player.getRole() == Role.BOSS) {
             StartGameMessage bossMessage = createStartGameMessage(Role.BOSS, player, game);
             messageManager.send(bossMessage, player.getSessionId(), START_MESSAGE_RESPONSE);
@@ -85,6 +82,7 @@ public class GameController {
         game.getHistory().setKiller(getWordsFromCards(CardColor.KILLER, game).get(0));
     }
 
+    // TODO: możę przenieść do klasy Game
     private List<String> getWordsFromCards(CardColor color, Game game){
         return game.getBoard().getCards().stream().filter(card -> card.getColor() == color).map(Card::getWord).collect(Collectors.toList());
     }
@@ -98,14 +96,14 @@ public class GameController {
         message.setGameState(game.getState());
         List<ClientCard> cards = ClientCardCreator.createCards(game.getBoard().getCards(), game, role, player.getTeam());
         message.setCards(cards);
-        message.setPlayers(new ArrayList<>(game.getPlayers()));
+        message.setPlayers(new ArrayList<>(game.getPlayers().getAllPlayers()));
 
         return message;
     }
 
     @MessageMapping("/game/click")
     public void servePlayersAnswer(@Payload Integer cardId, SimpMessageHeaderAccessor headerAccessor) {
-        Player player = game.getPlayer(headerAccessor.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         Card card = findCard(cardId);
         // TODO: zrobić refaktoryzację z tym
         if (!isPlayerTurn(player) || card.isChecked() || player.getRole()==Role.BOSS) {
@@ -127,7 +125,7 @@ public class GameController {
     }
 
     private boolean isAllPlayersAnswer(Player player, int answerForCard) {
-        return answerForCard == game.getTeamSize(player.getTeam()) - 1;
+        return answerForCard == game.getPlayers().getTeamSize(player.getTeam()) - 1;
     }
 
     private void handleAnswerMessage(Player player, Card card) {
@@ -210,7 +208,7 @@ public class GameController {
 
     @MessageMapping("/game/question")
     public void setQuestion(@Payload String messsageText, SimpMessageHeaderAccessor headerAccessor) {
-        Player player = game.getPlayer(headerAccessor.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         if (!isPlayerTurn(player) || player.getRole()==Role.PLAYER) {
             return;
         }
@@ -231,7 +229,7 @@ public class GameController {
 
     @MessageMapping("/game/flag")
     public void setFlag(@Payload Integer cardId, SimpMessageHeaderAccessor headerAccessor) {
-        Player player = game.getPlayer(headerAccessor.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         Card card = game.getBoard().getCard(cardId);
         if (card.isChecked() || player.getRole()==Role.BOSS || isPassCard(card)) {
             return;
@@ -264,8 +262,8 @@ public class GameController {
     @MessageMapping("/game/quit")
     public void quit(@Payload String messsage, SimpMessageHeaderAccessor headerAccessor){
         System.out.println("Player quit");
-        Player player = game.getPlayer(headerAccessor.getSessionId());
-        game.removePlayer(player.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
+        game.getPlayers().removePlayer(player.getSessionId());
         DisconnectController.disconnectPlayer(player, game, messageManager);
         // TODO: sprawdzić, czy wszystkie komunikaty wyświetlają się poprawnie
     }

@@ -1,14 +1,10 @@
 package com.parabbits.tajniakiserver.connection;
 
 
-import com.parabbits.tajniakiserver.game.GameController;
-import com.parabbits.tajniakiserver.game.messages.StartGameMessage;
-import com.parabbits.tajniakiserver.shared.DisconnectMessage;
-import com.parabbits.tajniakiserver.shared.Game;
+import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.shared.GameStep;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -50,14 +46,13 @@ public class ConnectionListener {
 
 //        preparePlayerForVotingTest(sessionId);
         preparePlayersForGameTest(sessionId);
-
     }
 
     private void preparePlayerForVotingTest(String sessionId){
         Player player = new Player(sessionId, counter, "g"+connectedSessions.size());
         player.setTeam(Team.BLUE);
         player.setId(counter);
-        game.addPlayer(player);
+        game.getPlayers().addPlayer(player);
         messageManager.send(counter, player.getSessionId(), "/user/player/id");
         counter++;
     }
@@ -67,12 +62,12 @@ public class ConnectionListener {
         Team team = counter % 2 ==0? Team.BLUE : Team.RED;
         player.setTeam(team);
         player.setId(counter);
-        if(game.getPlayers(team).size()==0){
+        if(game.getPlayers().getPlayers(team).size()==0){
             player.setRole(Role.BOSS);
         } else {
             player.setRole(Role.PLAYER);
         }
-        game.addPlayer(player);
+        game.getPlayers().addPlayer(player);
         messageManager.send(counter, player.getSessionId(), "/user/player/id");
         counter++;
     }
@@ -82,8 +77,8 @@ public class ConnectionListener {
         // TODO: można zrobić oddzielną klasę odpowiedzialną za rozłączenia
         String sessionId = event.getMessage().getHeaders().get("simpSessionId").toString();
         System.out.println("Rozłączono gracza " + sessionId);
-        Player player = game.getPlayer(sessionId);
-        game.removePlayer(sessionId);
+        Player player = game.getPlayers().getPlayer(sessionId);
+        game.getPlayers().removePlayer(sessionId);
 
         DisconnectController.disconnectPlayer(player, game, messageManager);
         connectedSessions.remove(sessionId);

@@ -1,10 +1,11 @@
 package com.parabbits.tajniakiserver.voting;
 
-import com.parabbits.tajniakiserver.shared.Game;
+import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.shared.GameStep;
+import com.parabbits.tajniakiserver.shared.game.GameStep;
+import com.parabbits.tajniakiserver.shared.timer.TimerService;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -33,6 +34,9 @@ public class VotingController {
     private Game game;
 
     @Autowired
+    private TimerService timerService;
+
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     private MessageManager messageManager;
@@ -49,23 +53,24 @@ public class VotingController {
         }
         setVotingStep(game);
         game.startVoting(); // TODO: zrobić to lepiej, żeby wykonywało się to tylko raz
-        Player player = game.getPlayer(headerAccessor.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         Team team = player.getTeam();
 
         StartVotingMessage votingMessage = createStartVotingMessage(team);
         messageManager.send(votingMessage, player.getSessionId(), VOTING_START);
 
-        if(!game.isVotingTimerStarted()){
-            game.setVotingTimerStarted(true);
-            startTimer();
-        }
+        // TODO: przepisać to odpowiednio
+//        if(!game.isVotingTimerStarted()){
+//            game.setVotingTimerStarted(true);
+//            startTimer();
+//        }
     }
 
     private StartVotingMessage createStartVotingMessage(Team team) {
         StartVotingMessage votingMessage = new StartVotingMessage();
         // TODO: tutaj powinno być pobieranie aktualnego czasu. Być może nie będzie to konieczne
         votingMessage.setTime(VOTING_TIME);
-        votingMessage.setPlayers(game.getVotingService(team).getCandidates());
+        votingMessage.setPlayers(game.getVoting().getCandidates(team));
         return votingMessage;
     }
 
@@ -88,20 +93,20 @@ public class VotingController {
                 System.out.println(votingTime);
                 messageManager.sendToAll(votingTime, VOTING_TIMER, game);
                 votingTime --;
-                if(votingTime==-1 || !game.isVotingTimerStarted()){
-                    endVoting();
-                    scheduler.shutdown();
-                }
+                // TODO: to też jakoś ogarnać
+//                if(votingTime==-1 || !game.isVotingTimerStarted()){
+//                    endVoting();
+//                    scheduler.shutdown();
+//                }
             }
         }, 1,1, TimeUnit.SECONDS);
     }
 
     @MessageMapping("/boss/vote")
     public void vote(@Payload long id, SimpMessageHeaderAccessor headerAccessor) {
-        Player player = game.getPlayer(headerAccessor.getSessionId());
-        Player votedPlayer = game.getPlayerById(id);
-        VotingService voting = game.getVotingService(player.getTeam());
-        List<VotingPlayer> playersToUpdate = voting.vote(player.getSessionId(), votedPlayer.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
+        Player votedPlayer = game.getPlayers().getPlayerById(id);
+        List<VotingPlayer> playersToUpdate = game.getVoting().vote(player.getSessionId(), votedPlayer.getSessionId(), player.getTeam());
         // TODO: można zrobić tak, że graczowi wysyłany jest dodatkowo komunikat o zaznaczeniu
         if(playersToUpdate != null){
             messageManager.sendToTeam(playersToUpdate, player.getTeam(), VOTING_VOTE, game);
@@ -116,15 +121,15 @@ public class VotingController {
 
     // TODO: przenieść to do innej klasy
     private void setRoles(){
-        VotingPlayer redBoss = game.getVotingService(Team.RED).getWinner();
-        VotingPlayer blueBoss = game.getVotingService(Team.BLUE).getWinner();
+        VotingPlayer redBoss = game.getVoting().getWinner(Team.RED);
+        VotingPlayer blueBoss = game.getVoting().getWinner(Team.BLUE);
         if(redBoss==null || blueBoss==null){
             // TODO: to później usunąć. Potrzebne do testowania widoku
             redBoss = blueBoss;
             // TODO: wysłać informacje o błędzie
 //            return; // TODO: odkomentować to
         }
-        for(Player player: game.getPlayers()){
+        for(Player player: game.getPlayers().getAllPlayers()){
             if(player.getId()==blueBoss.getId()){
                 player.setRole(Role.BOSS);
             } else {

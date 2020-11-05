@@ -1,9 +1,10 @@
 package com.parabbits.tajniakiserver.lobby;
 
-import com.parabbits.tajniakiserver.shared.Game;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.shared.GameStep;
+import com.parabbits.tajniakiserver.shared.game.GameStep;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -44,9 +45,9 @@ public class LobbyController {
         }
         setLobbyStep(game);
         String sessionId = headerAccessor.getSessionId();
-        Player player = game.getPlayer(sessionId);
-        if(game.getPlayer(sessionId)==null){
-            player = game.addPlayer(headerAccessor.getSessionId(), nickname);
+        Player player = game.getPlayers().getPlayer(sessionId);
+        if(game.getPlayers().getPlayer(sessionId)==null){
+            player = game.getPlayers().addPlayer(headerAccessor.getSessionId(), nickname);
         }
 
         // TODO: wysłąć do podłączonego gracza informacje o ustawieniach rozgrywki
@@ -76,21 +77,21 @@ public class LobbyController {
     }
 
     private List<Player> getAllPlayersInLobby() {
-        return game.getPlayers();
+        return game.getPlayers().getAllPlayers();
     }
 
     // TODO: przenieść to do gdzieś
     @MessageMapping("lobby/disconnect")
     public void disconnectPlayer(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor){
         System.out.println("Disconnect event");
-        Player player = game.getPlayer(headerAccessor.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         messageManager.sendToAll(player, "/queue/lobby/disconnect", game);
     }
 
     @MessageMapping("/lobby/team")
     public void changeTeam(@Payload String teamText, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
-        Player player = game.getPlayer(sessionId);
+        Player player = game.getPlayers().getPlayer(sessionId);
         System.out.println("Gracz " + player.getId() + " mienia drużynę");
         Team team = getTeam(teamText);
         changePlayerTeam(player, team);
@@ -113,14 +114,14 @@ public class LobbyController {
 
     @MessageMapping("/lobby/auto_team")
     public void joinAuto(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
-        Player player = game.getPlayer(headerAccessor.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         Team smallerTeam = getSmallerTeam();
         changePlayerTeam(player, smallerTeam);
     }
 
     private Team getSmallerTeam(){
-        int blueTeamSize = game.getTeamSize(Team.BLUE);
-        int redTeamSize = game.getTeamSize(Team.RED);
+        int blueTeamSize = game.getPlayers().getTeamSize(Team.BLUE);
+        int redTeamSize = game.getPlayers().getTeamSize(Team.RED);
         System.out.println("Niebiescy " + blueTeamSize);
         System.out.println("Czerwoni " + redTeamSize);
         return blueTeamSize<redTeamSize? Team.BLUE: Team.RED;
@@ -131,7 +132,7 @@ public class LobbyController {
         if(team == Team.LACK){
             return true;
         }
-        int teamSize = game.getPlayers(team).size();
+        int teamSize = game.getPlayers().getPlayers(team).size();
         return teamSize < game.getSettings().getMaxTeamSize();
     }
 
@@ -150,7 +151,7 @@ public class LobbyController {
     @MessageMapping("/lobby/ready")
     public void changeReady(@Payload boolean ready, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
-        Player player = game.getPlayer(sessionId);
+        Player player = game.getPlayers().getPlayer(sessionId);
         if (canSetReady(player)){
             player.setReady(ready);
             LobbyReadyMessage message = new LobbyReadyMessage(player.getId(), ready);
@@ -179,13 +180,13 @@ public class LobbyController {
     }
 
     private boolean areAllReady() {
-        List<Player> readyPlayers = game.getPlayers().stream().filter(Player::isReady).collect(Collectors.toList());
-        return readyPlayers.size() == game.getPlayers().size();
+        List<Player> readyPlayers = game.getPlayers().getAllPlayers().stream().filter(Player::isReady).collect(Collectors.toList());
+        return readyPlayers.size() == game.getPlayers().getAllPlayers().size();
     }
 
     private boolean isMinNumberOfPlayers(){
-        int bluePlayers = game.getPlayers(Team.BLUE).size();
-        int redPlayers = game.getPlayers(Team.RED).size();
+        int bluePlayers = game.getPlayers().getPlayers(Team.BLUE).size();
+        int redPlayers = game.getPlayers().getPlayers(Team.RED).size();
         return bluePlayers >= game.getSettings().getMinTeamSize() && redPlayers >= game.getSettings().getMinTeamSize();
     }
 
@@ -196,9 +197,16 @@ public class LobbyController {
      */
     @MessageMapping("/test/getid")
     public void getid(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
-        Player player = game.getPlayer(headerAccessor.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         if(player != null){
             messageManager.send(player.getId(), player.getSessionId(), "/queue/lobby/id");
         }
     }
+
+    @MessageMapping("/test/uuid")
+    public void testParameters(@Payload TestClass parameter, SimpMessageHeaderAccessor headerAccessor){
+        System.out.println("TestParameters");
+    }
+
+
 }

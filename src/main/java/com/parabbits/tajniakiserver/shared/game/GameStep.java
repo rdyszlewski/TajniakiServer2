@@ -1,4 +1,4 @@
-package com.parabbits.tajniakiserver.shared;
+package com.parabbits.tajniakiserver.shared.game;
 
 public enum GameStep {
     MAIN,

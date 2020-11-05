@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.game;
 
 import com.parabbits.tajniakiserver.game.models.*;
-import com.parabbits.tajniakiserver.shared.GameStep;
+import com.parabbits.tajniakiserver.shared.game.GameStep;
 
 public class GameState {
 
