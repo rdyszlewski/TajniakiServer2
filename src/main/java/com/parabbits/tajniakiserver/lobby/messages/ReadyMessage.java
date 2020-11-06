@@ -1,4 +1,4 @@
-package com.parabbits.tajniakiserver.lobby;
+package com.parabbits.tajniakiserver.lobby.messages;
 
 public class ReadyMessage {
 

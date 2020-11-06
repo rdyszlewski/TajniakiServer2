@@ -1,10 +1,19 @@
 package com.parabbits.tajniakiserver.lobby;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.parabbits.tajniakiserver.lobby.messages.LobbyReadyMessage;
+import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessage;
+import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessageCreator;
+import com.parabbits.tajniakiserver.lobby.messages.TeamMessage;
+import com.parabbits.tajniakiserver.lobby.team.LobbyHelper;
+import com.parabbits.tajniakiserver.lobby.team.TeamChanger;
+import com.parabbits.tajniakiserver.shared.parameters.BoolParam;
+import com.parabbits.tajniakiserver.shared.parameters.IdParam;
+import com.parabbits.tajniakiserver.shared.parameters.StringParam;
 import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.shared.game.GameStep;
+import com.parabbits.tajniakiserver.shared.game.GameManager;
+import com.parabbits.tajniakiserver.shared.timer.TimerService;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -14,22 +23,24 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 public class LobbyController {
 
+    public static final String LOBBY_TEAM = "/lobby/team";
+    public static final int FINISH_CHOOSING_TIME = 5;
     private final String LOBBY_START = "/lobby/players";
     private final String LOBBY_CONNECT = "/queue/connect";
     private final String LOBBY_END = "/queue/lobby/start";
     private final String LOBBY_READY = "/lobby/ready"; // TODO: zmienić to w aplikacji
 
     @Autowired
-    public Game game;
+    private GameManager gameManager;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private TimerService timerService;
+
+    @Autowired SimpMessagingTemplate messagingTemplate;
 
     private MessageManager messageManager;
 
@@ -40,173 +51,72 @@ public class LobbyController {
 
     @MessageMapping("/lobby/connect")
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-        if(!isCorrectStep(game)){
-            return;
-        }
-        setLobbyStep(game);
-        String sessionId = headerAccessor.getSessionId();
-        Player player = game.getPlayers().getPlayer(sessionId);
-        if(game.getPlayers().getPlayer(sessionId)==null){
-            player = game.getPlayers().addPlayer(headerAccessor.getSessionId(), nickname);
-        }
-
-        // TODO: wysłąć do podłączonego gracza informacje o ustawieniach rozgrywki
-        StartLobbyMessage message = createStartLobbyMessage(player);
-        sendStartLobbyMessage(player, message);
+        Game game = gameManager.findFreeGame();
+        Player player = game.getPlayers().addPlayer(headerAccessor.getSessionId(), nickname);
+        sendStartLobbyMessage(player, StartLobbyMessageCreator.create(game, player), game);
     }
 
-    private void sendStartLobbyMessage(Player player, StartLobbyMessage message) {
+    private void sendStartLobbyMessage(Player player, StartLobbyMessage message, Game game) {
         messageManager.send(message, player.getSessionId(), LOBBY_START);
         messageManager.sendToAll(player, LOBBY_CONNECT, game);
     }
 
-    private StartLobbyMessage createStartLobbyMessage(Player player) {
-        StartLobbyMessage message = new StartLobbyMessage(getAllPlayersInLobby(), game.getSettings());
-        message.setMinPlayersInTeam(game.getSettings().getMinTeamSize());
-        message.setMaxPlayersInTeam(game.getSettings().getMaxTeamSize());
-        message.setPlayerId(player.getId());
-        return message;
-    }
-
-    private boolean isCorrectStep(Game game){
-        return game.getState().getCurrentStep().equals(GameStep.MAIN) || game.getState().getCurrentStep().equals(GameStep.LOBBY);
-    }
-
-    private void setLobbyStep(Game game){
-        game.getState().setCurrentStep(GameStep.LOBBY);
-    }
-
-    private List<Player> getAllPlayersInLobby() {
-        return game.getPlayers().getAllPlayers();
-    }
-
-    // TODO: przenieść to do gdzieś
-    @MessageMapping("lobby/disconnect")
-    public void disconnectPlayer(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor){
-        System.out.println("Disconnect event");
-        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-        messageManager.sendToAll(player, "/queue/lobby/disconnect", game);
-    }
-
     @MessageMapping("/lobby/team")
-    public void changeTeam(@Payload String teamText, SimpMessageHeaderAccessor headerAccessor) {
-        String sessionId = headerAccessor.getSessionId();
-        Player player = game.getPlayers().getPlayer(sessionId);
-        System.out.println("Gracz " + player.getId() + " mienia drużynę");
-        Team team = getTeam(teamText);
-        changePlayerTeam(player, team);
-    }
-
-    private void changePlayerTeam(Player player, Team team){
-        if(canChangeTeam(team)){
-            player.setTeam(team);
-        }
-        TeamMessage message = new TeamMessage(player.getId(), player.getTeam().toString());
-        messageManager.sendToAll(message, "/lobby/team", game);
-        if (isEndChoosing()) {
-            finishChoosing();
+    public void changeTeam(@Payload StringParam param, SimpMessageHeaderAccessor headerAccessor) {
+        Game game = gameManager.findGame(param.getGameId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
+        if(TeamChanger.changePlayerTeam(player, param.getValue(), game)){
+            handleChangeTeam(game, player);
         }
     }
 
-    private boolean isEndChoosing(){
-        return areAllReady() && isMinNumberOfPlayers();
-    }
 
     @MessageMapping("/lobby/auto_team")
-    public void joinAuto(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
+    public void joinAuto(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor){
+        Game game = gameManager.findGame(param.getId());
         Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-        Team smallerTeam = getSmallerTeam();
-        changePlayerTeam(player, smallerTeam);
-    }
-
-    private Team getSmallerTeam(){
-        int blueTeamSize = game.getPlayers().getTeamSize(Team.BLUE);
-        int redTeamSize = game.getPlayers().getTeamSize(Team.RED);
-        System.out.println("Niebiescy " + blueTeamSize);
-        System.out.println("Czerwoni " + redTeamSize);
-        return blueTeamSize<redTeamSize? Team.BLUE: Team.RED;
-    }
-
-
-    private boolean canChangeTeam(Team team) {
-        if(team == Team.LACK){
-            return true;
+        Team smallerTeam = TeamChanger.getSmallerTeam(game);
+        if(TeamChanger.changePlayerTeam(player, smallerTeam, game)){
+            handleChangeTeam(game, player);
         }
-        int teamSize = game.getPlayers().getPlayers(team).size();
-        return teamSize < game.getSettings().getMaxTeamSize();
     }
 
-    // TODO: to powinno być w innym miejscu
-    private Team getTeam(String team) {
-        switch (team) {
-            case "RED":
-                return Team.RED;
-            case "BLUE":
-                return Team.BLUE;
-            default:
-                return Team.LACK;
+    private void handleChangeTeam(Game game, Player player) {
+        TeamMessage message = new TeamMessage(player.getId(), player.getTeam().toString());
+        messageManager.sendToAll(message, LOBBY_TEAM, game);
+        // TODO: to właściwie nie powinno się pojawić w tym miejscu. Trzeba zablokować dostęp do zmiany, kiedy jest gotowy
+        if (LobbyHelper.isEndChoosing(game)) {
+            finishChoosing(game);
         }
     }
 
     @MessageMapping("/lobby/ready")
-    public void changeReady(@Payload boolean ready, SimpMessageHeaderAccessor headerAccessor) {
-        String sessionId = headerAccessor.getSessionId();
-        Player player = game.getPlayers().getPlayer(sessionId);
+    public void changeReady(@Payload BoolParam param, SimpMessageHeaderAccessor headerAccessor) {
+        Game game = gameManager.findGame(param.getGameId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         if (canSetReady(player)){
-            player.setReady(ready);
-            LobbyReadyMessage message = new LobbyReadyMessage(player.getId(), ready);
-            messageManager.sendToAll(message, LOBBY_READY, game);
+            setPlayerReady(param, game, player);
         }
-        if (isEndChoosing()) {
-            finishChoosing();
+
+        if (LobbyHelper.isEndChoosing(game)) {
+            finishChoosing(game);
         }
+    }
+
+    private void setPlayerReady(BoolParam param, Game game, Player player) {
+        boolean ready = param.getValue();
+        player.setReady(ready);
+        LobbyReadyMessage message = new LobbyReadyMessage(player.getId(), ready);
+        messageManager.sendToAll(message, LOBBY_READY, game);
     }
 
     private boolean canSetReady(Player player){
         return player.getTeam() == Team.BLUE || player.getTeam() == Team.RED;
     }
 
-    private void finishChoosing(){
-        int TIME = 1000;
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        messageManager.sendToAll("START", LOBBY_END, game);
-                    }
-                },
-                TIME
-        );
+    private void finishChoosing(Game game){
+        timerService.startTimer(game.getID(), FINISH_CHOOSING_TIME, () -> {
+            messageManager.sendToAll("START", LOBBY_END, game);
+        });
     }
-
-    private boolean areAllReady() {
-        List<Player> readyPlayers = game.getPlayers().getAllPlayers().stream().filter(Player::isReady).collect(Collectors.toList());
-        return readyPlayers.size() == game.getPlayers().getAllPlayers().size();
-    }
-
-    private boolean isMinNumberOfPlayers(){
-        int bluePlayers = game.getPlayers().getPlayers(Team.BLUE).size();
-        int redPlayers = game.getPlayers().getPlayers(Team.RED).size();
-        return bluePlayers >= game.getSettings().getMinTeamSize() && redPlayers >= game.getSettings().getMinTeamSize();
-    }
-
-    /**
-     * Metoda służy wyłącznie do testowania. Przydziela graczom numer id, który normalnie jest przydzielany podczas wejścia do lobby
-     * @param message
-     * @param headerAccessor
-     */
-    @MessageMapping("/test/getid")
-    public void getid(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
-        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-        if(player != null){
-            messageManager.send(player.getId(), player.getSessionId(), "/queue/lobby/id");
-        }
-    }
-
-    @MessageMapping("/test/uuid")
-    public void testParameters(@Payload TestClass parameter, SimpMessageHeaderAccessor headerAccessor){
-        System.out.println("TestParameters");
-    }
-
-
 }

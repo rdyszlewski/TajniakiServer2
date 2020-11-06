@@ -8,31 +8,35 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.*;
 
-@Service
+//@Service
 public class Game {
 
     // TODO: pomyśleć, jak rozwiązać to inaczej
 //    @Autowired
 //    private VotingController bossController;
+    private UUID id;
     private final GamePlayersManager players;
     private final VotingManager voting;
-
     private  GameHistory history = new GameHistory();
-
-    private Team firstTeam;
-    private  GameState state;
     private GameSettings settings;
+    private  GameState state;
     private  Board board;
 
+    private Team firstTeam;
+
+
+    public UUID getID(){
+        return id;
+    }
     public GamePlayersManager getPlayers(){
         return players;
     }
-
     public VotingManager getVoting(){
         return voting;
     }
 
-    public Game(){
+    public Game(UUID id){
+        this.id = id;
         state = new GameState();
         getState().setCurrentStep(GameStep.MAIN);
         settings = new GameSettings();
@@ -40,29 +44,6 @@ public class Game {
         voting = new VotingManager();
         board = new Board();
     }
-    // =====================================================
-    //  zbiór, który może być wykorzystywany np. do zliczania, ilu graczy wykonało jakąś akcję. Np. ile osób wyświetliło podsumowanie
-    // TODO: będzie można przenieść to do klasy zarządzającej graczami
-    private final Set<Long> usedPlayers = new HashSet<>();
-
-    public void usePlayer(Player player){
-        usedPlayers.add(player.getId());
-    }
-
-    public void removeUsePlayer(Player player){
-        usedPlayers.remove(player.getId());
-    }
-
-    public boolean areAllPlayerUsed(){
-        return usedPlayers.size() == players.getPlayersCount();
-    }
-
-    public void clearUsedPlayer(){
-        usedPlayers.clear();
-    }
-    // =====================================================
-
-    // TODO: dodać oddzielną klasę do zarządzania graczami w grze
 
     private boolean started = false;
 

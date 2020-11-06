@@ -3,10 +3,7 @@ package com.parabbits.tajniakiserver.shared.game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class GamePlayersManager {
@@ -15,17 +12,27 @@ public class GamePlayersManager {
     private final GameSettings settings;
     private int currentPlayerID = 0;
 
+    private final Set<Long> usedPlayers = new HashSet<>();
+
     public GamePlayersManager(GameSettings settings){
         this.settings = settings;
     }
 
     public Player addPlayer(String sessionId, String nickname){
-        if (players.size() < settings.getMaxTeamSize()*2){
+        if (isNotFull() && playerNotExists(sessionId)){
             Player player = new Player(sessionId, nickname);
             addPlayer(player);
             return player;
         }
         return null;
+    }
+
+    private boolean playerNotExists(String sessionId) {
+        return !players.containsKey(sessionId);
+    }
+
+    private boolean isNotFull() {
+        return players.size() < settings.getMaxTeamSize() * 2;
     }
 
     public synchronized void addPlayer(Player player){
@@ -38,8 +45,7 @@ public class GamePlayersManager {
         System.out.println(players.size());
         if (players.containsKey(sessionId)){
             Player player = players.get(sessionId);
-            // TODO: z tym będzie trzeba pomyśleć
-//                removeUsePlayer(player);
+            removeUsePlayer(player);
             players.remove(sessionId);
         }
     }
@@ -74,6 +80,23 @@ public class GamePlayersManager {
 
     public int getTeamSize(Team team){
         return getPlayers(team).size();
+    }
+
+
+    public void usePlayer(Player player){
+        usedPlayers.add(player.getId());
+    }
+
+    public void removeUsePlayer(Player player){
+        usedPlayers.remove(player.getId());
+    }
+
+    public boolean areAllPlayerUsed(){
+        return usedPlayers.size() == players.size();
+    }
+
+    public void clearUsedPlayer(){
+        usedPlayers.clear();
     }
 
 }

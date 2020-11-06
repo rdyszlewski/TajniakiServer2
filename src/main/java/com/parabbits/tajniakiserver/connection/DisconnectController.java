@@ -1,6 +1,6 @@
 package com.parabbits.tajniakiserver.connection;
 
-import com.parabbits.tajniakiserver.game.GameController;
+
 import com.parabbits.tajniakiserver.game.messages.StartGameMessage;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
@@ -99,8 +99,9 @@ public class DisconnectController {
         message.setPlayers(new ArrayList<>(game.getPlayers().getAllPlayers()));
         messageManager.sendToAll(message, DISCONNECT_PATH, game);
         // TODO: przyjrzeć się bliżej statycznej metodzie w GameController. Spróbować zrobić to inaczej
-        StartGameMessage messageForNewBoss =  GameController.createStartGameMessage(Role.BOSS, newBoss, game);
-        messageManager.send(messageForNewBoss, newBoss.getSessionId(), NEW_BOSS_PATH);
+        // TODO: odkomencić to
+//        StartGameMessage messageForNewBoss =  GameController.createStartGameMessage(Role.BOSS, newBoss, game);
+//        messageManager.send(messageForNewBoss, newBoss.getSessionId(), NEW_BOSS_PATH);
     }
 
 
