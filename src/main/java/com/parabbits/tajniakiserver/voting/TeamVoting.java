@@ -7,22 +7,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
-public class VotingService {
+public class TeamVoting {
 
     private final Map<String, String> votes = new HashMap<>();
     private Map<String, VotingPlayer> candidates = new HashMap<>();
     private Map<String, Player> playersMap = new HashMap<>();
     private final Team team;
 
-    public VotingService(Team team){
+    public TeamVoting(Team team){
         this.team = team;
     }
 
-    public void init(Map<String, Player> players){
-        this.candidates = createCandidates(players);
-        this.playersMap = players;
+    public void init(List<Player> players){
+        Map<String, Player> playersMap = players.stream().collect(Collectors.toMap(Player::getSessionId, player->player));
+        this.candidates = createCandidates(playersMap);
+        this.playersMap = playersMap;
     }
 
     private Map<String, VotingPlayer> createCandidates(Map<String, Player> players){

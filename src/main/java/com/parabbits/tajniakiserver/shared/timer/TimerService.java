@@ -15,7 +15,19 @@ public class TimerService {
         if(timersMap.containsKey(id)){
             timersMap.get(id).stop();
         }
-        Timer timer = new Timer(callback);
+        Timer timer = new Timer(new ITimerCallback() {
+            @Override
+            public void onFinish() {
+                callback.onFinish();
+                // remove timer after finish job
+                timersMap.remove(id);
+            }
+
+            @Override
+            public void onTick(Long time) {
+                callback.onTick(time);
+            }
+        });
         timer.start(time);
         timersMap.put(id, timer);
     }

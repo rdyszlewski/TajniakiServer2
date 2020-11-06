@@ -21,7 +21,7 @@ public class Timer {
     public void start(long time) {
         timer = new java.util.Timer();
         TimerTask timerTask = new CountDownTimerTask(time, timer, callback);
-        timer.schedule(timerTask, 1000, 1000);
+        timer.schedule(timerTask, 0, 1000);
         running = true;
     }
 
@@ -30,7 +30,7 @@ public class Timer {
         running = false;
     }
 
-    private class CountDownTimerTask extends TimerTask{
+    private static class CountDownTimerTask extends TimerTask{
 
         private long remainigTime;
         private java.util.Timer timer;
@@ -48,9 +48,10 @@ public class Timer {
             if (remainigTime == 0) {
                 timer.cancel();
                 timer.purge();
-                callback.execute();
+                callback.onFinish();
                 System.out.println("Zadanie wykonane");
             } else {
+                callback.onTick(remainigTime);
                 System.out.println("Beep");
                 // TODO: tutaj można dodać jakiegoś klika
             }

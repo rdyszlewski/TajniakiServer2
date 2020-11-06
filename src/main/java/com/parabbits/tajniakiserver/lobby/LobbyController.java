@@ -13,6 +13,7 @@ import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.shared.game.GameManager;
+import com.parabbits.tajniakiserver.shared.timer.ITimerCallback;
 import com.parabbits.tajniakiserver.shared.timer.TimerService;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +74,7 @@ public class LobbyController {
 
     @MessageMapping("/lobby/auto_team")
     public void joinAuto(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor){
-        Game game = gameManager.findGame(param.getId());
+        Game game = gameManager.findGame(param.getGameId());
         Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         Team smallerTeam = TeamChanger.getSmallerTeam(game);
         if(TeamChanger.changePlayerTeam(player, smallerTeam, game)){
@@ -115,8 +116,16 @@ public class LobbyController {
     }
 
     private void finishChoosing(Game game){
-        timerService.startTimer(game.getID(), FINISH_CHOOSING_TIME, () -> {
-            messageManager.sendToAll("START", LOBBY_END, game);
+        timerService.startTimer(game.getID(), FINISH_CHOOSING_TIME, new ITimerCallback() {
+            @Override
+            public void onFinish() {
+                messageManager.sendToAll("START", LOBBY_END, game);
+            }
+
+            @Override
+            public void onTick(Long time) {
+                // TODO: zrobienie odliczania
+            }
         });
     }
 }

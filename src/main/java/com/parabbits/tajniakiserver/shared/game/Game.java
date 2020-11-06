@@ -3,7 +3,7 @@ package com.parabbits.tajniakiserver.shared.game;
 import com.parabbits.tajniakiserver.summary.GameHistory;
 import com.parabbits.tajniakiserver.game.GameState;
 import com.parabbits.tajniakiserver.game.models.*;
-import org.springframework.stereotype.Service;
+import com.parabbits.tajniakiserver.voting.Voting;
 
 import java.io.IOException;
 import java.util.*;
@@ -16,7 +16,7 @@ public class Game {
 //    private VotingController bossController;
     private UUID id;
     private final GamePlayersManager players;
-    private final VotingManager voting;
+//    private final Voting voting;
     private  GameHistory history = new GameHistory();
     private GameSettings settings;
     private  GameState state;
@@ -31,9 +31,9 @@ public class Game {
     public GamePlayersManager getPlayers(){
         return players;
     }
-    public VotingManager getVoting(){
-        return voting;
-    }
+//    public Voting getVoting(){
+//        return voting;
+//    }
 
     public Game(UUID id){
         this.id = id;
@@ -41,7 +41,7 @@ public class Game {
         getState().setCurrentStep(GameStep.MAIN);
         settings = new GameSettings();
         players = new GamePlayersManager(settings);
-        voting = new VotingManager();
+//        voting = new Voting();
         board = new Board();
     }
 
@@ -61,7 +61,7 @@ public class Game {
 //    }
 
     public void reset(){
-        voting.reset();
+//        voting.reset();
         history = new GameHistory();
         firstTeam = null;
         state = new GameState();
