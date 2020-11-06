@@ -11,12 +11,8 @@ import java.util.stream.Collectors;
 //@Service
 public class Game {
 
-    // TODO: pomyśleć, jak rozwiązać to inaczej
-//    @Autowired
-//    private VotingController bossController;
     private UUID id;
     private final GamePlayersManager players;
-//    private final Voting voting;
     private  GameHistory history = new GameHistory();
     private GameSettings settings;
     private  GameState state;

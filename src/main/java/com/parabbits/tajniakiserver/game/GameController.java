@@ -28,7 +28,6 @@ public class GameController {
     private final String CLICK_MESSAGE_RESPONSE = "/queue/game/click";
     private final String QUESTION_MESSAGE_RESPONSE = "/queue/game/question";
     private final String END_MESSAGE_RESPONSE = "/queue/game/end_game";
-    private final String POSSIBLE_MESSAGE_RESPONSE = "/queue/game/possible_game";
 
     @Autowired
     private GameManager gameManager;

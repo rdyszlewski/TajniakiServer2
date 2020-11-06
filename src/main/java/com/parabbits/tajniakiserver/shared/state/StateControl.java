@@ -10,6 +10,8 @@ public class StateControl {
             switch (step){
                 case VOTING:
                     return game.getState().getCurrentStep().equals(GameStep.LOBBY) || game.getState().getCurrentStep().equals(GameStep.VOTING);
+                case SUMMARY:
+                    return game.getState().getCurrentStep().equals(GameStep.GAME) || game.getState().getCurrentStep().equals(GameStep.SUMMARY);
 
             }
         } else {

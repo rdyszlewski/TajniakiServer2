@@ -1,5 +1,7 @@
-package com.parabbits.tajniakiserver.game.models;
+package com.parabbits.tajniakiserver.summary.messages;
 
+import com.parabbits.tajniakiserver.game.models.EndGameCause;
+import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.summary.SummaryCard;
 import com.parabbits.tajniakiserver.summary.SummaryEntry;
 
