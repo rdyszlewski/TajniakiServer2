@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.voting.messages;
 
 import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.voting.Voting;
+import com.parabbits.tajniakiserver.voting.service.Voting;
 
 public class StartVotingMessageCreator {
 

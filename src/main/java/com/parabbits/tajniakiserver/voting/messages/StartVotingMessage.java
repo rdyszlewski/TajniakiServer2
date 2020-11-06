@@ -1,6 +1,6 @@
 package com.parabbits.tajniakiserver.voting.messages;
 
-import com.parabbits.tajniakiserver.voting.VotingPlayer;
+import com.parabbits.tajniakiserver.voting.service.VotingPlayer;
 
 import java.util.List;
 

@@ -4,6 +4,8 @@ import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.shared.game.Game;
+import com.parabbits.tajniakiserver.voting.service.Voting;
+import com.parabbits.tajniakiserver.voting.service.VotingPlayer;
 
 public class PlayerRole {
 

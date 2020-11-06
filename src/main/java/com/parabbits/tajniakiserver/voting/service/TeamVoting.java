@@ -1,13 +1,13 @@
-package com.parabbits.tajniakiserver.voting;
+package com.parabbits.tajniakiserver.voting.service;
 
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
+import com.parabbits.tajniakiserver.voting.service.VotingPlayer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 

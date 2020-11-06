@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.voting.messages;
 
 import com.parabbits.tajniakiserver.shared.game.Game;
-import com.parabbits.tajniakiserver.voting.Voting;
+import com.parabbits.tajniakiserver.voting.service.Voting;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;

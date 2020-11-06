@@ -1,4 +1,4 @@
-package com.parabbits.tajniakiserver.voting;
+package com.parabbits.tajniakiserver.voting.service;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.parabbits.tajniakiserver.voting;
+package com.parabbits.tajniakiserver.voting.service;
 
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;

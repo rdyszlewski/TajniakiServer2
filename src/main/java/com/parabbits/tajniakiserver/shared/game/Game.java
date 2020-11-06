@@ -3,10 +3,10 @@ package com.parabbits.tajniakiserver.shared.game;
 import com.parabbits.tajniakiserver.summary.GameHistory;
 import com.parabbits.tajniakiserver.game.GameState;
 import com.parabbits.tajniakiserver.game.models.*;
-import com.parabbits.tajniakiserver.voting.Voting;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 //@Service
 public class Game {
@@ -121,7 +121,18 @@ public class Game {
             board.init(firstTeam, settings);
             state.initState(firstTeam, settings.getFirstTeamWords());
         }
+        initHistory();
         started = true;
+    }
+
+    private void initHistory(){
+        history.setWords(getWords(CardColor.BLUE), Team.BLUE);
+        history.setWords(getWords(CardColor.RED), Team.RED);
+        history.setKiller(getWords(CardColor.KILLER).get(0));
+    }
+
+    private List<String> getWords(CardColor cardColor){
+        return board.getCards().stream().filter(card->card.getColor()==cardColor).map(Card::getWord).collect(Collectors.toList());
     }
 
     private Team randomFirstGroup(){

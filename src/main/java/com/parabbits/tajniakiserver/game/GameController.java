@@ -1,14 +1,14 @@
 package com.parabbits.tajniakiserver.game;
 
-import com.google.gson.Gson;
-
 import com.parabbits.tajniakiserver.connection.DisconnectController;
-import com.parabbits.tajniakiserver.game.end_game.EndGameHelper;
-import com.parabbits.tajniakiserver.game.end_game.EndGameInfo;
 import com.parabbits.tajniakiserver.game.messages.*;
 import com.parabbits.tajniakiserver.game.models.*;
+import com.parabbits.tajniakiserver.game.parameters.QuestionParam;
 import com.parabbits.tajniakiserver.shared.game.Game;
+import com.parabbits.tajniakiserver.shared.game.GameManager;
 import com.parabbits.tajniakiserver.shared.game.GameStep;
+import com.parabbits.tajniakiserver.shared.parameters.IdParam;
+import com.parabbits.tajniakiserver.shared.parameters.IntParam;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Controller
 public class GameController {
@@ -31,8 +30,8 @@ public class GameController {
     private final String END_MESSAGE_RESPONSE = "/queue/game/end_game";
     private final String POSSIBLE_MESSAGE_RESPONSE = "/queue/game/possible_game";
 
-//    @Autowired
-//    private Game game;
+    @Autowired
+    private GameManager gameManager;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -44,229 +43,137 @@ public class GameController {
         messageManager = new MessageManager(messagingTemplate);
     }
 
-//    @MessageMapping("/game/start")
-//    public void startGame(@Payload String message, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-//        setGameStep(game);
-//        synchronized (this){
-//            // TODO: to może zadziałać, ale może rodzić problemy w przypadku wielu gier. Wymyslić lepszy sposób
-//            game.initializeGame();
-//        }
-//        sendStartGameMessage(headerAccessor);
-//
-//        initHistory(game);
-//    }
-//
-//    private void sendStartGameMessage(SimpMessageHeaderAccessor headerAccessor) {
-//        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-//        if (player.getRole() == Role.BOSS) {
-//            StartGameMessage bossMessage = createStartGameMessage(Role.BOSS, player, game);
-//            messageManager.send(bossMessage, player.getSessionId(), START_MESSAGE_RESPONSE);
-//        } else {
-//            StartGameMessage playersMessage = createStartGameMessage(Role.PLAYER, player, game);
-//            messageManager.send(playersMessage, player.getSessionId(), START_MESSAGE_RESPONSE);
-//        }
-//    }
-//
-//    private boolean isCorrectStep(Game game){
-//        return game.getState().getCurrentStep().equals(GameStep.VOTING) || game.getState().getCurrentStep().equals(GameStep.GAME);
-//    }
-//
-//    private void setGameStep(Game game){
-//        game.getState().setCurrentStep(GameStep.GAME);
-//    }
-//
-//
-//    private void initHistory(Game game){
-//        game.getHistory().setWords(getWordsFromCards(CardColor.BLUE, game), Team.BLUE);
-//        game.getHistory().setWords(getWordsFromCards(CardColor.RED, game), Team.RED);
-//        game.getHistory().setKiller(getWordsFromCards(CardColor.KILLER, game).get(0));
-//    }
-//
-//    // TODO: możę przenieść do klasy Game
-//    private List<String> getWordsFromCards(CardColor color, Game game){
-//        return game.getBoard().getCards().stream().filter(card -> card.getColor() == color).map(Card::getWord).collect(Collectors.toList());
-//    }
-//
-//    // TODO: można przenieść do oodzielnej klasy
-//    public static StartGameMessage createStartGameMessage(Role role, Player player, Game game) {
-//        StartGameMessage message = new StartGameMessage();
-//        message.setNickname(player.getNickname());
-//        message.setPlayerRole(role);
-//        message.setPlayerTeam(player.getTeam());
-//        message.setGameState(game.getState());
-//        List<ClientCard> cards = ClientCardCreator.createCards(game.getBoard().getCards(), game, role, player.getTeam());
-//        message.setCards(cards);
-//        message.setPlayers(new ArrayList<>(game.getPlayers().getAllPlayers()));
-//
-//        return message;
-//    }
-//
-//    @MessageMapping("/game/click")
-//    public void servePlayersAnswer(@Payload Integer cardId, SimpMessageHeaderAccessor headerAccessor) {
-//        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-//        Card card = findCard(cardId);
-//        // TODO: zrobić refaktoryzację z tym
-//        if (!isPlayerTurn(player) || card.isChecked() || player.getRole()==Role.BOSS) {
-//            return;
-//        }
-//        game.getBoard().getAnswerManager().setAnswer(card, player);
-//        int answerForCard = game.getBoard().getAnswerManager().getCounter(card);
-//        if (isAllPlayersAnswer(player, answerForCard)) {
-//            game.getHistory().addAnswer(card.getWord(), card.getColor());
-//            game.useCard(card);
-//            handleAnswerMessage(player, card);
-//        } else {
-//            handleClickMessage(player);
-//        }
-//    }
-//
-//    private Card findCard(Integer cardId){
-//        return game.getBoard().getCard(cardId);
-//    }
-//
-//    private boolean isAllPlayersAnswer(Player player, int answerForCard) {
-//        return answerForCard == game.getPlayers().getTeamSize(player.getTeam()) - 1;
-//    }
-//
-//    private void handleAnswerMessage(Player player, Card card) {
-//        sendAnswerMessage(player, card, isCorrect(card, player));
-//        if (!game.getState().isGameActive()) {
-//            sendEndGameMessage();
-//        }
-//    }
-//
-//    private void sendEndGameMessage() {
-//        EndGameMessage endGameMessage = getEndGameMessage();
-//        messageManager.sendToAll(endGameMessage, END_MESSAGE_RESPONSE, game);
-//    }
-//
-//    private void sendAnswerMessage(Player player, Card card, boolean correct) {
-//        List<Card> cardsToUpdate = game.getBoard().getAnswerManager().popCardsToUpdate(player);
-//        AnswerMessage bossMessage = buildAnswerMessage(cardsToUpdate, correct, player, Role.BOSS);
-//        messageManager.sendToPlayersWithRole(bossMessage, Role.BOSS, ANSWER_MESSAGE_RESPONSE, game);
-//        AnswerMessage playerMessage = buildAnswerMessage(cardsToUpdate, correct, player, Role.PLAYER);
-//        messageManager.sendToPlayersWithRole(playerMessage, Role.PLAYER, ANSWER_MESSAGE_RESPONSE, game);
-//    }
-//
-//    private boolean isCorrect(Card card, Player player){
-//        return (card.getColor()== CardColor.BLUE && player.getTeam() == Team.BLUE) || (card.getColor() == CardColor.RED && player.getTeam() == Team.RED);
-//    }
-//
-//    private void handleIncorrectMessage(Card card, Player player) {
-//        handleCorrectMessage(card, false, player);
-//    }
-//
-//    private void handleCorrectMessage(Card card, boolean correct, Player player) {
-//        sendAnswerMessage(player, card, correct);
-//    }
-//
-//    private EndGameMessage getEndGameMessage(){
-//        EndGameMessage message = new EndGameMessage();
-//        EndGameInfo info = EndGameHelper.getEndGameInfo(game);
-//        message.setCause(info.getCause());
-//        message.setWinner(info.getWinner());
-//        return message;
-//    }
-//
-//    private void handleClickMessage(Player player) {
-//        ClickMessage message = buildClickMessage(player);
-//        messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
-//    }
-//
-//    private ClickMessage buildClickMessage(Player player) {
-//        List<Card> editedCards = game.getBoard().getAnswerManager().popCardsToUpdate(player);
-//        List<ClientCard> clientCards = prepareClientCards(editedCards, player);
-//        ClickMessage message = new ClickMessage(clientCards);
-//        List<Card> passCard = editedCards.stream().filter(x->x.getId() < 0).collect(Collectors.toList());
-//        if(!passCard.isEmpty()){
-//            ClientCard passClientCard = ClientCardCreator.createCard(passCard.get(0), game, player.getRole(), player.getTeam());
-//            message.setPass(passClientCard.getAnswers().size());
-//        }
-//        // TODO: dodac liczbę pominiętych
-//        return message;
-//    }
-//
-//    private List<ClientCard> prepareClientCards(List<Card> cards, Player player) {
-//        List<ClientCard> clientCards = new ArrayList<>();
-//        for (Card card : cards) {
-//            ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
-//            clientCards.add(clientCard);
-//        }
-//        return clientCards;
-//    }
-//
-//    private AnswerMessage buildAnswerMessage(List<Card> cardsToUpdate, boolean correct, Player player,Role role) {
-////        ClientCard clientCard = ClientCardCreator.createCard(card, game, player.getRole(), player.getTeam());
-//        // TODO: sprawdzić po co jest rola i drużyna
-//        List<ClientCard> cards = ClientCardCreator.createCards( cardsToUpdate, game, role, player.getTeam());
-//        return new AnswerMessage(cards, correct, game.getState());
-//    }
-//
-//    private boolean isPlayerTurn(Player player) {
-//        return player.getTeam() == game.getState().getCurrentTeam() && player.getRole() == game.getState().getCurrentStage();
-//    }
-//
-//    @MessageMapping("/game/question")
-//    public void setQuestion(@Payload String messsageText, SimpMessageHeaderAccessor headerAccessor) {
-//        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-//        if (!isPlayerTurn(player) || player.getRole()==Role.PLAYER) {
-//            return;
-//        }
-//        BossMessage message = buildBossMessage(messsageText, new Gson());
-//        game.getHistory().addQuestion(message.getWord(), message.getNumber(), player.getTeam());
-//        if(!WordValidator.validate(message.getWord())){
-//            return;
-//        }
-//        messageManager.sendToAll(message, QUESTION_MESSAGE_RESPONSE, game);
-//    }
-//
-//    private BossMessage buildBossMessage(@Payload String messsageText, Gson gson) {
-//        BossMessage message = gson.fromJson(messsageText, BossMessage.class);
-//        game.getState().setAnswerState(message.getWord(), message.getNumber());
-//        message.setGameState(game.getState());
-//        return message;
-//    }
-//
-//    @MessageMapping("/game/flag")
-//    public void setFlag(@Payload Integer cardId, SimpMessageHeaderAccessor headerAccessor) {
-//        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-//        Card card = game.getBoard().getCard(cardId);
-//        if (card.isChecked() || player.getRole()==Role.BOSS || isPassCard(card)) {
-//            return;
-//        }
-//        game.getBoard().getFlagsManager().addFlag(player, card);
-//        ClickMessage message = buildFlagMessage(player, card);
-//        messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
-//    }
-//
-//    // TODO: metodę można przenieść w inne miejsce (np do karty)
-//    private boolean isPassCard(Card card){
-//        return card.getId() == -1;
-//    }
-//
-//    private ClickMessage buildFlagMessage(Player player, Card card) {
-//        List<Card> editedCards = Collections.singletonList(card);
-//        List<ClientCard> clientCards = prepareClientCards(editedCards, player);
-//        return new ClickMessage(clientCards);
-//    }
-
-    @MessageMapping("/game/possible_game")
-    public void checkFreeGame(@Payload String message, SimpMessageHeaderAccessor headerAccessor){
-//        System.out.println(game.getState().getCurrentStep());
-//        boolean value = game.getState().getCurrentStep() == null
-//                || game.getState().getCurrentStep() == GameStep.MAIN
-//                || game.getState().getCurrentStep() == GameStep.LOBBY;
-//        messageManager.send(value, headerAccessor.getSessionId(), POSSIBLE_MESSAGE_RESPONSE);
-        // TODO: zmienić aplikacje, aby nie pytała o zgodę na dołączenie
-        messageManager.send(true, headerAccessor.getSessionId(), POSSIBLE_MESSAGE_RESPONSE);
+    @MessageMapping("/game/start")
+    public void startGame(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) throws Exception {
+        Game game = gameManager.findGame(param.getGameId());
+        // TODO: sprawdzenie poprawności stanu
+        game.getState().setCurrentStep(GameStep.GAME);
+        if(!game.isStarted()){
+            game.initializeGame();
+        }
+        sendStartGameMessage(headerAccessor.getSessionId(), game);
     }
 
-//    @MessageMapping("/game/quit")
-//    public void quit(@Payload String messsage, SimpMessageHeaderAccessor headerAccessor){
-//        System.out.println("Player quit");
-//        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-//        game.getPlayers().removePlayer(player.getSessionId());
-//        DisconnectController.disconnectPlayer(player, game, messageManager);
-//        // TODO: sprawdzić, czy wszystkie komunikaty wyświetlają się poprawnie
-//    }
+    private void sendStartGameMessage(String playerSessionId, Game game) {
+        Player player = game.getPlayers().getPlayer(playerSessionId);
+        StartGameMessage message = StartGameMessageCreator.create(player.getRole(), player, game);
+        messageManager.send(message, playerSessionId, START_MESSAGE_RESPONSE);
+    }
+
+    @MessageMapping("/game/click")
+    public void servePlayersAnswer(@Payload IntParam param, SimpMessageHeaderAccessor headerAccessor) {
+        Game game = gameManager.findGame(param.getGameId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
+        Card card = findCard(param.getValue(), game);
+        if (!canClick(player, card, game)) {
+            return;
+        }
+        handleAnswer(game, player, card);
+    }
+
+    private void handleAnswer(Game game, Player player, Card card) {
+        // TODO: przenieść wszystko do klasy Game, return - czy wszyscy odpowiedzieli
+        AnswerManager answerManager = game.getBoard().getAnswerManager();
+        answerManager.setAnswer(card, player);
+        int answerForCard = answerManager.getCounter(card);
+        if (isAllPlayersAnswer(player, answerForCard, game)) {
+            game.getHistory().addAnswer(card.getWord(), card.getColor());
+            game.useCard(card);
+            handleAnswerMessage(player, card, game);
+        } else {
+            handleClickMessage(player, game);
+        }
+    }
+
+    private boolean canClick(Player player, Card card, Game game) {
+        return isPlayerTurn(player, game) && !card.isChecked();
+    }
+
+    private boolean isPlayerTurn(Player player, Game game) {
+        return player.getTeam() == game.getState().getCurrentTeam()
+                && player.getRole() == game.getState().getCurrentStage();
+    }
+
+    private Card findCard(Integer cardId, Game game){
+        return game.getBoard().getCard(cardId);
+    }
+
+    private boolean isAllPlayersAnswer(Player player, int answerForCard, Game game) {
+        return answerForCard == game.getPlayers().getTeamSize(player.getTeam()) - 1;
+    }
+
+    private void handleAnswerMessage(Player player, Card card, Game game) {
+        sendAnswerMessage(player, card, isCorrect(card, player), game);
+        if (!game.getState().isGameActive()) { // TODO: może jakoś inaczej zrobić zarządzanie grą
+            sendEndGameMessage(game);
+        }
+    }
+
+    private void handleClickMessage(Player player, Game game) {
+        ClickMessage message = ClickMessageCreator.create(player, game);
+        messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
+    }
+
+    private void sendEndGameMessage(Game game) {
+        EndGameMessage endGameMessage = EndGameMessageCreator.create(game);
+        messageManager.sendToAll(endGameMessage, END_MESSAGE_RESPONSE, game);
+    }
+
+    private void sendAnswerMessage(Player player, Card card, boolean correct, Game game) {
+        List<Card> cardsToUpdate = game.getBoard().getAnswerManager().popCardsToUpdate(player);
+        sendAnswerMessageToRole(player, correct, game, Role.BOSS, cardsToUpdate);
+        sendAnswerMessageToRole(player, correct, game, Role.PLAYER, cardsToUpdate);
+    }
+
+    private void sendAnswerMessageToRole(Player player, boolean correct, Game game, Role role, List<Card> cardsToUpdate){
+        // TODO: sprawdzić, czy wysyłanie tej wiadomości jest dobrze zrobione
+        AnswerMessage message = AnswerMessageCreator.create(cardsToUpdate, correct, player, role, game);
+        messageManager.sendToPlayersWithRole(message, role, ANSWER_MESSAGE_RESPONSE, game);
+    }
+
+    private boolean isCorrect(Card card, Player player){
+        return (card.getColor()== CardColor.BLUE && player.getTeam() == Team.BLUE) || (card.getColor() == CardColor.RED && player.getTeam() == Team.RED);
+    }
+
+    @MessageMapping("/game/question")
+    public void setQuestion(@Payload QuestionParam param, SimpMessageHeaderAccessor headerAccessor) {
+        // TODO: mocna refaktoryzacja metody
+        Game game = gameManager.findGame(param.getGameId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
+        if (!isPlayerTurn(player, game)) {
+            return;
+        }
+
+        // TODO: to powinno być załatwione za jendym zamachem
+        String word = param.getQuestion();
+        int number = param.getNumber();
+        game.getState().setAnswerState(word, number);
+        game.getHistory().addQuestion(word, number, player.getTeam());
+        if(!WordValidator.validate(word)){ // TODO: sprawdzić co to robi
+            return;
+        }
+        BossMessage message = BossMessageCreator.create(param.getQuestion(), param.getNumber(), game);
+        messageManager.sendToAll(message, QUESTION_MESSAGE_RESPONSE, game);
+    }
+
+    @MessageMapping("/game/flag")
+    public void setFlag(@Payload IntParam param, SimpMessageHeaderAccessor headerAccessor) {
+        Game game = gameManager.findGame(param.getGameId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
+        Card card = game.getBoard().getCard(param.getValue());
+        if (!canClick(player, card, game)) {
+            return;
+        }
+        game.getBoard().getFlagsManager().addFlag(player, card);
+        ClickMessage message = FlagMessageCreator.create(player, card, game);
+        messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
+    }
+
+    @MessageMapping("/game/quit")
+    public void quit(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor){
+        Game game = gameManager.findGame(param.getGameId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
+        game.getPlayers().removePlayer(player.getSessionId());
+        DisconnectController.disconnectPlayer(player, game, messageManager);
+    }
 }
