@@ -68,7 +68,7 @@ public class Game {
     }
 
     public void startGame(List<Player> playersList) throws IOException {
-        playersList.forEach(players::addPlayer);
+        playersList.forEach(players::addPlayer); // TODO: odkomentować to, po zakończeniu testowania
         if(firstTeam == null){
             firstTeam = randomFirstGroup();
             board.init(firstTeam, settings);

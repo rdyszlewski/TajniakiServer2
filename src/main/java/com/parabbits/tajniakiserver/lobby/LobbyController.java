@@ -1,5 +1,8 @@
 package com.parabbits.tajniakiserver.lobby;
 
+import com.parabbits.tajniakiserver.game.models.Player;
+import com.parabbits.tajniakiserver.game.models.Role;
+import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.lobby.manager.Lobby;
 import com.parabbits.tajniakiserver.lobby.manager.LobbyManager;
 import com.parabbits.tajniakiserver.lobby.manager.LobbyPlayer;
@@ -7,6 +10,7 @@ import com.parabbits.tajniakiserver.lobby.messages.LobbyReadyMessage;
 import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessage;
 import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessageCreator;
 import com.parabbits.tajniakiserver.lobby.messages.TeamMessage;
+import com.parabbits.tajniakiserver.shared.PlayerSessionId;
 import com.parabbits.tajniakiserver.shared.parameters.BoolParam;
 import com.parabbits.tajniakiserver.shared.parameters.IdParam;
 import com.parabbits.tajniakiserver.shared.parameters.StringParam;
@@ -22,6 +26,8 @@ import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,7 +65,7 @@ public class LobbyController {
 
     private void sendStartLobbyMessage(LobbyPlayer player, StartLobbyMessage message, Lobby lobby) {
         messageManager.send(message, player.getSessionId(), LOBBY_START);
-        List<String> sessionsIds = getSessionsIds(lobby);
+        List<String> sessionsIds = PlayerSessionId.getSessionsIds(lobby.getPlayers());
         messageManager.sendToAll(player, LOBBY_CONNECT, sessionsIds);
     }
 
@@ -74,7 +80,7 @@ public class LobbyController {
 
     private void handleChangeTeam(Lobby lobby, LobbyPlayer player) {
         TeamMessage message = new TeamMessage(player.getId(), player.getTeam().toString());
-        List<String> sessionsIds = getSessionsIds(lobby);
+        List<String> sessionsIds = PlayerSessionId.getSessionsIds(lobby.getPlayers());
         messageManager.sendToAll(message, LOBBY_TEAM, sessionsIds);
         endChoosingIfCan(lobby, sessionsIds);
     }
@@ -85,9 +91,6 @@ public class LobbyController {
         }
     }
 
-    private List<String> getSessionsIds(Lobby lobby){
-        return lobby.getPlayers().stream().map(LobbyPlayer::getSessionId).collect(Collectors.toList());
-    }
 
     @MessageMapping("/lobby/auto_team")
     public void joinAuto(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor){
@@ -104,8 +107,8 @@ public class LobbyController {
         LobbyPlayer player = lobby.getPlayer(headerAccessor.getSessionId());
         if(lobby.setReady(player)){ // TODO: zrobić to, żeby się odpstykiwało
             LobbyReadyMessage message = new LobbyReadyMessage(player.getId(), player.isReady());
-            List<String> sessionsIds = getSessionsIds(lobby);
-            messageManager.sendToAll(message, LOBBY_READY, getSessionsIds(lobby));
+            List<String> sessionsIds = PlayerSessionId.getSessionsIds(lobby.getPlayers());
+            messageManager.sendToAll(message, LOBBY_READY, sessionsIds);
             endChoosingIfCan(lobby, sessionsIds);
         }
     }
@@ -123,5 +126,28 @@ public class LobbyController {
                 // TODO: zrobienie odliczania
             }
         });
+    }
+
+    @MessageMapping("/test/start")
+    public void startTest(@Payload String param, SimpMessageHeaderAccessor headerAccessor) throws IOException {
+        Lobby lobby = lobbyManager.findFreeLobby();
+        LobbyPlayer player = lobby.addPlayer("Jacuś", headerAccessor.getSessionId());
+        Team team = lobby.getPlayersCount() % 2 == 0 ? Team.BLUE : Team.RED;
+        player.setRole(isBossRole(lobby, team) ? Role.BOSS : Role.PLAYER);
+        player.setTeam(team);
+        StartLobbyMessage message = new StartLobbyMessage(new ArrayList<>(), null);
+        message.setGameId(lobby.getID());
+        message.setPlayerId(player.getId());
+        messageManager.send(message, headerAccessor.getSessionId(), "/queue/test/start");
+
+        if(lobby.getPlayersCount() % 4 == 0){
+            lobby.startGame();
+            List<String> sessionsIds = PlayerSessionId.getSessionsIds(lobby.getPlayers());
+            messageManager.sendToAll("START", "/queue/test/startGame", sessionsIds);
+        }
+    }
+
+    private boolean isBossRole(Lobby lobby, Team team) {
+        return lobby.getPlayers().stream().noneMatch(x -> x.getTeam() == team);
     }
 }
