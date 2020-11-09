@@ -65,7 +65,7 @@
 			</exclusions>
 		</dependency>
 	</dependencies>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<build>
 		<finalName>${artifactId}</finalName>
 		<plugins>
