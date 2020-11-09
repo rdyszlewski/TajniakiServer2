@@ -1,6 +1,13 @@
 package com.parabbits.tajniakiserver.connection;
 
 
+import com.parabbits.tajniakiserver.game.models.Player;
+import com.parabbits.tajniakiserver.lobby.manager.Lobby;
+import com.parabbits.tajniakiserver.lobby.manager.LobbyManager;
+import com.parabbits.tajniakiserver.lobby.manager.LobbyPlayer;
+import com.parabbits.tajniakiserver.lobby.manager.LobbyPlayerAdapter;
+import com.parabbits.tajniakiserver.shared.game.Game;
+import com.parabbits.tajniakiserver.shared.game.GameManager;
 import com.parabbits.tajniakiserver.utils.MessageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +25,12 @@ public class ConnectionListener {
     
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private PlayersManager playersManager;
+
+    @Autowired
+    private GameManager gameManager;
 
     private MessageManager messageManager;
 
@@ -67,13 +80,16 @@ public class ConnectionListener {
     public void handleWebsocketDisconnectListener(SessionDisconnectEvent event){
         // TODO: można zrobić oddzielną klasę odpowiedzialną za rozłączenia
         String sessionId = event.getMessage().getHeaders().get("simpSessionId").toString();
+        Lobby lobby = playersManager.findGame(sessionId);
+        Game game = gameManager.findGame(lobby.getID());
+        LobbyPlayer lobbyPlayer = lobby.getPlayer(sessionId);
+        Player player = LobbyPlayerAdapter.createPlayer(lobbyPlayer);
+        playersManager.removePlayer(sessionId);
 
-        // TODO: w jakiś sposób powinniśmy gre z takim graczem
-//        Player player = game.getPlayers().getPlayer(sessionId);
-//        game.getPlayers().removePlayer(sessionId);
-//
-//        DisconnectController.disconnectPlayer(player, game, messageManager);
-//        connectedSessions.remove(sessionId);
+        DisconnectController.disconnectPlayer(player, game, messageManager);
+        connectedSessions.remove(sessionId);
+
+        // TODO: bardzo mocno skrócić tę metodę
     }
 
 

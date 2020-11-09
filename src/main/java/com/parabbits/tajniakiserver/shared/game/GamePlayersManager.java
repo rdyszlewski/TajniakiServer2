@@ -36,7 +36,6 @@ public class GamePlayersManager {
     }
 
     public synchronized void addPlayer(Player player){
-        player.setId(currentPlayerID);
         currentPlayerID++;
         players.put(player.getSessionId(), player);
     }

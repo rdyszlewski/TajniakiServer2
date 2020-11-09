@@ -16,14 +16,12 @@ public class ClickResult {
 
     private ClickCorrectness correctness;
     private List<Card> updatedCards;
-    private Player player;
     private Card card;
 
-    public ClickResult(ClickCorrectness correctness, List<Card> updatedCards, Card card, Player player){
+    public ClickResult(ClickCorrectness correctness, List<Card> updatedCards, Card card){
         this.correctness = correctness;
         this.updatedCards = updatedCards;
         this.card = card;
-        this.player = player;
     }
 
     // TODO: można dodać, coś, co będzie informowało o wygranej
@@ -44,14 +42,6 @@ public class ClickResult {
 
     public void setUpdatedCards(List<Card> updatedCards) {
         this.updatedCards = updatedCards;
-    }
-
-    public Player getPlayer() {
-        return player;
-    }
-
-    public void setPlayer(Player player) {
-        this.player = player;
     }
 
     public Card getCard() {

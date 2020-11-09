@@ -94,6 +94,7 @@ public class DisconnectController {
 
     private static void setNewBoss(Player player, Game game, MessageManager messageManager) {
         Player newBoss = game.getPlayers().getPlayers(player.getTeam()).get(0);
+
         newBoss.setRole(Role.BOSS);
         DisconnectMessage message = createDisconnectMessage(player, GameStep.GAME);
         message.setPlayers(new ArrayList<>(game.getPlayers().getAllPlayers()));

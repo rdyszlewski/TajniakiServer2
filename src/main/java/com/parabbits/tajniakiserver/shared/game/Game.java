@@ -108,8 +108,7 @@ public class Game {
         return history;
     }
 
-    public ClickResult click(int cardId, String playerSession){
-        Player player = players.getPlayer(playerSession);
+    public ClickResult click(int cardId, Player player){
         Card card = board.getCard(cardId);
         if(canClick(player, card)){
             board.getAnswerManager().setAnswer(card, player);
@@ -127,7 +126,7 @@ public class Game {
     private ClickResult prepareClickResult(Player player, Card card, boolean allAnswerd) {
         ClickResult.ClickCorrectness correctness = allAnswerd ? getCorrectness(card, player.getTeam()) : ClickResult.ClickCorrectness.NONE;
         List<Card> updatedCards = board.getAnswerManager().popCardsToUpdate(player);
-        return new ClickResult(correctness, updatedCards, card, player);
+        return new ClickResult(correctness, updatedCards, card);
     }
 
     private boolean canClick(Player player, Card card){
@@ -156,12 +155,11 @@ public class Game {
         }
     }
 
-    public FlagResult flag(int cardId, String playerSession){
-        Player player = players.getPlayer(playerSession);
+    public Card flag(int cardId, Player player){
         Card card = board.getCard(cardId);
         if(canFlag(card)){
             board.getFlagsManager().addFlag(player, card); // TODO: przecież to może zwracać zmodyfikowane wartości. Dlaczego tego nie robi?
-            return new FlagResult(card, player);
+            return card;
         }
         return null;
     }

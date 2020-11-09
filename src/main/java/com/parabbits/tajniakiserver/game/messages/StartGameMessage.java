@@ -12,7 +12,7 @@ public class StartGameMessage {
     private Team playerTeam;
     private GameState gameState;
     private List<ClientCard> cards;
-    private List<GamePlayer> players;
+    private List<Player> players;
 
     public String getNickname() {
         return nickname;
@@ -54,11 +54,11 @@ public class StartGameMessage {
         this.cards = cards;
     }
 
-    public List<GamePlayer> getPlayers() {
+    public List<Player> getPlayers() {
         return players;
     }
 
-    public void setPlayers(List<GamePlayer> players) {
+    public void setPlayers(List<Player> players) {
         this.players = players;
     }
 }

@@ -1,10 +1,9 @@
 package com.parabbits.tajniakiserver.shared.game;
 
+import com.parabbits.tajniakiserver.game.models.Player;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class GameManager {
@@ -29,7 +28,6 @@ public class GameManager {
     public Game createGame() {
         UUID id = UUID.randomUUID();
         Game game = new Game(id);
-//        game.initializeGame();
         game.getState().setCurrentStep(GameStep.LOBBY); // TODO: to później będzie można zmienić
         gamesMap.put(id, game);
         return game;

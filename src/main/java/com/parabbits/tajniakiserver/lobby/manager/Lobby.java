@@ -37,6 +37,13 @@ public class Lobby {
         return null;
     }
 
+    public void removePlayer(String sessionId){
+        if(players.containsKey(sessionId)){
+            players.remove(sessionId);
+            game.getPlayers().removePlayer(sessionId);
+        }
+    }
+
     public LobbyPlayer getPlayer(String sessionId){
         if (players.containsKey(sessionId)) {
             return players.get(sessionId);

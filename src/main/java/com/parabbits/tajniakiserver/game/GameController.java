@@ -1,6 +1,7 @@
 package com.parabbits.tajniakiserver.game;
 
 import com.parabbits.tajniakiserver.connection.DisconnectController;
+import com.parabbits.tajniakiserver.connection.PlayersManager;
 import com.parabbits.tajniakiserver.game.messages.*;
 import com.parabbits.tajniakiserver.game.models.*;
 import com.parabbits.tajniakiserver.game.parameters.QuestionParam;
@@ -31,6 +32,9 @@ public class GameController {
     private GameManager gameManager;
 
     @Autowired
+    private PlayersManager playersManager;
+
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     private MessageManager messageManager;
@@ -57,18 +61,20 @@ public class GameController {
     @MessageMapping("/game/click")
     public void servePlayersAnswer(@Payload IntParam param, SimpMessageHeaderAccessor headerAccessor) {
         Game game = gameManager.findGame(param.getGameId());
-        ClickResult result = game.click(param.getValue(), headerAccessor.getSessionId());
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
+        ClickResult result = game.click(param.getValue(), player);
         if(result != null){
             if(result.getCorrectness() == ClickResult.ClickCorrectness.NONE){
-                handleClickMessage(result.getPlayer(), result.getUpdatedCards(), game);
+                handleClickMessage(player, result.getUpdatedCards(), game);
             } else {
-                handleAnswerMessage(result.getPlayer(), result.getCard(), result.getCorrectness() == ClickResult.ClickCorrectness.CORRECT, game);
+                boolean correct = result.getCorrectness() == ClickResult.ClickCorrectness.CORRECT;
+                handleAnswerMessage(player, correct, game);
             }
         }
     }
 
-    private void handleAnswerMessage(Player player, Card card, boolean correct, Game game) {
-        sendAnswerMessage(player, card, isCorrect(card, player), game);
+    private void handleAnswerMessage(Player player, boolean correct, Game game) {
+        sendAnswerMessage(player , correct, game);
         if (!game.getState().isGameActive()) { // TODO: może jakoś inaczej zrobić zarządzanie grą
             sendEndGameMessage(game);
         }
@@ -84,7 +90,7 @@ public class GameController {
         messageManager.sendToAll(endGameMessage, END_MESSAGE_RESPONSE, game);
     }
 
-    private void sendAnswerMessage(Player player, Card card, boolean correct, Game game) {
+    private void sendAnswerMessage(Player player, boolean correct, Game game) {
         List<Card> cardsToUpdate = game.getBoard().getAnswerManager().popCardsToUpdate(player);
         sendAnswerMessageToRole(player, correct, game, Role.BOSS, cardsToUpdate);
         sendAnswerMessageToRole(player, correct, game, Role.PLAYER, cardsToUpdate);
@@ -93,10 +99,6 @@ public class GameController {
     private void sendAnswerMessageToRole(Player player, boolean correct, Game game, Role role, List<Card> cardsToUpdate){
         AnswerMessage message = AnswerMessageCreator.create(cardsToUpdate, correct, player, role, game);
         messageManager.sendToPlayersWithRole(message, role, ANSWER_MESSAGE_RESPONSE, game);
-    }
-
-    private boolean isCorrect(Card card, Player player){
-        return (card.getColor()== CardColor.BLUE && player.getTeam() == Team.BLUE) || (card.getColor() == CardColor.RED && player.getTeam() == Team.RED);
     }
 
     @MessageMapping("/game/question")
@@ -112,19 +114,21 @@ public class GameController {
     @MessageMapping("/game/flag")
     public void setFlag(@Payload IntParam param, SimpMessageHeaderAccessor headerAccessor) {
         Game game = gameManager.findGame(param.getGameId());
-        FlagResult flagResult = game.flag(param.getValue(), headerAccessor.getSessionId());
-        if(flagResult != null){
-            // TODO: przemyśleć to wszystko jakoś inaczej
-            ClickMessage message = FlagMessageCreator.create(flagResult.getPlayer(), flagResult.getCard(), game);
-            messageManager.sendToRoleFromTeam(message, Role.PLAYER, flagResult.getPlayer().getTeam(), CLICK_MESSAGE_RESPONSE, game);
+        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
+        Card card = game.flag(param.getValue(), player);
+        if(card != null){
+            ClickMessage message = FlagMessageCreator.create(player, card, game);
+            messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
         }
     }
 
+    // TODO: wspólną metodę do wychodzenia można zrobić w oddzielnym kontrollerze
     @MessageMapping("/game/quit")
     public void quit(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor){
         Game game = gameManager.findGame(param.getGameId());
         Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         game.getPlayers().removePlayer(player.getSessionId());
         DisconnectController.disconnectPlayer(player, game, messageManager);
+        // TODO: czy tutaj na pewno powinnismy iśc do disconnect?
     }
 }
