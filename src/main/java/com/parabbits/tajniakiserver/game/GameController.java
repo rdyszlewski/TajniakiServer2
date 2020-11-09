@@ -43,13 +43,10 @@ public class GameController {
     }
 
     @MessageMapping("/game/start")
-    public void startGame(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) throws Exception {
+    public void startGame(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) {
         Game game = gameManager.findGame(param.getGameId());
         // TODO: sprawdzenie poprawności stanu
         game.getState().setCurrentStep(GameStep.GAME);
-        if(!game.isStarted()){
-            game.initializeGame();
-        }
         sendStartGameMessage(headerAccessor.getSessionId(), game);
     }
 

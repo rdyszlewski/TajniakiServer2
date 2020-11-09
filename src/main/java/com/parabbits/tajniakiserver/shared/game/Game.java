@@ -1,5 +1,6 @@
 package com.parabbits.tajniakiserver.shared.game;
 
+import com.parabbits.tajniakiserver.lobby.manager.LobbyPlayer;
 import com.parabbits.tajniakiserver.summary.GameHistory;
 import com.parabbits.tajniakiserver.game.GameState;
 import com.parabbits.tajniakiserver.game.models.*;
@@ -8,7 +9,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//@Service
 public class Game {
 
     private UUID id;
@@ -27,9 +27,6 @@ public class Game {
     public GamePlayersManager getPlayers(){
         return players;
     }
-//    public Voting getVoting(){
-//        return voting;
-//    }
 
     public Game(UUID id){
         this.id = id;
@@ -37,7 +34,6 @@ public class Game {
         getState().setCurrentStep(GameStep.MAIN);
         settings = new GameSettings();
         players = new GamePlayersManager(settings);
-//        voting = new Voting();
         board = new Board();
     }
 
@@ -47,30 +43,16 @@ public class Game {
         return started;
     }
 
-    // TODO: to też będzie trzeba jakoś rozwiązać
-//    public boolean isVotingTimerStarted(){
-//        return votingTimerStared;
-//    }
-//
-//    public void setVotingTimerStarted(boolean started){
-//        votingTimerStared = started;
-//    }
-
     public void reset(){
-//        voting.reset();
         history = new GameHistory();
         firstTeam = null;
         state = new GameState();
         settings = new GameSettings();
         board = new Board();
-//        playerCounter = 0;
         started = false;
 
-//        setVotingTimerStarted(false);
         // TODO: przenieść to w jakieś inne miejsce. Może w GameManager zrobić reset graczy
-        for(Player player: players.getAllPlayers()){
-            player.setReady(false);
-        }
+        // TODO: zresetować jakoś lobby
         getState().setCurrentStep(GameStep.LOBBY);
     }
 
@@ -78,40 +60,12 @@ public class Game {
         return state;
     }
 
-    public Team getFirstTeam(){
-        return firstTeam;
-    }
-
     public Board getBoard(){
         return board;
     }
 
-
-    public void startVoting(){
-        // TODO: zrobić to jakoś fajnie
-//        if(blueVoting.getCandidates().isEmpty()){
-//            blueVoting.init(players);
-//            redVoting.init(players);
-//            // TODO: z uruchomieniem licznika można poczekać, aż wszyscy się załadują
-////            startTimer();
-//        }
-    }
-
-//    private void startTimer(){
-//        // TODO: można zrobić klasę Timer, która będzie znajdować się w Game. Kontrolery będą mogły z niego korzystać.
-//        new java.util.Timer().schedule(
-//                new java.util.TimerTask() {
-//                    @Override
-//                    public void run() {
-//                        bossController.endVoting();
-//                        // TODO: można zrobić wysyłanie czasu do klientów co sekunde
-//                    }
-//                },
-//                10000
-//        );
-//    }
-
-    public void initializeGame() throws IOException {
+    public void initializeGame(List<Player> playersList) throws IOException {
+        playersList.forEach(players::addPlayer);
         if(firstTeam == null){
             firstTeam = randomFirstGroup();
             board.init(firstTeam, settings);

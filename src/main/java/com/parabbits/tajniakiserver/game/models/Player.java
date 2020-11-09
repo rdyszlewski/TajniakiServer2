@@ -3,7 +3,6 @@ package com.parabbits.tajniakiserver.game.models;
 public class Player extends GamePlayer{
 
     private String sessionId;
-    private boolean ready;
 
     public Player(String sessionId, String nickname){
         init(sessionId, nickname);
@@ -18,7 +17,6 @@ public class Player extends GamePlayer{
         this.sessionId = sessionid;
         this.nickname = nickname;
         this.team = Team.LACK;
-        this.ready = false;
     }
 
     public String getSessionId() {
@@ -27,13 +25,5 @@ public class Player extends GamePlayer{
 
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
-    }
-
-    public boolean isReady(){
-        return ready;
-    }
-
-    public void setReady(boolean ready){
-        this.ready = ready;
     }
 }

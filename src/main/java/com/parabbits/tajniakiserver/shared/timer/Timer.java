@@ -2,6 +2,7 @@ package com.parabbits.tajniakiserver.shared.timer;
 
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.TimerTask;
 
 public class Timer {
@@ -48,7 +49,11 @@ public class Timer {
             if (remainigTime == 0) {
                 timer.cancel();
                 timer.purge();
-                callback.onFinish();
+                try {
+                    callback.onFinish();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 System.out.println("Zadanie wykonane");
             } else {
                 callback.onTick(remainigTime);

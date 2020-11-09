@@ -15,8 +15,7 @@ import java.util.List;
 
 @Configuration
 public class ConnectionListener {
-
-
+    
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 

@@ -1,18 +1,15 @@
 package com.parabbits.tajniakiserver.lobby;
 
+import com.parabbits.tajniakiserver.lobby.manager.Lobby;
+import com.parabbits.tajniakiserver.lobby.manager.LobbyManager;
+import com.parabbits.tajniakiserver.lobby.manager.LobbyPlayer;
 import com.parabbits.tajniakiserver.lobby.messages.LobbyReadyMessage;
 import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessage;
 import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessageCreator;
 import com.parabbits.tajniakiserver.lobby.messages.TeamMessage;
-import com.parabbits.tajniakiserver.lobby.team.LobbyHelper;
-import com.parabbits.tajniakiserver.lobby.team.TeamChanger;
 import com.parabbits.tajniakiserver.shared.parameters.BoolParam;
 import com.parabbits.tajniakiserver.shared.parameters.IdParam;
 import com.parabbits.tajniakiserver.shared.parameters.StringParam;
-import com.parabbits.tajniakiserver.shared.game.Game;
-import com.parabbits.tajniakiserver.game.models.Player;
-import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.shared.game.GameManager;
 import com.parabbits.tajniakiserver.shared.timer.ITimerCallback;
 import com.parabbits.tajniakiserver.shared.timer.TimerService;
 import com.parabbits.tajniakiserver.utils.MessageManager;
@@ -24,6 +21,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class LobbyController {
@@ -36,7 +36,7 @@ public class LobbyController {
     private final String LOBBY_READY = "/lobby/ready"; // TODO: zmienić to w aplikacji
 
     @Autowired
-    private GameManager gameManager;
+    private LobbyManager lobbyManager;
 
     @Autowired
     private TimerService timerService;
@@ -52,74 +52,70 @@ public class LobbyController {
 
     @MessageMapping("/lobby/connect")
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
-        Game game = gameManager.findFreeGame();
-        Player player = game.getPlayers().addPlayer(headerAccessor.getSessionId(), nickname);
-        sendStartLobbyMessage(player, StartLobbyMessageCreator.create(game, player), game);
+        Lobby lobby = lobbyManager.findFreeLobby();
+        LobbyPlayer player = lobby.addPlayer(nickname, headerAccessor.getSessionId());
+        sendStartLobbyMessage(player, StartLobbyMessageCreator.create(lobby, player), lobby);
     }
 
-    private void sendStartLobbyMessage(Player player, StartLobbyMessage message, Game game) {
+    private void sendStartLobbyMessage(LobbyPlayer player, StartLobbyMessage message, Lobby lobby) {
         messageManager.send(message, player.getSessionId(), LOBBY_START);
-        messageManager.sendToAll(player, LOBBY_CONNECT, game);
+        List<String> sessionsIds = getSessionsIds(lobby);
+        messageManager.sendToAll(player, LOBBY_CONNECT, sessionsIds);
     }
 
     @MessageMapping("/lobby/team")
     public void changeTeam(@Payload StringParam param, SimpMessageHeaderAccessor headerAccessor) {
-        Game game = gameManager.findGame(param.getGameId());
-        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-        if(TeamChanger.changePlayerTeam(player, param.getValue(), game)){
-            handleChangeTeam(game, player);
+        Lobby lobby = lobbyManager.findLobby(param.getGameId());
+        LobbyPlayer player = lobby.getPlayer(headerAccessor.getSessionId());
+        if(lobby.changeTeam(player, TeamConverter.getTeam(param.getValue()))){
+            handleChangeTeam(lobby, player);
         }
     }
 
+    private void handleChangeTeam(Lobby lobby, LobbyPlayer player) {
+        TeamMessage message = new TeamMessage(player.getId(), player.getTeam().toString());
+        List<String> sessionsIds = getSessionsIds(lobby);
+        messageManager.sendToAll(message, LOBBY_TEAM, sessionsIds);
+        endChoosingIfCan(lobby, sessionsIds);
+    }
+
+    private void endChoosingIfCan(Lobby lobby, List<String> sessionsIds) {
+        if (lobby.canStart()) {
+            finishChoosing(lobby, sessionsIds);
+        }
+    }
+
+    private List<String> getSessionsIds(Lobby lobby){
+        return lobby.getPlayers().stream().map(LobbyPlayer::getSessionId).collect(Collectors.toList());
+    }
 
     @MessageMapping("/lobby/auto_team")
     public void joinAuto(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor){
-        Game game = gameManager.findGame(param.getGameId());
-        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-        Team smallerTeam = TeamChanger.getSmallerTeam(game);
-        if(TeamChanger.changePlayerTeam(player, smallerTeam, game)){
-            handleChangeTeam(game, player);
-        }
-    }
-
-    private void handleChangeTeam(Game game, Player player) {
-        TeamMessage message = new TeamMessage(player.getId(), player.getTeam().toString());
-        messageManager.sendToAll(message, LOBBY_TEAM, game);
-        // TODO: to właściwie nie powinno się pojawić w tym miejscu. Trzeba zablokować dostęp do zmiany, kiedy jest gotowy
-        if (LobbyHelper.isEndChoosing(game)) {
-            finishChoosing(game);
+        Lobby lobby = lobbyManager.findLobby(param.getGameId());
+        LobbyPlayer player = lobby.getPlayer(headerAccessor.getSessionId());
+        if(lobby.autoChangeTeam(player)){
+            handleChangeTeam(lobby, player);
         }
     }
 
     @MessageMapping("/lobby/ready")
     public void changeReady(@Payload BoolParam param, SimpMessageHeaderAccessor headerAccessor) {
-        Game game = gameManager.findGame(param.getGameId());
-        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-        if (canSetReady(player)){
-            setPlayerReady(param, game, player);
+        Lobby lobby = lobbyManager.findLobby(param.getGameId());
+        LobbyPlayer player = lobby.getPlayer(headerAccessor.getSessionId());
+        if(lobby.setReady(player)){ // TODO: zrobić to, żeby się odpstykiwało
+            LobbyReadyMessage message = new LobbyReadyMessage(player.getId(), player.isReady());
+            List<String> sessionsIds = getSessionsIds(lobby);
+            messageManager.sendToAll(message, LOBBY_READY, getSessionsIds(lobby));
+            endChoosingIfCan(lobby, sessionsIds);
         }
-
-        if (LobbyHelper.isEndChoosing(game)) {
-            finishChoosing(game);
-        }
     }
 
-    private void setPlayerReady(BoolParam param, Game game, Player player) {
-        boolean ready = param.getValue();
-        player.setReady(ready);
-        LobbyReadyMessage message = new LobbyReadyMessage(player.getId(), ready);
-        messageManager.sendToAll(message, LOBBY_READY, game);
-    }
-
-    private boolean canSetReady(Player player){
-        return player.getTeam() == Team.BLUE || player.getTeam() == Team.RED;
-    }
-
-    private void finishChoosing(Game game){
-        timerService.startTimer(game.getID(), FINISH_CHOOSING_TIME, new ITimerCallback() {
+    private void finishChoosing(Lobby lobby, List<String> sessionsIds){
+        timerService.startTimer(lobby.getID(), FINISH_CHOOSING_TIME, new ITimerCallback() {
             @Override
-            public void onFinish() {
-                messageManager.sendToAll("START", LOBBY_END, game);
+            public void onFinish() throws IOException {
+                lobby.startGame();
+                messageManager.sendToAll("START", LOBBY_END, sessionsIds);
             }
 
             @Override

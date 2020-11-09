@@ -7,6 +7,8 @@ import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
+import java.util.List;
+
 public class MessageManager {
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -18,6 +20,12 @@ public class MessageManager {
     public void sendToAll(Object message, String path, Game game){
         for(Player player: game.getPlayers().getAllPlayers()){
             send(message, player.getSessionId(), path);
+        }
+    }
+
+    public void sendToAll(Object message, String path, List<String> sessionsId){
+        for(String sessionId: sessionsId){
+            send(message, sessionId, path);
         }
     }
 

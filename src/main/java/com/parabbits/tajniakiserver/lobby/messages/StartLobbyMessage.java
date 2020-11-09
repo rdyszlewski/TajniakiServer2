@@ -1,22 +1,27 @@
 package com.parabbits.tajniakiserver.lobby.messages;
 
 import com.parabbits.tajniakiserver.game.models.Player;
+import com.parabbits.tajniakiserver.lobby.manager.LobbyPlayer;
 import com.parabbits.tajniakiserver.shared.game.GameSettings;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 public class StartLobbyMessage {
 
     private UUID gameId;
+    // TODO: tutaj jakoś prytnie trzeba zmienić nazwę
     private long playerId;
+    // TODO: jeżeli dołączamy settings, to to może być niepotrzebne
     private int minPlayersInTeam;
     private int maxPlayersInTeam;
-    private List<Player> players;
+    private List<LobbyPlayer> players;
     private GameSettings settings;
 
-    public StartLobbyMessage(List<Player> players, GameSettings settings) {
-        this.players = players;
+    public StartLobbyMessage(Collection<LobbyPlayer> players, GameSettings settings) {
+        this.players = new ArrayList<>(players);
         this.settings = settings;
     }
 
@@ -52,11 +57,11 @@ public class StartLobbyMessage {
         this.maxPlayersInTeam = maxPlayersInTeam;
     }
 
-    public List<Player> getPlayers() {
+    public List<LobbyPlayer> getPlayers() {
         return players;
     }
 
-    public void setPlayers(List<Player> players) {
+    public void setPlayers(List<LobbyPlayer> players) {
         this.players = players;
     }
 
