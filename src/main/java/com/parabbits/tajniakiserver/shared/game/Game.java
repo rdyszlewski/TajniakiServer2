@@ -63,9 +63,7 @@ public class Game {
         return state;
     }
 
-    public Board getBoard(){
-        return board;
-    }
+
 
     public void startGame(List<Player> playersList) throws IOException {
         playersList.forEach(players::addPlayer); // TODO: odkomentować to, po zakończeniu testowania
@@ -178,6 +176,25 @@ public class Game {
             }
         }
         return false;
+    }
+
+    public List<Card> getCards(){
+        return board.getCards();
+    }
+
+    public List<Card> getCards(boolean withoutPass){
+        if(withoutPass){
+            return board.getCards().stream().filter(x->x.getId()>=0).collect(Collectors.toList());
+        }
+        return getCards();
+    }
+
+    public Set<Player> getPlayersWhoClicked(Card card){
+        return board.getAnswerManager().getPlayers(card);
+    }
+
+    public Set<Player> getFlagsOwner(Card card, Team team){
+        return board.getFlagsManager().getFlagsOwners(card, team);
     }
 
 }

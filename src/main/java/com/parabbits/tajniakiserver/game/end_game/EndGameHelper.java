@@ -28,7 +28,7 @@ public class EndGameHelper {
     }
 
     private static boolean isKillerChecked(Game game) {
-        for (Card card : game.getBoard().getCards()) {
+        for (Card card : game.getCards()) {
             if (card.getColor() == CardColor.KILLER && card.isChecked()) {
                 return true;
             }

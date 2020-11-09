@@ -17,7 +17,7 @@ public class StartGameMessageCreator {
         message.setPlayerRole(role);
         message.setPlayerTeam(player.getTeam());
         message.setGameState(game.getState());
-        List<ClientCard> cards = ClientCardCreator.createCards(game.getBoard().getCards(), game, role, player.getTeam());
+        List<ClientCard> cards = ClientCardCreator.createCards(game.getCards(), game, role, player.getTeam());
         message.setCards(cards);
         message.setPlayers(new ArrayList<>(game.getPlayers().getAllPlayers()));
 

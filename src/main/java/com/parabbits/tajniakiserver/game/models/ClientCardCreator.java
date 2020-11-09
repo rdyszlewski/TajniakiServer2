@@ -45,7 +45,8 @@ public class ClientCardCreator {
     }
 
     private static Set<Long> getPlayerFromAnswer(Game game, Card card){
-        Set<Player> players = game.getBoard().getAnswerManager().getPlayers(card);
+        // TODO: zrobić to jakoś inaczej
+        Set<Player> players = game.getPlayersWhoClicked(card);
         return getPlayersIds(players);
     }
 
@@ -58,7 +59,7 @@ public class ClientCardCreator {
     }
 
     private static Set<Long> getPlayerFromFlags(Game game, Card card, Team team){
-        Set<Player> players = game.getBoard().getFlagsManager().getFlagsOwners(card, team);
+        Set<Player> players = game.getFlagsOwner(card, team);
         return getPlayersIds(players);
     }
 }

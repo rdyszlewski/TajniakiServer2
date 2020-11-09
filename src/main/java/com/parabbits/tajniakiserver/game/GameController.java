@@ -68,13 +68,13 @@ public class GameController {
                 handleClickMessage(player, result.getUpdatedCards(), game);
             } else {
                 boolean correct = result.getCorrectness() == ClickResult.ClickCorrectness.CORRECT;
-                handleAnswerMessage(player, correct, game);
+                handleAnswerMessage(player, correct, game, result.getUpdatedCards());
             }
         }
     }
 
-    private void handleAnswerMessage(Player player, boolean correct, Game game) {
-        sendAnswerMessage(player , correct, game);
+    private void handleAnswerMessage(Player player, boolean correct, Game game, List<Card> cardsToUpdate) {
+        sendAnswerMessage(player , correct, game, cardsToUpdate);
         if (!game.getState().isGameActive()) { // TODO: może jakoś inaczej zrobić zarządzanie grą
             sendEndGameMessage(game);
         }
@@ -90,8 +90,8 @@ public class GameController {
         messageManager.sendToAll(endGameMessage, END_MESSAGE_RESPONSE, game);
     }
 
-    private void sendAnswerMessage(Player player, boolean correct, Game game) {
-        List<Card> cardsToUpdate = game.getBoard().getAnswerManager().popCardsToUpdate(player);
+    private void sendAnswerMessage(Player player, boolean correct, Game game, List<Card> cardsToUpdate) {
+//        List<Card> cardsToUpdate = game.getBoard().getAnswerManager().popCardsToUpdate(player);
         sendAnswerMessageToRole(player, correct, game, Role.BOSS, cardsToUpdate);
         sendAnswerMessageToRole(player, correct, game, Role.PLAYER, cardsToUpdate);
     }

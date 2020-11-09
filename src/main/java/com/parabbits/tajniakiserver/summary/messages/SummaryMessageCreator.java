@@ -31,7 +31,7 @@ public class SummaryMessageCreator {
     private static List<SummaryCard> prepareSummaryCards(Game game){
         // TODO: zrobić refaktoryzację
         List<SummaryCard> results = new ArrayList<>();
-        List<Card> cards = game.getBoard().getCards().stream().filter(x->x.getId() >=0).collect(Collectors.toList());
+        List<Card> cards = game.getCards(true);
         for(Card card: cards){
             SummaryCard summaryCard = new SummaryCard();
             summaryCard.setId(card.getId());
