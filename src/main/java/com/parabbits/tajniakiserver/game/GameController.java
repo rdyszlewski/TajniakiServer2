@@ -4,9 +4,7 @@ import com.parabbits.tajniakiserver.connection.DisconnectController;
 import com.parabbits.tajniakiserver.game.messages.*;
 import com.parabbits.tajniakiserver.game.models.*;
 import com.parabbits.tajniakiserver.game.parameters.QuestionParam;
-import com.parabbits.tajniakiserver.shared.game.Game;
-import com.parabbits.tajniakiserver.shared.game.GameManager;
-import com.parabbits.tajniakiserver.shared.game.GameStep;
+import com.parabbits.tajniakiserver.shared.game.*;
 import com.parabbits.tajniakiserver.shared.parameters.IdParam;
 import com.parabbits.tajniakiserver.shared.parameters.IntParam;
 import com.parabbits.tajniakiserver.utils.MessageManager;
@@ -59,54 +57,25 @@ public class GameController {
     @MessageMapping("/game/click")
     public void servePlayersAnswer(@Payload IntParam param, SimpMessageHeaderAccessor headerAccessor) {
         Game game = gameManager.findGame(param.getGameId());
-        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-        Card card = findCard(param.getValue(), game);
-        if (!canClick(player, card, game)) {
-            return;
-        }
-        handleAnswer(game, player, card);
-    }
-
-    private void handleAnswer(Game game, Player player, Card card) {
-        // TODO: przenieść wszystko do klasy Game, return - czy wszyscy odpowiedzieli
-        AnswerManager answerManager = game.getBoard().getAnswerManager();
-        answerManager.setAnswer(card, player);
-        int answerForCard = answerManager.getCounter(card);
-        if (isAllPlayersAnswer(player, answerForCard, game)) {
-            game.getHistory().addAnswer(card.getWord(), card.getColor());
-            game.useCard(card);
-            handleAnswerMessage(player, card, game);
-        } else {
-            handleClickMessage(player, game);
+        ClickResult result = game.click(param.getValue(), headerAccessor.getSessionId());
+        if(result != null){
+            if(result.getCorrectness() == ClickResult.ClickCorrectness.NONE){
+                handleClickMessage(result.getPlayer(), result.getUpdatedCards(), game);
+            } else {
+                handleAnswerMessage(result.getPlayer(), result.getCard(), result.getCorrectness() == ClickResult.ClickCorrectness.CORRECT, game);
+            }
         }
     }
 
-    private boolean canClick(Player player, Card card, Game game) {
-        return isPlayerTurn(player, game) && !card.isChecked();
-    }
-
-    private boolean isPlayerTurn(Player player, Game game) {
-        return player.getTeam() == game.getState().getCurrentTeam()
-                && player.getRole() == game.getState().getCurrentStage();
-    }
-
-    private Card findCard(Integer cardId, Game game){
-        return game.getBoard().getCard(cardId);
-    }
-
-    private boolean isAllPlayersAnswer(Player player, int answerForCard, Game game) {
-        return answerForCard == game.getPlayers().getTeamSize(player.getTeam()) - 1;
-    }
-
-    private void handleAnswerMessage(Player player, Card card, Game game) {
+    private void handleAnswerMessage(Player player, Card card, boolean correct, Game game) {
         sendAnswerMessage(player, card, isCorrect(card, player), game);
         if (!game.getState().isGameActive()) { // TODO: może jakoś inaczej zrobić zarządzanie grą
             sendEndGameMessage(game);
         }
     }
 
-    private void handleClickMessage(Player player, Game game) {
-        ClickMessage message = ClickMessageCreator.create(player, game);
+    private void handleClickMessage(Player player, List<Card> updatedCards,  Game game) {
+        ClickMessage message = ClickMessageCreator.create(player, updatedCards, game);
         messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
     }
 
@@ -122,7 +91,6 @@ public class GameController {
     }
 
     private void sendAnswerMessageToRole(Player player, boolean correct, Game game, Role role, List<Card> cardsToUpdate){
-        // TODO: sprawdzić, czy wysyłanie tej wiadomości jest dobrze zrobione
         AnswerMessage message = AnswerMessageCreator.create(cardsToUpdate, correct, player, role, game);
         messageManager.sendToPlayersWithRole(message, role, ANSWER_MESSAGE_RESPONSE, game);
     }
@@ -133,36 +101,23 @@ public class GameController {
 
     @MessageMapping("/game/question")
     public void setQuestion(@Payload QuestionParam param, SimpMessageHeaderAccessor headerAccessor) {
-        // TODO: mocna refaktoryzacja metody
         Game game = gameManager.findGame(param.getGameId());
-        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-        if (!isPlayerTurn(player, game)) {
-            return;
+        boolean correct = game.setQuestion(param, headerAccessor.getSessionId());
+        if(correct){
+            BossMessage message = BossMessageCreator.create(param.getQuestion(), param.getNumber(), game);
+            messageManager.sendToAll(message, QUESTION_MESSAGE_RESPONSE, game);
         }
-
-        // TODO: to powinno być załatwione za jendym zamachem
-        String word = param.getQuestion();
-        int number = param.getNumber();
-        game.getState().setAnswerState(word, number);
-        game.getHistory().addQuestion(word, number, player.getTeam());
-        if(!WordValidator.validate(word)){ // TODO: sprawdzić co to robi
-            return;
-        }
-        BossMessage message = BossMessageCreator.create(param.getQuestion(), param.getNumber(), game);
-        messageManager.sendToAll(message, QUESTION_MESSAGE_RESPONSE, game);
     }
 
     @MessageMapping("/game/flag")
     public void setFlag(@Payload IntParam param, SimpMessageHeaderAccessor headerAccessor) {
         Game game = gameManager.findGame(param.getGameId());
-        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-        Card card = game.getBoard().getCard(param.getValue());
-        if (!canClick(player, card, game)) {
-            return;
+        FlagResult flagResult = game.flag(param.getValue(), headerAccessor.getSessionId());
+        if(flagResult != null){
+            // TODO: przemyśleć to wszystko jakoś inaczej
+            ClickMessage message = FlagMessageCreator.create(flagResult.getPlayer(), flagResult.getCard(), game);
+            messageManager.sendToRoleFromTeam(message, Role.PLAYER, flagResult.getPlayer().getTeam(), CLICK_MESSAGE_RESPONSE, game);
         }
-        game.getBoard().getFlagsManager().addFlag(player, card);
-        ClickMessage message = FlagMessageCreator.create(player, card, game);
-        messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
     }
 
     @MessageMapping("/game/quit")

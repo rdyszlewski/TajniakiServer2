@@ -1,5 +1,8 @@
 package com.parabbits.tajniakiserver.shared.game;
 
+import com.parabbits.tajniakiserver.game.AnswerCorrectness;
+import com.parabbits.tajniakiserver.game.WordValidator;
+import com.parabbits.tajniakiserver.game.parameters.QuestionParam;
 import com.parabbits.tajniakiserver.lobby.manager.LobbyPlayer;
 import com.parabbits.tajniakiserver.summary.GameHistory;
 import com.parabbits.tajniakiserver.game.GameState;
@@ -64,7 +67,7 @@ public class Game {
         return board;
     }
 
-    public void initializeGame(List<Player> playersList) throws IOException {
+    public void startGame(List<Player> playersList) throws IOException {
         playersList.forEach(players::addPlayer);
         if(firstTeam == null){
             firstTeam = randomFirstGroup();
@@ -104,4 +107,79 @@ public class Game {
     public GameHistory getHistory(){
         return history;
     }
+
+    public ClickResult click(int cardId, String playerSession){
+        Player player = players.getPlayer(playerSession);
+        Card card = board.getCard(cardId);
+        if(canClick(player, card)){
+            board.getAnswerManager().setAnswer(card, player);
+            if(allPlayersAnswer(card, player.getTeam())){
+                history.addAnswer(card.getWord(), card.getColor());
+                useCard(card);
+                return prepareClickResult(player, card, true);
+            } else {
+                return prepareClickResult(player, card, false);
+            }
+        }
+        return null;
+    }
+
+    private ClickResult prepareClickResult(Player player, Card card, boolean allAnswerd) {
+        ClickResult.ClickCorrectness correctness = allAnswerd ? getCorrectness(card, player.getTeam()) : ClickResult.ClickCorrectness.NONE;
+        List<Card> updatedCards = board.getAnswerManager().popCardsToUpdate(player);
+        return new ClickResult(correctness, updatedCards, card, player);
+    }
+
+    private boolean canClick(Player player, Card card){
+        return isPlayerTurn(player) && !card.isChecked();
+    }
+
+    private boolean isPlayerTurn(Player player){
+        return player.getTeam() == state.getCurrentTeam()
+                && player.getRole() == state.getCurrentStage();
+    }
+
+    private boolean allPlayersAnswer(Card card, Team team){
+        int answers = board.getAnswerManager().getCounter(card);
+        return answers == players.getTeamSize(team) - 1;
+    }
+
+    private ClickResult.ClickCorrectness getCorrectness(Card card, Team team){
+        if((card.getColor() == CardColor.BLUE) && team == Team.BLUE || card.getColor() == CardColor.RED && team == Team.RED){
+            return ClickResult.ClickCorrectness.CORRECT;
+        } else if(card.getColor() == CardColor.KILLER){
+            return ClickResult.ClickCorrectness.KILLER;
+        } else if(card.getColor() == CardColor.NEUTRAL){
+            return ClickResult.ClickCorrectness.INCORRECT;
+        } else {
+            return ClickResult.ClickCorrectness.INCORRECT;
+        }
+    }
+
+    public FlagResult flag(int cardId, String playerSession){
+        Player player = players.getPlayer(playerSession);
+        Card card = board.getCard(cardId);
+        if(canFlag(card)){
+            board.getFlagsManager().addFlag(player, card); // TODO: przecież to może zwracać zmodyfikowane wartości. Dlaczego tego nie robi?
+            return new FlagResult(card, player);
+        }
+        return null;
+    }
+
+    private boolean canFlag(Card card){
+        return !card.isChecked();
+    }
+
+    public boolean setQuestion(QuestionParam question, String sessionId){
+        Player player = players.getPlayer(sessionId);
+        if(isPlayerTurn(player)){
+            if(WordValidator.validate(question.getQuestion())){
+                state.setAnswerState(question.getQuestion(), question.getNumber());
+                history.addQuestion(question.getQuestion(), question.getNumber(), player.getTeam());
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

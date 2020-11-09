@@ -12,11 +12,10 @@ import java.util.stream.Collectors;
 
 public class ClickMessageCreator extends CardMessageCreator {
 
-    public static ClickMessage create(Player player, Game game) {
-        List<Card> editedCards = game.getBoard().getAnswerManager().popCardsToUpdate(player);
-        List<ClientCard> clientCards = prepareClientCards(editedCards, player, game);
+    public static ClickMessage create(Player player, List<Card> updatedCards, Game game) {
+        List<ClientCard> clientCards = prepareClientCards(updatedCards, player, game);
         ClickMessage message = new ClickMessage(clientCards);
-        List<Card> passCard = editedCards.stream().filter(x->x.getId() < 0).collect(Collectors.toList());
+        List<Card> passCard = updatedCards.stream().filter(x->x.getId() < 0).collect(Collectors.toList());
         if(!passCard.isEmpty()){
             ClientCard passClientCard = ClientCardCreator.createCard(passCard.get(0), game, player.getRole(), player.getTeam());
             message.setPass(passClientCard.getAnswers().size());

@@ -136,6 +136,6 @@ public class Lobby {
     public void startGame() throws IOException {
         // TODO: wstawić wszystkie funkcje
         List<Player> playersList = players.values().stream().map(LobbyPlayerAdapter::createPlayer).collect(Collectors.toList());
-        game.initializeGame(playersList);
+        game.startGame(playersList);
     }
 }
