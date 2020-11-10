@@ -1,9 +1,8 @@
-package com.parabbits.words_utils;
+package com.parabbits.tajniakiserver.words;
 
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: wrzucić do odpowiedniego pakietu
 public class ListUtils {
 
     public static <T> List<List<T>> splitListBySize(List<T> list, int[] sizes) {

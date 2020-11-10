@@ -1,15 +1,15 @@
 package com.parabbits.tajniakiserver.shared.game;
 
-import com.parabbits.tajniakiserver.game.AnswerCorrectness;
-import com.parabbits.tajniakiserver.game.WordValidator;
-import com.parabbits.tajniakiserver.game.parameters.QuestionParam;
-import com.parabbits.tajniakiserver.lobby.manager.LobbyPlayer;
-import com.parabbits.tajniakiserver.summary.GameHistory;
-import com.parabbits.tajniakiserver.game.GameState;
+import com.parabbits.tajniakiserver.game.*;
 import com.parabbits.tajniakiserver.game.models.*;
+import com.parabbits.tajniakiserver.game.parameters.QuestionParam;
+import com.parabbits.tajniakiserver.summary.GameHistory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class Game {
@@ -33,11 +33,8 @@ public class Game {
 
     public Game(UUID id){
         this.id = id;
-        state = new GameState();
-        getState().setCurrentStep(GameStep.MAIN);
-        settings = new GameSettings();
         players = new GamePlayersManager(settings);
-        board = new Board();
+        reset();
     }
 
     private boolean started = false;
@@ -54,8 +51,6 @@ public class Game {
         board = new Board();
         started = false;
 
-        // TODO: przenieść to w jakieś inne miejsce. Może w GameManager zrobić reset graczy
-        // TODO: zresetować jakoś lobby
         getState().setCurrentStep(GameStep.LOBBY);
     }
 
@@ -63,10 +58,8 @@ public class Game {
         return state;
     }
 
-
-
     public void startGame(List<Player> playersList) throws IOException {
-        playersList.forEach(players::addPlayer); // TODO: odkomentować to, po zakończeniu testowania
+        playersList.forEach(players::addPlayer);
         if(firstTeam == null){
             firstTeam = randomFirstGroup();
             board.init(firstTeam, settings);
@@ -91,11 +84,11 @@ public class Game {
         return randValue < 50 ? Team.BLUE : Team.RED;
     }
 
-    public void useCard(Card card){
+    public UseCardResult useCard(Card card){
         // TODO: prawdopodobnie tutaj wystarczy word
         board.getAnswerManager().reset();
         board.getFlagsManager().removeFlags(card);
-        state.useCard(card);
+        return state.useCard(card);
     }
 
     public GameSettings getSettings() {
@@ -108,23 +101,29 @@ public class Game {
 
     public ClickResult click(int cardId, Player player){
         Card card = board.getCard(cardId);
-        if(canClick(player, card)){
+        if(canClick(player, card) && state.isGameActive()){
             board.getAnswerManager().setAnswer(card, player);
             if(allPlayersAnswer(card, player.getTeam())){
                 history.addAnswer(card.getWord(), card.getColor());
-                useCard(card);
-                return prepareClickResult(player, card, true);
+                 UseCardResult result = useCard(card);
+                 UseCardType type = isEndGame(result) ? UseCardType.END_GAME : UseCardType.ANSWER;
+                 return prepareClickResult(player, card, type);
             } else {
-                return prepareClickResult(player, card, false);
+                return prepareClickResult(player, card, UseCardType.CLICK);
             }
         }
         return null;
     }
 
-    private ClickResult prepareClickResult(Player player, Card card, boolean allAnswerd) {
-        ClickResult.ClickCorrectness correctness = allAnswerd ? getCorrectness(card, player.getTeam()) : ClickResult.ClickCorrectness.NONE;
+    private boolean isEndGame(UseCardResult result){
+        return result == UseCardResult.LAST_CORRECT || result == UseCardResult.LAST_INCORRECT || result == UseCardResult.KILLER;
+    }
+
+    private ClickResult prepareClickResult(Player player, Card card, UseCardType type) {
+        ClickCorrectness correctness = type != UseCardType.CLICK
+                ? CorrectnessChecker.getCorrectness(card, player.getTeam()) : null;
         List<Card> updatedCards = board.getAnswerManager().popCardsToUpdate(player);
-        return new ClickResult(correctness, updatedCards, card);
+        return new ClickResult(type, correctness, updatedCards, card);
     }
 
     private boolean canClick(Player player, Card card){
@@ -139,18 +138,6 @@ public class Game {
     private boolean allPlayersAnswer(Card card, Team team){
         int answers = board.getAnswerManager().getCounter(card);
         return answers == players.getTeamSize(team) - 1;
-    }
-
-    private ClickResult.ClickCorrectness getCorrectness(Card card, Team team){
-        if((card.getColor() == CardColor.BLUE) && team == Team.BLUE || card.getColor() == CardColor.RED && team == Team.RED){
-            return ClickResult.ClickCorrectness.CORRECT;
-        } else if(card.getColor() == CardColor.KILLER){
-            return ClickResult.ClickCorrectness.KILLER;
-        } else if(card.getColor() == CardColor.NEUTRAL){
-            return ClickResult.ClickCorrectness.INCORRECT;
-        } else {
-            return ClickResult.ClickCorrectness.INCORRECT;
-        }
     }
 
     public Card flag(int cardId, Player player){

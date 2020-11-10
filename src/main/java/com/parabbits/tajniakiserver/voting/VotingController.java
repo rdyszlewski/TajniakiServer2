@@ -49,15 +49,15 @@ public class VotingController {
     @MessageMapping("/boss/start")
     public void startVoting(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) {
         Game game = gameManager.findGame(param.getGameId());
-        if(!StateControl.isCorrectState(GameStep.VOTING, true, game)){
+        if (!StateControl.isCorrectState(GameStep.VOTING, true, game)) {
             return;
         }
-        game.getState().setCurrentStep(GameStep.VOTING);
-        // TODO: zastanowić się, kiedy powinno się włączyć odliczanie
-        // TODO: tutaj powinna być jakaś synchronizacja, ponieważ wiele graczy jednocześnie może utworzyć głosowanie
         Voting voting = votingManager.getVoting(game);
-        if(!voting.isStarted()){
-            startVoting(voting, game);
+        synchronized (game.getID()) {
+            if (!voting.isStarted()) {
+                game.getState().setCurrentStep(GameStep.VOTING);
+                startVoting(voting, game);
+            }
         }
 
         Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
@@ -65,7 +65,7 @@ public class VotingController {
         messageManager.send(votingMessage, player.getSessionId(), VOTING_START);
     }
 
-    private void startVoting(Voting voting, Game game){
+    private void startVoting(Voting voting, Game game) {
         voting.startVoting();
         timerService.startTimer(game.getID(), VOTING_TIME, new ITimerCallback() {
             @Override
@@ -87,14 +87,13 @@ public class VotingController {
         Player votedPlayer = game.getPlayers().getPlayerById(param.getValue());
         Voting voting = votingManager.getVoting(game);
         List<VotingPlayer> playersToUpdate = voting.vote(player.getSessionId(), votedPlayer.getSessionId(), player.getTeam());
-        if(playersToUpdate != null){
+        if (playersToUpdate != null) {
             messageManager.sendToTeam(playersToUpdate, player.getTeam(), VOTING_VOTE, game);
         }
     }
 
-    public void endVoting(Game game, Voting voting){
+    public void endVoting(Game game, Voting voting) {
         PlayerRole.setRole(game, voting);
-        // TODO: już tutaj można wysłąć role do graczy
         messageManager.sendToAll("END", VOTING_END, game);
     }
 }

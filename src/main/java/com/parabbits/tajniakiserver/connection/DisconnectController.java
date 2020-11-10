@@ -61,7 +61,9 @@ public class DisconnectController {
         if(message != null){
             messageManager.sendToAll(message, DISCONNECT_PATH, remainingsPlayersSessions);
             game.getState().setCurrentStep(message.getCurrentStep());
-
+            if(message.getCurrentStep() == GameStep.LOBBY){
+                lobby.reset();
+            }
         }
     }
 

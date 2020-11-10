@@ -1,4 +1,4 @@
-package com.parabbits.words_utils;
+package com.parabbits.tajniakiserver.words;
 
 import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.game.models.CardColor;

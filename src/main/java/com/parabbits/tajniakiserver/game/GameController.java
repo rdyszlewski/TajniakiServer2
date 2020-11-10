@@ -3,9 +3,14 @@ package com.parabbits.tajniakiserver.game;
 import com.parabbits.tajniakiserver.connection.DisconnectController;
 import com.parabbits.tajniakiserver.connection.PlayersManager;
 import com.parabbits.tajniakiserver.game.messages.*;
-import com.parabbits.tajniakiserver.game.models.*;
+import com.parabbits.tajniakiserver.game.models.Card;
+import com.parabbits.tajniakiserver.game.models.Player;
+import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.parameters.QuestionParam;
-import com.parabbits.tajniakiserver.shared.game.*;
+import com.parabbits.tajniakiserver.shared.game.ClickResult;
+import com.parabbits.tajniakiserver.shared.game.Game;
+import com.parabbits.tajniakiserver.shared.game.GameManager;
+import com.parabbits.tajniakiserver.shared.game.GameStep;
 import com.parabbits.tajniakiserver.shared.parameters.IdParam;
 import com.parabbits.tajniakiserver.shared.parameters.IntParam;
 import com.parabbits.tajniakiserver.utils.MessageManager;
@@ -13,11 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.List;
 
 @Controller
 public class GameController {
@@ -59,21 +62,32 @@ public class GameController {
         Game game = gameManager.findGame(param.getGameId());
         Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         ClickResult result = game.click(param.getValue(), player);
-        if(result != null){
-            if(result.getCorrectness() == ClickResult.ClickCorrectness.NONE){
+        handleClickAction(game, player, result);
+    }
+
+    private void handleClickAction(Game game, Player player, ClickResult result) {
+        switch (result.getType()){
+            case CLICK:
                 handleClickMessage(player, result.getUpdatedCards(), game);
-            } else {
-                boolean correct = result.getCorrectness() == ClickResult.ClickCorrectness.CORRECT;
-                handleAnswerMessage(player, correct, game, result.getUpdatedCards());
-            }
+                break;
+            case ANSWER:
+                handleAnswerMessage(player, CorrectnessChecker.isCorrect(result.getCorrectness()), game, result.getUpdatedCards());
+                break;
+            case END_GAME:
+                // TODO: na razie zostawić to w ten spsobó
+                sendEndGameMessage(game);
+                break;
         }
     }
 
     private void handleAnswerMessage(Player player, boolean correct, Game game, List<Card> cardsToUpdate) {
-        sendAnswerMessage(player , correct, game, cardsToUpdate);
-        if (!game.getState().isGameActive()) { // TODO: może jakoś inaczej zrobić zarządzanie grą
-            sendEndGameMessage(game);
-        }
+        sendAnswerMessageToRole(player, correct, game, Role.BOSS, cardsToUpdate);
+        sendAnswerMessageToRole(player, correct, game, Role.PLAYER, cardsToUpdate);
+    }
+
+    private void sendAnswerMessageToRole(Player player, boolean correct, Game game, Role role, List<Card> cardsToUpdate){
+        AnswerMessage message = AnswerMessageCreator.create(cardsToUpdate, correct, player, role, game);
+        messageManager.sendToPlayersWithRole(message, role, ANSWER_MESSAGE_RESPONSE, game);
     }
 
     private void handleClickMessage(Player player, List<Card> updatedCards,  Game game) {
@@ -84,17 +98,6 @@ public class GameController {
     private void sendEndGameMessage(Game game) {
         EndGameMessage endGameMessage = EndGameMessageCreator.create(game);
         messageManager.sendToAll(endGameMessage, END_MESSAGE_RESPONSE, game);
-    }
-
-    private void sendAnswerMessage(Player player, boolean correct, Game game, List<Card> cardsToUpdate) {
-//        List<Card> cardsToUpdate = game.getBoard().getAnswerManager().popCardsToUpdate(player);
-        sendAnswerMessageToRole(player, correct, game, Role.BOSS, cardsToUpdate);
-        sendAnswerMessageToRole(player, correct, game, Role.PLAYER, cardsToUpdate);
-    }
-
-    private void sendAnswerMessageToRole(Player player, boolean correct, Game game, Role role, List<Card> cardsToUpdate){
-        AnswerMessage message = AnswerMessageCreator.create(cardsToUpdate, correct, player, role, game);
-        messageManager.sendToPlayersWithRole(message, role, ANSWER_MESSAGE_RESPONSE, game);
     }
 
     @MessageMapping("/game/question")

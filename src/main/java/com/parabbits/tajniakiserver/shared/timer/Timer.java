@@ -33,32 +33,32 @@ public class Timer {
 
     private static class CountDownTimerTask extends TimerTask{
 
-        private long remainigTime;
+        private long remainingTime;
         private java.util.Timer timer;
         private ITimerCallback callback;
 
         CountDownTimerTask(long time, java.util.Timer timer, ITimerCallback callback){
-            this.remainigTime = time;
+            this.remainingTime = time;
             this.timer = timer;
             this.callback = callback;
         }
 
         @Override
         public void run() {
-            remainigTime--;
-            if (remainigTime == 0) {
-                timer.cancel();
-                timer.purge();
-                try {
-                    callback.onFinish();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                System.out.println("Zadanie wykonane");
+            remainingTime--;
+            if (remainingTime == 0) {
+                endTimer();
             } else {
-                callback.onTick(remainigTime);
-                System.out.println("Beep");
-                // TODO: tutaj można dodać jakiegoś klika
+                callback.onTick(remainingTime); }
+        }
+
+        private void endTimer() {
+            timer.cancel();
+            timer.purge();
+            try {
+                callback.onFinish();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

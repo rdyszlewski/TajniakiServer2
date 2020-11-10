@@ -3,16 +3,21 @@ package com.parabbits.tajniakiserver.game;
 import com.parabbits.tajniakiserver.game.models.*;
 import com.parabbits.tajniakiserver.shared.game.GameStep;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GameState {
 
     private GameStep currentStep;
     private boolean active;
     private Team currentTeam;
     private Role currentPlayer;
+
     private int pointsBlue;
     private int pointsRed;
     private int remainingBlue;
     private int remainingRed;
+
     private String currentWord;
     private int remainingAnswers;
 
@@ -43,12 +48,15 @@ public class GameState {
         return pointsRed;
     }
 
-    public int getRemainingBlue() {
-        return remainingBlue;
-    }
-
-    public int getRemainingRed(){
-        return remainingRed;
+    public int getRemainings(Team team){
+        switch (team){
+            case BLUE:
+                return remainingBlue;
+            case RED:
+                return remainingRed;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     public String getCurrentWord(){
@@ -76,54 +84,58 @@ public class GameState {
         }
     }
 
-    public void useCard(Card card){
-        if(!active){
-            return;
+    public UseCardResult useCard(Card card){
+        decreaseRemainingCards(card);
+        ClickCorrectness correctness = CorrectnessChecker.getCorrectness(card, getCurrentTeam());
+        if(correctness == ClickCorrectness.CORRECT){
+            remainingAnswers--;
+            addPoints(card);
         }
-        if(card.getId() < 0){
-            changeTeams();
-            return;
-        }
-        card.setChecked(true);
-        CardColor cardColor = card.getColor();
-        boolean correct = AnswerCorrectness.isCorrect(cardColor, getCurrentTeam());
-        handleUsingCard(correct, cardColor);
 
-        //TODO: jeśli zostanie tak, to będzie trzeba to sprawdzać 2 razy, później przy wyświetlaniu podsumowania. Możliwe jest także stworznie zmiennej, ale nie powinna ona być wysyłana teraz do klienta
-        if(card.getColor()== CardColor.KILLER){
+        if(!isEndGame(card)){
+            if(isTeamChange(card, correctness)){
+                changeTeams();
+            }
+        } else {
             active = false;
-            // TODO: ustawić zwycięzce na drużynę przeciwną
         }
-        if(remainingRed==0 || remainingBlue==0){
-            active = false;
+        if(isPassCard(card)){
+            card.setChecked(true);
+        }
+
+        return UseCardResult.getResult(correctness, !active);
+    }
+
+    private boolean isEndGame(Card card) {
+        return remainingRed==0 || remainingBlue == 0 || card.getColor() == CardColor.KILLER;
+    }
+
+    private boolean isTeamChange(Card card, ClickCorrectness correctness) {
+        return correctness == ClickCorrectness.INCORRECT || remainingAnswers <= 0 || isPassCard(card);
+    }
+
+    private boolean isPassCard(Card card) {
+        return card.getId() < 0;
+    }
+
+    private void addPoints(Card card) {
+        switch (card.getColor()){
+            case BLUE:
+                pointsBlue++;
+                break;
+            case RED:
+                pointsRed++;
         }
     }
 
-    private void handleUsingCard(boolean correct, CardColor color){
-        // TODO: refaktoryzacja
-        switch (color) {
-            case KILLER:
-                active = false;
-                break;
+    private void decreaseRemainingCards(Card card) {
+        switch (card.getColor()){
             case BLUE:
                 remainingBlue--;
                 break;
             case RED:
                 remainingRed--;
                 break;
-        }
-        if (correct) {
-            remainingAnswers--;
-            if(color==CardColor.BLUE){
-                pointsBlue++;
-            } else {
-                pointsRed++;
-            }
-        } else {
-            changeTeams();
-        }
-        if(correct && remainingAnswers <=0){
-            changeTeams();
         }
     }
 

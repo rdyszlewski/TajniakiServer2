@@ -6,7 +6,6 @@ import com.parabbits.tajniakiserver.game.models.Team;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// TODO: można zrobić jakoś w ten sposób, że to nie będzie w grze, ale w jakimś innym miejscu i będzie do tego taki sam dostęp
 public class Voting {
 
     private final TeamVoting blueVoting = new TeamVoting(Team.BLUE);
@@ -48,7 +47,8 @@ public class Voting {
     }
 
     public void reset(){
-        // TODO: resetowanie tego cholerstwa
+        blueVoting.reset();
+        redVoting.reset();
     }
 
     public boolean isStarted(){

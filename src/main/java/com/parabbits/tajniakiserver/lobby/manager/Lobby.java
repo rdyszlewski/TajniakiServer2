@@ -145,4 +145,8 @@ public class Lobby {
         List<Player> playersList = players.values().stream().map(LobbyPlayerAdapter::createPlayer).collect(Collectors.toList());
         game.startGame(playersList);
     }
+
+    public void reset(){
+        players.values().forEach(x->x.setReady(false));
+    }
 }

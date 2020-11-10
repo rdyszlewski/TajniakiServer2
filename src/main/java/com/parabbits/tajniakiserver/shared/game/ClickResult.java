@@ -1,24 +1,20 @@
 package com.parabbits.tajniakiserver.shared.game;
 
+import com.parabbits.tajniakiserver.game.ClickCorrectness;
+import com.parabbits.tajniakiserver.game.UseCardType;
 import com.parabbits.tajniakiserver.game.models.Card;
-import com.parabbits.tajniakiserver.game.models.Player;
 
 import java.util.List;
 
 public class ClickResult {
 
-    public enum ClickCorrectness{
-        CORRECT,
-        INCORRECT,
-        KILLER,
-        NONE
-    }
-
+    private UseCardType type;
     private ClickCorrectness correctness;
     private List<Card> updatedCards;
     private Card card;
 
-    public ClickResult(ClickCorrectness correctness, List<Card> updatedCards, Card card){
+    public ClickResult(UseCardType type, ClickCorrectness correctness, List<Card> updatedCards, Card card){
+        this.type = type;
         this.correctness = correctness;
         this.updatedCards = updatedCards;
         this.card = card;
@@ -27,6 +23,14 @@ public class ClickResult {
     // TODO: można dodać, coś, co będzie informowało o wygranej
     // TODO: tutaj powinno być coś jeszcze, ale nie pamiętam co
 
+
+    public UseCardType getType() {
+        return type;
+    }
+
+    public void setType(UseCardType type) {
+        this.type = type;
+    }
 
     public ClickCorrectness getCorrectness() {
         return correctness;

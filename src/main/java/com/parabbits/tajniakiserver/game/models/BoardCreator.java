@@ -1,8 +1,8 @@
 package com.parabbits.tajniakiserver.game.models;
 
 import com.parabbits.tajniakiserver.shared.game.GameSettings;
-import com.parabbits.words_utils.WordColorRandom;
-import com.parabbits.words_utils.WordsHelper;
+import com.parabbits.tajniakiserver.words.WordColorRandom;
+import com.parabbits.tajniakiserver.words.WordsHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;

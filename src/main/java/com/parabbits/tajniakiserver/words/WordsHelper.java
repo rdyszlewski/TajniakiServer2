@@ -1,4 +1,4 @@
-package com.parabbits.words_utils;
+package com.parabbits.tajniakiserver.words;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

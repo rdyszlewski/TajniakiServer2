@@ -15,7 +15,6 @@ public class VotingManager {
 
     public Voting getVoting(Game game){
         UUID gameId = game.getID();
-        // TODO: tutaj może zmienić nazwę
         if(votingMap.containsKey(gameId)){
             return votingMap.get(gameId);
         }
