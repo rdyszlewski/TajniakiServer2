@@ -1,6 +1,6 @@
 package com.parabbits.tajniakiserver.summary;
 
-import com.parabbits.tajniakiserver.game.models.*;
+import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.shared.game.GameManager;
 import com.parabbits.tajniakiserver.shared.game.GameStep;
@@ -13,10 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Date;
 
@@ -29,14 +27,8 @@ public class SummaryController {
     private GameManager gameManager;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
     private MessageManager messageManager;
 
-    @PostConstruct
-    public void init(){
-        messageManager = new MessageManager(messagingTemplate);
-    }
 
     @MessageMapping("/summary/summary")
     public void getSummary(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) throws IOException {

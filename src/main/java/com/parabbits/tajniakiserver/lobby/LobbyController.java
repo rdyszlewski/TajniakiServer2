@@ -21,15 +21,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 public class LobbyController {
@@ -47,14 +43,9 @@ public class LobbyController {
     @Autowired
     private TimerService timerService;
 
-    @Autowired SimpMessagingTemplate messagingTemplate;
-
+    @Autowired
     private MessageManager messageManager;
 
-    @PostConstruct
-    private void init(){
-        messageManager = new MessageManager(messagingTemplate);
-    }
 
     @MessageMapping("/lobby/connect")
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {

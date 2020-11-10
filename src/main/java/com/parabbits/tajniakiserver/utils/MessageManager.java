@@ -5,17 +5,18 @@ import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 
+@Service
 public class MessageManager {
 
-    private final SimpMessagingTemplate messagingTemplate;
-
-    public MessageManager(SimpMessagingTemplate messagingTemplate){
-        this.messagingTemplate = messagingTemplate;
-    }
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     public void sendToAll(Object message, String path, Game game){
         for(Player player: game.getPlayers().getAllPlayers()){

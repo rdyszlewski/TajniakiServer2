@@ -35,14 +35,10 @@ public class GameController {
     private PlayersManager playersManager;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
     private MessageManager messageManager;
 
-    @PostConstruct
-    public void init() {
-        messageManager = new MessageManager(messagingTemplate);
-    }
+    @Autowired
+    private DisconnectController disconnectController;
 
     @MessageMapping("/game/start")
     public void startGame(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) {
@@ -122,13 +118,8 @@ public class GameController {
         }
     }
 
-    // TODO: wspólną metodę do wychodzenia można zrobić w oddzielnym kontrollerze
     @MessageMapping("/game/quit")
     public void quit(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor){
-        Game game = gameManager.findGame(param.getGameId());
-        Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
-        game.getPlayers().removePlayer(player.getSessionId());
-        DisconnectController.disconnectPlayer(player, game, messageManager);
-        // TODO: czy tutaj na pewno powinnismy iśc do disconnect?
+        disconnectController.disconnectPlayer(headerAccessor.getSessionId(), param.getGameId());
     }
 }

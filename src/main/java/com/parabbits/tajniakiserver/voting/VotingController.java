@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.voting;
 
-import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.game.models.Player;
+import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.shared.game.GameManager;
 import com.parabbits.tajniakiserver.shared.game.GameStep;
 import com.parabbits.tajniakiserver.shared.parameters.IdParam;
@@ -10,7 +10,6 @@ import com.parabbits.tajniakiserver.shared.state.StateControl;
 import com.parabbits.tajniakiserver.shared.timer.ITimerCallback;
 import com.parabbits.tajniakiserver.shared.timer.TimerService;
 import com.parabbits.tajniakiserver.utils.MessageManager;
-import com.parabbits.tajniakiserver.voting.PlayerRole;
 import com.parabbits.tajniakiserver.voting.messages.StartVotingMessage;
 import com.parabbits.tajniakiserver.voting.messages.StartVotingMessageCreator;
 import com.parabbits.tajniakiserver.voting.messages.VotingManager;
@@ -20,10 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Controller
@@ -46,14 +43,8 @@ public class VotingController {
     private TimerService timerService;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
     private MessageManager messageManager;
 
-    @PostConstruct
-    private void init(){
-        messageManager = new MessageManager(messagingTemplate);
-    }
 
     @MessageMapping("/boss/start")
     public void startVoting(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) {
