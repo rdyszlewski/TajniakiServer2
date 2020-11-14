@@ -11,6 +11,7 @@ import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessage;
 import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessageCreator;
 import com.parabbits.tajniakiserver.lobby.messages.TeamMessage;
 import com.parabbits.tajniakiserver.shared.PlayerSessionId;
+import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.shared.parameters.BoolParam;
 import com.parabbits.tajniakiserver.shared.parameters.IdParam;
 import com.parabbits.tajniakiserver.shared.parameters.StringParam;
@@ -128,7 +129,7 @@ public class LobbyController {
         });
     }
 
-    @MessageMapping("/test/start")
+    @MessageMapping("/test/start_ready")
     public void startTest(@Payload String param, SimpMessageHeaderAccessor headerAccessor) throws IOException {
         Lobby lobby = lobbyManager.findFreeLobby();
         LobbyPlayer player = lobby.addPlayer("Jacuś", headerAccessor.getSessionId());
@@ -140,12 +141,14 @@ public class LobbyController {
         message.setGameId(lobby.getID());
         message.setPlayerId(player.getId());
         messageManager.send(message, headerAccessor.getSessionId(), "/queue/test/start");
+    }
 
-        if(lobby.getPlayersCount() % 4 == 0){
-            lobby.startGame();
-            List<String> sessionsIds = PlayerSessionId.getSessionsIds(lobby.getPlayers());
-            messageManager.sendToAll("START", "/queue/test/startGame", sessionsIds);
-        }
+    @MessageMapping("/test/start")
+    public void  startTest(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) throws IOException {
+        Lobby lobby = lobbyManager.findLobby(param.getGameId());
+        lobby.startGame();
+        List<String> sessionIds = PlayerSessionId.getSessionsIds(lobby.getPlayers());
+        messageManager.sendToAll("START", "/queue/test/startGame", sessionIds);
     }
 
     private boolean isBossRole(Lobby lobby, Team team) {
