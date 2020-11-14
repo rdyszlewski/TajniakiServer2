@@ -2,6 +2,7 @@ package com.parabbits.tajniakiserver.connection;
 
 
 import com.parabbits.tajniakiserver.game.messages.StartGameMessage;
+import com.parabbits.tajniakiserver.game.messages.StartGameMessageCreator;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
@@ -26,7 +27,7 @@ import java.util.UUID;
 public class DisconnectController {
 
     private final String DISCONNECT_PATH = "/queue/common/disconnect";
-    private final String NEW_BOSS_PATH = "/queue/game/new_boss";
+    protected static final String NEW_BOSS_PATH = "/queue/game/new_boss";
 
     @Autowired
     private MessageManager messageManager;
@@ -43,23 +44,24 @@ public class DisconnectController {
         Game game = gameManager.findGame(gameId);
         Player player = game.getPlayers().getPlayer(playerSession);
         lobby.removePlayer(playerSession);
-        List<String> remainingsPlayersSessions = PlayerSessionId.getSessionsIds(lobby.getPlayers());
+        List<String> remainingPlayersSessions = PlayerSessionId.getSessionsIds(lobby.getPlayers());
         DisconnectMessage message = null;
         switch (game.getState().getCurrentStep()){
             case LOBBY:
-
-                message = LobbyDisconnector.getMessage(player, remainingsPlayersSessions);
+                message = LobbyDisconnector.getMessage(player, remainingPlayersSessions);
                 break;
             case VOTING:
                 message = VotingDisconnector.getMessage(player, game);
                 break;
             case GAME:
+                Player newBoss = GameDisconnector.prepareNewBoss(player, game);
                 message = GameDisconnector.getMessage(player, game);
+                sendMessageToNewBoss(game, newBoss);
                 break;
 
         }
         if(message != null){
-            messageManager.sendToAll(message, DISCONNECT_PATH, remainingsPlayersSessions);
+            messageManager.sendToAll(message, DISCONNECT_PATH, remainingPlayersSessions);
             game.getState().setCurrentStep(message.getCurrentStep());
             if(message.getCurrentStep() == GameStep.LOBBY){
                 lobby.reset();
@@ -67,6 +69,10 @@ public class DisconnectController {
         }
     }
 
+    private void sendMessageToNewBoss(Game game, Player newBoss) {
+        StartGameMessage messageForNewBoss = StartGameMessageCreator.create(newBoss.getRole(), newBoss, game);
+        messageManager.send(messageForNewBoss, newBoss.getSessionId(), NEW_BOSS_PATH);
+    }
 
 
 }

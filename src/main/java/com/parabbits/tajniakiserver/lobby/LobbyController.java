@@ -1,5 +1,6 @@
 package com.parabbits.tajniakiserver.lobby;
 
+import com.parabbits.tajniakiserver.connection.PlayersManager;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.lobby.manager.Lobby;
@@ -45,11 +46,20 @@ public class LobbyController {
     @Autowired
     private MessageManager messageManager;
 
+    @Autowired
+    private PlayersManager playersManager;
 
     @MessageMapping("/lobby/connect")
     public void connectToGame(@Payload String nickname, SimpMessageHeaderAccessor headerAccessor) throws Exception {
         Lobby lobby = lobbyManager.findFreeLobby();
-        LobbyPlayer player = lobby.addPlayer(nickname, headerAccessor.getSessionId());
+        String sessionId = headerAccessor.getSessionId();
+        LobbyPlayer player;
+        if(!lobby.containPlayer(headerAccessor.getSessionId())){
+            player = lobby.addPlayer(nickname, sessionId);
+            playersManager.addPlayer(sessionId, lobby);
+        } else {
+            player = lobby.getPlayer(sessionId);
+        }
         sendStartLobbyMessage(player, StartLobbyMessageCreator.create(lobby, player), lobby);
     }
 
@@ -125,6 +135,7 @@ public class LobbyController {
         Team team = lobby.getPlayersCount() % 2 == 0 ? Team.BLUE : Team.RED;
         player.setRole(isBossRole(lobby, team) ? Role.BOSS : Role.PLAYER);
         player.setTeam(team);
+        playersManager.addPlayer(player.getSessionId(), lobby);
         StartLobbyMessage message = new StartLobbyMessage(new ArrayList<>(), null);
         message.setGameId(lobby.getID());
         message.setPlayerId(player.getId());

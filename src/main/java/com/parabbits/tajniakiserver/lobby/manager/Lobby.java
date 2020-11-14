@@ -1,5 +1,6 @@
 package com.parabbits.tajniakiserver.lobby.manager;
 
+import com.parabbits.tajniakiserver.connection.PlayersManager;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.shared.game.Game;
@@ -43,6 +44,10 @@ public class Lobby {
             players.remove(sessionId);
             game.getPlayers().removePlayer(sessionId);
         }
+    }
+
+    public boolean containPlayer(String sessionId){
+        return players.containsKey(sessionId);
     }
 
     public LobbyPlayer getPlayer(String sessionId){

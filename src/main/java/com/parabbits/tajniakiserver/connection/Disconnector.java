@@ -8,9 +8,6 @@ import com.parabbits.tajniakiserver.shared.game.GameStep;
 
 public class Disconnector {
 
-    protected static final String DISCONNECT_PATH = "/queue/common/disconnect";
-    protected static final String NEW_BOSS_PATH = "/queue/game/new_boss";
-
     protected static boolean isEnoughPlayers(Game game){
         return game.getPlayers().getPlayers(Team.BLUE).size() >= game.getSettings().getMinTeamSize()
                 && game.getPlayers().getPlayers(Team.RED).size() >= game.getSettings().getMinTeamSize();
