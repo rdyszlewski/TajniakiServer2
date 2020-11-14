@@ -1,6 +1,5 @@
 package com.parabbits.tajniakiserver.lobby;
 
-import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Role;
 import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.lobby.manager.Lobby;
@@ -35,7 +34,7 @@ public class LobbyController {
     private final String LOBBY_START = "/lobby/players";
     private final String LOBBY_CONNECT = "/queue/connect";
     private final String LOBBY_END = "/queue/lobby/start";
-    private final String LOBBY_READY = "/lobby/ready"; // TODO: zmienić to w aplikacji
+    private final String LOBBY_READY = "/lobby/ready";
 
     @Autowired
     private LobbyManager lobbyManager;

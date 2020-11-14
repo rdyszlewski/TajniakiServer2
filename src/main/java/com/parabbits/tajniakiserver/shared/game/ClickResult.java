@@ -20,10 +20,6 @@ public class ClickResult {
         this.card = card;
     }
 
-    // TODO: można dodać, coś, co będzie informowało o wygranej
-    // TODO: tutaj powinno być coś jeszcze, ale nie pamiętam co
-
-
     public UseCardType getType() {
         return type;
     }

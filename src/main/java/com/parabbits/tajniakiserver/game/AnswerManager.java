@@ -11,55 +11,30 @@ public class AnswerManager {
 
     private final Map<Player, Card> answers = new HashMap<>();
     private final GroupCounter<Card> counter = new GroupCounter<>();
-    private final MapList<Player, Card> editedCards = new MapList<>();
 
-    public void setAnswer(Card card, Player player){
-        // TODO: refaktoryzacja
-        // TODO: sprawdzić, jak to się będzie zachowywać z nullem
+    public List<Card> setAnswer(Card card, Player player){
         Card previousCard=null;
-        if(answers.containsKey(player)){
+        List<Card> editedCards = new ArrayList<>();
+        if(answers.containsKey(player)){ // change answer
             previousCard = answers.get(player);
             counter.remove(previousCard);
-            editedCards.add(player,previousCard);
+            editedCards.add(previousCard);
             answers.remove(player);
-        } if (!card.equals(previousCard)){
+
+        } if (!card.equals(previousCard)){ // add new
             answers.put(player, card);
             counter.add(card);
-            editedCards.add(player, card);
+            editedCards.add(card);
         }
-    }
-
-    public void removeAnswer(Player player){
-        counter.remove(answers.get(player));
-        answers.remove(player);
-        editedCards.add(player, answers.get(player));
+        return editedCards;
     }
 
     public void reset(){
-        // TODO: dodanie wszystkich kart do edytowanych
         answers.clear();
     }
 
     public int getCounter(Card card){
         return counter.getCounter(card);
-    }
-
-    public boolean isValidAnswer(int playersInTeam){
-        return counter.getBestValue() == playersInTeam;
-    }
-
-    public Card getValidAnswer(int teamSize){
-        if(counter.getBestValue() == teamSize){
-            return counter.getBestElement();
-        }
-        return null;
-    }
-
-    // TODO: sprawdzić, czy to się sprawdzi
-    public List<Card> popCardsToUpdate(Player player){
-        List<Card> cards = new ArrayList<>(editedCards.get(player));
-        editedCards.clear(player);
-        return cards;
     }
 
     public Set<Player> getPlayers(Card card){

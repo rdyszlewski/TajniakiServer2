@@ -19,4 +19,19 @@ public enum UseCardResult {
                 throw new IllegalArgumentException();
         }
     }
+
+    public static ClickCorrectness getCorrectness(UseCardResult result){
+        switch (result){
+            case CORRECT:
+            case LAST_CORRECT:
+                return ClickCorrectness.CORRECT;
+            case INCORRECT:
+            case LAST_INCORRECT:
+                return ClickCorrectness.INCORRECT;
+            case KILLER:
+                return ClickCorrectness.KILLER;
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
 }

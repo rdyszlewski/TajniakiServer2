@@ -31,6 +31,7 @@ public class Lobby {
             player.setId(currentId);
             player.setSessionId(sessionId);
             player.setNickname(nickname);
+            player.setTeam(Team.LACK);
             currentId++;
             return addPlayer(player, sessionId);
         }

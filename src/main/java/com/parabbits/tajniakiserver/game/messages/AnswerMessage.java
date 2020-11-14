@@ -7,39 +7,26 @@ import java.util.List;
 
 public class AnswerMessage {
 
-//    private ClientCard card;
-    private List<ClientCard> cardsToUpdate;
-    private boolean correct;
-    private GameState gameState;
+    private final List<ClientCard> cardsToUpdate;
+    private final boolean correct;
+    private final GameStateMessage gameState;
 
     public AnswerMessage(List<ClientCard> cardsToUpdate, boolean correct, GameState gameState) {
-//        this.card = card;
         this.cardsToUpdate = cardsToUpdate;
         this.correct = correct;
-        this.gameState = gameState;
+        this.gameState = new GameStateMessage(gameState);
     }
 
     public List<ClientCard> getCardsToUpdate() {
         return cardsToUpdate;
     }
 
-    public void setCardsToUpdate(List<ClientCard> cardsToUpdate) {
-        this.cardsToUpdate = cardsToUpdate;
-    }
-
     public boolean isCorrect() {
         return correct;
     }
 
-    public void setCorrect(boolean correct) {
-        this.correct = correct;
-    }
 
-    public GameState getGameState() {
+    public GameStateMessage getGameState() {
         return gameState;
-    }
-
-    public void setGameState(GameState gameState) {
-        this.gameState = gameState;
     }
 }

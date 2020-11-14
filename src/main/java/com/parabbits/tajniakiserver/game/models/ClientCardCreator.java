@@ -20,11 +20,9 @@ public class ClientCardCreator {
     }
 
     public static List<ClientCard> createCards(List<Card> cards, Game game, Role role, Team team){
-        List<ClientCard> clientCards = new ArrayList<>();
-        for(Card card: cards){
-            clientCards.add(createCard(card, game, role, team));
-        }
-        return clientCards;
+        return cards.parallelStream()
+                .map(x->createCard(x, game, role, team))
+                .collect(Collectors.toList());
     }
 
     private static ClientCard createCardForBoss(Card card, Game game, Team team){

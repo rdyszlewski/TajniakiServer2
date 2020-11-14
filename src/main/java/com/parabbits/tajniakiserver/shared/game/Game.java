@@ -85,7 +85,6 @@ public class Game {
     }
 
     public UseCardResult useCard(Card card){
-        // TODO: prawdopodobnie tutaj wystarczy word
         board.getAnswerManager().reset();
         board.getFlagsManager().removeFlags(card);
         return state.useCard(card);
@@ -102,14 +101,14 @@ public class Game {
     public ClickResult click(int cardId, Player player){
         Card card = board.getCard(cardId);
         if(canClick(player, card) && state.isGameActive()){
-            board.getAnswerManager().setAnswer(card, player);
+            List<Card> editedCards = board.getAnswerManager().setAnswer(card, player);
             if(allPlayersAnswer(card, player.getTeam())){
                 history.addAnswer(card.getWord(), card.getColor());
                  UseCardResult result = useCard(card);
                  UseCardType type = isEndGame(result) ? UseCardType.END_GAME : UseCardType.ANSWER;
-                 return prepareClickResult(player, card, type);
+                 return prepareClickResult(card, editedCards, type, result);
             } else {
-                return prepareClickResult(player, card, UseCardType.CLICK);
+                return prepareClickResult(card, editedCards, UseCardType.CLICK, null);
             }
         }
         return null;
@@ -119,10 +118,11 @@ public class Game {
         return result == UseCardResult.LAST_CORRECT || result == UseCardResult.LAST_INCORRECT || result == UseCardResult.KILLER;
     }
 
-    private ClickResult prepareClickResult(Player player, Card card, UseCardType type) {
-        ClickCorrectness correctness = type != UseCardType.CLICK
-                ? CorrectnessChecker.getCorrectness(card, player.getTeam()) : null;
-        List<Card> updatedCards = board.getAnswerManager().popCardsToUpdate(player);
+    private ClickResult prepareClickResult(Card card, List<Card> updatedCards, UseCardType type, UseCardResult result) {
+        ClickCorrectness correctness = type != UseCardType.CLICK && result != null
+                ? UseCardResult.getCorrectness(result) : null;
+        // TODO: czy to musi być tutaj
+//        List<Card> updatedCards = board.getAnswerManager().popCardsToUpdate(player);
         return new ClickResult(type, correctness, updatedCards, card);
     }
 
@@ -143,7 +143,7 @@ public class Game {
     public Card flag(int cardId, Player player){
         Card card = board.getCard(cardId);
         if(canFlag(card)){
-            board.getFlagsManager().addFlag(player, card); // TODO: przecież to może zwracać zmodyfikowane wartości. Dlaczego tego nie robi?
+            board.getFlagsManager().addFlag(player, card);
             return card;
         }
         return null;

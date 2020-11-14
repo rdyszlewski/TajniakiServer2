@@ -10,7 +10,7 @@ public class StartGameMessage {
     private String nickname;
     private Role playerRole;
     private Team playerTeam;
-    private GameState gameState;
+    private GameStateMessage gameState;
     private List<ClientCard> cards;
     private List<Player> players;
 
@@ -38,11 +38,11 @@ public class StartGameMessage {
         this.playerTeam = playerTeam;
     }
 
-    public GameState getGameState() {
+    public GameStateMessage getGameState() {
         return gameState;
     }
 
-    public void setGameState(GameState gameState) {
+    public void setGameState(GameStateMessage gameState) {
         this.gameState = gameState;
     }
 

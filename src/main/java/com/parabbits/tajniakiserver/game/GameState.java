@@ -3,8 +3,6 @@ package com.parabbits.tajniakiserver.game;
 import com.parabbits.tajniakiserver.game.models.*;
 import com.parabbits.tajniakiserver.shared.game.GameStep;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class GameState {
 
@@ -99,7 +97,7 @@ public class GameState {
         } else {
             active = false;
         }
-        if(isPassCard(card)){
+        if(!isPassCard(card)){
             card.setChecked(true);
         }
 
