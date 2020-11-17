@@ -8,7 +8,7 @@ import java.util.List;
 
 public class GameHistory {
 
-    private List<SummaryEntry> history = new ArrayList<>();
+    private final List<SummaryEntry> history = new ArrayList<>();
     private List<String> blueWords;
     private List<String> redWords;
     private String killer;

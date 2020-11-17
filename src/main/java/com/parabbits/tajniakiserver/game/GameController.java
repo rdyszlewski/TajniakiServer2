@@ -71,7 +71,7 @@ public class GameController {
                 handleClickMessage(player, result.getUpdatedCards(), game);
                 break;
             case ANSWER:
-                handleAnswerMessage(player, CorrectnessChecker.isCorrect(result.getCorrectness()), game, result.getUpdatedCards());
+                handleAnswerMessage(player, CorrectnessUtil.isCorrect(result.getCorrectness()), game, result.getUpdatedCards());
                 break;
             case END_GAME:
                 // TODO: na razie zostawić to w ten spsobó

@@ -4,10 +4,11 @@ import com.parabbits.tajniakiserver.game.models.Card;
 import com.parabbits.tajniakiserver.game.models.CardColor;
 import com.parabbits.tajniakiserver.game.models.Team;
 
-public class CorrectnessChecker {
+public class CorrectnessUtil {
 
     public static ClickCorrectness getCorrectness(Card card, Team team){
-        if((card.getColor() == CardColor.BLUE) && team == Team.BLUE || card.getColor() == CardColor.RED && team == Team.RED){
+        if((card.getColor() == CardColor.BLUE) && team == Team.BLUE
+                || card.getColor() == CardColor.RED && team == Team.RED){
             return ClickCorrectness.CORRECT;
         } else if(card.getColor() == CardColor.KILLER){
             return ClickCorrectness.KILLER;

@@ -7,15 +7,15 @@ import com.parabbits.tajniakiserver.shared.game.GameStep;
 
 public class GameStateMessage {
 
-    private GameStep currentStep;
-    private Team currentTeam;
-    private Role currentRole;
+    private final GameStep currentStep;
+    private final Team currentTeam;
+    private final Role currentRole;
 
-    private int remainingBlue;
-    private int remainingRed;
+    private final int remainingBlue;
+    private final int remainingRed;
 
-    private String currentWord;
-    private int remainingAnswers;
+    private final String currentWord;
+    private final int remainingAnswers;
 
     public GameStateMessage(GameState gameState){
         currentStep = gameState.getCurrentStep();

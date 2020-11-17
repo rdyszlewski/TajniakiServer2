@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 public class Board {
@@ -27,10 +29,7 @@ public class Board {
 
     public void init(Team firstTeam, GameSettings settings) throws IOException {
         List<Card> cardsList = BoardCreator.createCards(firstTeam, settings);
-        cards = new HashMap<>();
-        for(Card card: cardsList){
-            cards.put(card.getId(), card);
-        }
+        cards = cardsList.stream().collect(Collectors.toMap(Card::getId, Function.identity()));
     }
 
     public Card getCard(Integer cardId){

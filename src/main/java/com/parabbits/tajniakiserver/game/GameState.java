@@ -84,7 +84,7 @@ public class GameState {
 
     public UseCardResult useCard(Card card){
         decreaseRemainingCards(card);
-        ClickCorrectness correctness = CorrectnessChecker.getCorrectness(card, getCurrentTeam());
+        ClickCorrectness correctness = CorrectnessUtil.getCorrectness(card, getCurrentTeam());
         if(correctness == ClickCorrectness.CORRECT){
             remainingAnswers--;
             addPoints(card);

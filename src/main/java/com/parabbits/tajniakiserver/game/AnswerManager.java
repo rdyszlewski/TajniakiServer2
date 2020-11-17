@@ -3,13 +3,14 @@ package com.parabbits.tajniakiserver.game;
 import com.parabbits.tajniakiserver.game.models.Card;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.utils.GroupCounter;
-import com.parabbits.tajniakiserver.utils.MapList;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class AnswerManager {
 
-    private final Map<Player, Card> answers = new HashMap<>();
+    private final Map<Player, Card> answers = new ConcurrentHashMap<>();
     private final GroupCounter<Card> counter = new GroupCounter<>();
 
     public List<Card> setAnswer(Card card, Player player){
@@ -38,12 +39,9 @@ public class AnswerManager {
     }
 
     public Set<Player> getPlayers(Card card){
-        Set<Player> players = new HashSet<>();
-        for(Map.Entry<Player, Card> entry: answers.entrySet()){
-            if(entry.getValue().equals(card)){
-                players.add(entry.getKey());
-            }
-        }
-        return players;
+        return answers.entrySet().parallelStream()
+                .filter(entry -> entry.getValue()==card)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -16,7 +17,7 @@ public class LobbyManager {
     @Autowired
     private GameManager gameManager;
 
-    private Map<UUID, Lobby> lobbyMap = new HashMap<>();
+    private Map<UUID, Lobby> lobbyMap = new ConcurrentHashMap<>();
 
     public Lobby findFreeLobby() throws IOException {
         Lobby lobby = LobbyFinder.findBestLobby(lobbyMap.values());

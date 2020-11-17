@@ -57,12 +57,7 @@ public class GamePlayersManager {
     }
 
     public Player getPlayerById(long id){
-        for(Player player: players.values()){
-            if(player.getId() == id){
-                return player;
-            }
-        }
-        return null;
+        return players.values().stream().filter(player -> player.getId()==id).findAny().get();
     }
 
     public List<Player> getAllPlayers(){

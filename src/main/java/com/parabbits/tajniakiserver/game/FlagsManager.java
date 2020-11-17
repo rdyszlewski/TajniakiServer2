@@ -5,21 +5,24 @@ import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.game.models.Team;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class FlagsManager {
 
-    private final Map<Card, Set<Player>> flagsMap = new HashMap<>();
+    private final ConcurrentHashMap<Card, Set<Player>> flagsMap = new ConcurrentHashMap<>();
 
     public void addFlag(Player player, Card card){
-        if(!flagsMap.containsKey(card)){
-            flagsMap.put(card, new HashSet<>());
-        }
+        synchronized (this){
+            if(!flagsMap.containsKey(card)){
+                flagsMap.put(card, new HashSet<>());
+            }
 
-        if(!flagsMap.get(card).contains(player)){
-            flagsMap.get(card).add(player);
-        } else {
-            flagsMap.get(card).remove(player);
+            if(!flagsMap.get(card).contains(player)){
+                flagsMap.get(card).add(player);
+            } else {
+                flagsMap.get(card).remove(player);
+            }
         }
     }
 

@@ -14,20 +14,19 @@ import java.util.stream.Collectors;
 
 public class Game {
 
-    private UUID id;
+    private final UUID id;
     private final GamePlayersManager players;
-    private  GameHistory history = new GameHistory();
+    private GameHistory history = new GameHistory();
     private GameSettings settings;
-    private  GameState state;
-    private  Board board;
+    private GameState state;
+    private Board board;
 
     private Team firstTeam;
 
-
-    public UUID getID(){
+    public final UUID getID(){
         return id;
     }
-    public GamePlayersManager getPlayers(){
+    public final GamePlayersManager getPlayers(){
         return players;
     }
 
@@ -58,6 +57,11 @@ public class Game {
         return state;
     }
 
+    /**
+     * Starts new game. All values are reset. Initializes all values.
+     * @param playersList players, who will participate in the game
+     * @throws IOException can be throws, during reading words
+     */
     public void startGame(List<Player> playersList) throws IOException {
         playersList.forEach(players::addPlayer);
         if(firstTeam == null){
@@ -122,7 +126,6 @@ public class Game {
         ClickCorrectness correctness = type != UseCardType.CLICK && result != null
                 ? UseCardResult.getCorrectness(result) : null;
         // TODO: czy to musi być tutaj
-//        List<Card> updatedCards = board.getAnswerManager().popCardsToUpdate(player);
         return new ClickResult(type, correctness, updatedCards, card);
     }
 
@@ -183,5 +186,4 @@ public class Game {
     public Set<Player> getFlagsOwner(Card card, Team team){
         return board.getFlagsManager().getFlagsOwners(card, team);
     }
-
 }

@@ -8,10 +8,10 @@ import java.util.List;
 
 public class ClickResult {
 
-    private UseCardType type;
-    private ClickCorrectness correctness;
-    private List<Card> updatedCards;
-    private Card card;
+    private final UseCardType type;
+    private final ClickCorrectness correctness;
+    private final List<Card> updatedCards;
+    private final Card card;
 
     public ClickResult(UseCardType type, ClickCorrectness correctness, List<Card> updatedCards, Card card){
         this.type = type;
@@ -24,31 +24,15 @@ public class ClickResult {
         return type;
     }
 
-    public void setType(UseCardType type) {
-        this.type = type;
-    }
-
     public ClickCorrectness getCorrectness() {
         return correctness;
-    }
-
-    public void setCorrectness(ClickCorrectness correctness) {
-        this.correctness = correctness;
     }
 
     public List<Card> getUpdatedCards() {
         return updatedCards;
     }
 
-    public void setUpdatedCards(List<Card> updatedCards) {
-        this.updatedCards = updatedCards;
-    }
-
     public Card getCard() {
         return card;
-    }
-
-    public void setCard(Card card) {
-        this.card = card;
     }
 }

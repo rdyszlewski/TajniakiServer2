@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Service
@@ -19,38 +18,37 @@ public class MessageManager {
     private SimpMessagingTemplate messagingTemplate;
 
     public void sendToAll(Object message, String path, Game game){
-        for(Player player: game.getPlayers().getAllPlayers()){
+        getAllPlayers(game).parallelStream().forEach(player -> {
             send(message, player.getSessionId(), path);
-        }
+        });
     }
 
     public void sendToAll(Object message, String path, List<String> sessionsId){
-        for(String sessionId: sessionsId){
-            send(message, sessionId, path);
-        }
+        sessionsId.parallelStream().forEach(s -> {
+            send(message, s, path);
+        });
     }
 
     public void sendToPlayersWithRole(Object message, Role role, String path, Game game){
-        for(Player player: game.getPlayers().getAllPlayers()){
-            if(player.getRole()== role){
-                System.out.println("Wysyłanie do użytkownika " + player.getNickname());
-                send(message, player.getSessionId(), path);
-            }
-        }
+        getAllPlayers(game).parallelStream().filter(player -> player.getRole() == role).forEach(player -> {
+            send(message, player.getSessionId(), path);
+        });
     }
 
     public void sendToTeam(Object message, Team team, String path, Game game){
-        for(Player player: game.getPlayers().getPlayers(team)){
+        getAllPlayers(game).parallelStream().filter(player -> player.getTeam() == team).forEach(player -> {
             send(message, player.getSessionId(), path);
-        }
+        });
+    }
+
+    private List<Player> getAllPlayers(Game game){
+        return game.getPlayers().getAllPlayers();
     }
 
     public void sendToRoleFromTeam(Object message, Role role, Team team, String path, Game game){
-        for(Player player: game.getPlayers().getPlayers(team)){
-            if(player.getRole() == role){
-                send(message, player.getSessionId(), path);
-            }
-        }
+        getAllPlayers(game).parallelStream().filter(player -> player.getRole() == role).forEach(player -> {
+            send(message, player.getSessionId(), path);
+        });
     }
 
     public void send(Object message, String sessionId, String path){
