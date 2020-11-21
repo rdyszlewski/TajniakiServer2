@@ -4,6 +4,7 @@ import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.shared.game.GameManager;
 import com.parabbits.tajniakiserver.shared.game.GameStep;
+import com.parabbits.tajniakiserver.shared.messeges.Message;
 import com.parabbits.tajniakiserver.shared.parameters.IdParam;
 import com.parabbits.tajniakiserver.shared.parameters.LongParam;
 import com.parabbits.tajniakiserver.shared.state.StateControl;
@@ -75,7 +76,7 @@ public class VotingController {
 
             @Override
             public void onTick(Long time) {
-                messageManager.sendToAll(time, VOTING_TIMER, game);
+                messageManager.sendToAll(new Message(time.toString()), VOTING_TIMER, game);
             }
         });
     }
@@ -94,6 +95,6 @@ public class VotingController {
 
     public void endVoting(Game game, Voting voting) {
         PlayerRole.setRole(game, voting);
-        messageManager.sendToAll("END", VOTING_END, game);
+        messageManager.sendToAll(new Message("END"), VOTING_END, game);
     }
 }

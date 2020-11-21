@@ -11,8 +11,8 @@ import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessage;
 import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessageCreator;
 import com.parabbits.tajniakiserver.lobby.messages.TeamMessage;
 import com.parabbits.tajniakiserver.shared.PlayerSessionId;
-import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.shared.parameters.BoolParam;
+import com.parabbits.tajniakiserver.shared.messeges.Message;
 import com.parabbits.tajniakiserver.shared.parameters.IdParam;
 import com.parabbits.tajniakiserver.shared.parameters.StringParam;
 import com.parabbits.tajniakiserver.shared.timer.ITimerCallback;
@@ -119,7 +119,7 @@ public class LobbyController {
             @Override
             public void onFinish() throws IOException {
                 lobby.startGame();
-                messageManager.sendToAll("START", LOBBY_END, sessionsIds);
+                messageManager.sendToAll(new Message("START"), LOBBY_END, sessionsIds);
             }
 
             @Override
@@ -148,7 +148,7 @@ public class LobbyController {
         Lobby lobby = lobbyManager.findLobby(param.getGameId());
         lobby.startGame();
         List<String> sessionIds = PlayerSessionId.getSessionsIds(lobby.getPlayers());
-        messageManager.sendToAll("START", "/queue/test/startGame", sessionIds);
+        messageManager.sendToAll(new Message("Start"), "/queue/test/startGame", sessionIds);
     }
 
     private boolean isBossRole(Lobby lobby, Team team) {

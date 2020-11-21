@@ -78,6 +78,9 @@ public class TeamVoting {
                 maxVotes = val > 50? maxVotes: votes;
             }
         }
+        if(bestCandidate == null && !candidates.isEmpty()){
+            return candidates.values().stream().findFirst().get();
+        }
         return bestCandidate;
     }
 

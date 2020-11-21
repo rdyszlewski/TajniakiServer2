@@ -46,7 +46,7 @@ public class MessageManager {
     }
 
     public void sendToRoleFromTeam(Object message, Role role, Team team, String path, Game game){
-        getAllPlayers(game).parallelStream().filter(player -> player.getRole() == role).forEach(player -> {
+        getAllPlayers(game).parallelStream().filter(player -> player.getRole() == role &&  player.getTeam() == team).forEach(player -> {
             send(message, player.getSessionId(), path);
         });
     }

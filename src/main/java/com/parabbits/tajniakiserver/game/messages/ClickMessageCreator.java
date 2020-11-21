@@ -5,8 +5,6 @@ import com.parabbits.tajniakiserver.game.models.ClientCard;
 import com.parabbits.tajniakiserver.game.models.ClientCardCreator;
 import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.shared.game.Game;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

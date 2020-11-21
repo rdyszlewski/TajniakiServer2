@@ -2,7 +2,6 @@ package com.parabbits.tajniakiserver.game.models;
 
 import com.parabbits.tajniakiserver.shared.game.Game;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,7 +32,8 @@ public class ClientCardCreator {
         CardColor color = getPlayerCardColor(card);
         ClientCard clientCard = new ClientCard(card.getId(), card.getWord(), color, card.isChecked());
         clientCard.setAnswers(getPlayerFromAnswer(game, card));
-        clientCard.setFlags(getPlayerFromFlags(game, card, team));
+        // TODO: to powinno odziałać jakoś tak
+        clientCard.setFlags(getPlayersIdsFromFlags(game, card, team));
 
         return clientCard;
     }
@@ -56,7 +56,7 @@ public class ClientCardCreator {
         return players.stream().map(Player::getId).collect(Collectors.toSet());
     }
 
-    private static Set<Long> getPlayerFromFlags(Game game, Card card, Team team){
+    private static Set<Long> getPlayersIdsFromFlags(Game game, Card card, Team team){
         Set<Player> players = game.getFlagsOwner(card, team);
         return getPlayersIds(players);
     }
