@@ -11,11 +11,11 @@ public class QuestionParam extends IdParam {
     @JsonProperty("number")
     private int number;
 
-    public String getQuestion(){
+    public String getQuestion() {
         return question;
     }
 
-    public int getNumber(){
+    public int getNumber() {
         return number;
     }
 }

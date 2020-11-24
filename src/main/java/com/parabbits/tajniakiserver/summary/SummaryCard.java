@@ -11,7 +11,7 @@ public class SummaryCard {
     private Team team;
     private String question;
 
-    public SummaryCard(int id, String word, CardColor color){
+    public SummaryCard(int id, String word, CardColor color) {
         this.id = id;
         this.word = word;
         this.color = color;

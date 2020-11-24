@@ -10,7 +10,7 @@ public final class EndGameMessage {
     private final int remainingBlue;
     private final int remainingRed;
 
-    public EndGameMessage(final Team winner, final EndGameCause cause, final int remainingBlue, final int remainingRed){
+    public EndGameMessage(final Team winner, final EndGameCause cause, final int remainingBlue, final int remainingRed) {
         this.winner = winner;
         this.cause = cause;
         this.remainingBlue = remainingBlue;

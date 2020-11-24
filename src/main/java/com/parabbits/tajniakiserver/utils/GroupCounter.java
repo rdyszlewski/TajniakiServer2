@@ -8,33 +8,33 @@ public class GroupCounter<T> {
     private volatile T bestElement;
     private volatile int bestValue;
 
-    public void add(T element){
-        counter.compute(element, (k, v)->v == null? 1: v + 1);
-        synchronized (this){
-            if(counter.get(element) > bestValue){
+    public void add(T element) {
+        counter.compute(element, (k, v) -> v == null ? 1 : v + 1);
+        synchronized (this) {
+            if (counter.get(element) > bestValue) {
                 bestElement = element;
                 bestValue = counter.get(element);
             }
         }
     }
 
-    public int getCounter(T element){
+    public int getCounter(T element) {
         return counter.getOrDefault(element, 0);
     }
 
-    public void remove(T element){
+    public void remove(T element) {
         counter.remove(element);
     }
 
-    public T getBestElement(){
+    public T getBestElement() {
         return bestElement;
     }
 
-    public int getBestValue(){
+    public int getBestValue() {
         return bestValue;
     }
 
-    public void reset(){
+    public void reset() {
         counter.clear();
     }
 }

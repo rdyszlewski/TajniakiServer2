@@ -7,12 +7,12 @@ public enum UseCardResult {
     LAST_INCORRECT,
     KILLER;
 
-    public static UseCardResult getResult(ClickCorrectness correctness, boolean endGame){
-        switch (correctness){
+    public static UseCardResult getResult(ClickCorrectness correctness, boolean endGame) {
+        switch (correctness) {
             case CORRECT:
-                return endGame ? LAST_CORRECT: CORRECT;
+                return endGame ? LAST_CORRECT : CORRECT;
             case INCORRECT:
-                return endGame ? LAST_INCORRECT: INCORRECT;
+                return endGame ? LAST_INCORRECT : INCORRECT;
             case KILLER:
                 return KILLER;
             default:
@@ -20,8 +20,8 @@ public enum UseCardResult {
         }
     }
 
-    public static ClickCorrectness getCorrectness(UseCardResult result){
-        switch (result){
+    public static ClickCorrectness getCorrectness(UseCardResult result) {
+        switch (result) {
             case CORRECT:
             case LAST_CORRECT:
                 return ClickCorrectness.CORRECT;

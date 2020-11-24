@@ -3,7 +3,7 @@ package com.parabbits.tajniakiserver.game.models;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ClientCard extends Card{
+public class ClientCard extends Card {
 
     private Set<Long> answers;
     private Set<Long> flags;

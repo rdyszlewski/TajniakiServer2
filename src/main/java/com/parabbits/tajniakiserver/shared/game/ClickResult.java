@@ -13,7 +13,7 @@ public class ClickResult {
     private final List<Card> updatedCards;
     private final Card card;
 
-    public ClickResult(UseCardType type, ClickCorrectness correctness, List<Card> updatedCards, Card card){
+    public ClickResult(UseCardType type, ClickCorrectness correctness, List<Card> updatedCards, Card card) {
         this.type = type;
         this.correctness = correctness;
         this.updatedCards = updatedCards;

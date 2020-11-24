@@ -7,14 +7,14 @@ public enum Team {
 
     private final int value;
 
-    Team(int value){
+    Team(int value) {
         this.value = value;
     }
 
-    public Team opposite(){
-        if(value == BLUE.value){
+    public Team opposite() {
+        if (value == BLUE.value) {
             return RED;
-        } else if (value == RED.value){
+        } else if (value == RED.value) {
             return BLUE;
         }
         return LACK;

@@ -23,14 +23,15 @@ public class Game {
 
     private Team firstTeam;
 
-    public final UUID getID(){
+    public final UUID getID() {
         return id;
     }
-    public final GamePlayersManager getPlayers(){
+
+    public final GamePlayersManager getPlayers() {
         return players;
     }
 
-    public Game(UUID id){
+    public Game(UUID id) {
         this.id = id;
         players = new GamePlayersManager(settings);
         reset();
@@ -38,11 +39,11 @@ public class Game {
 
     private boolean started = false;
 
-    public boolean isStarted(){
+    public boolean isStarted() {
         return started;
     }
 
-    public void reset(){
+    public void reset() {
         history = new GameHistory();
         firstTeam = null;
         state = new GameState();
@@ -53,18 +54,19 @@ public class Game {
         getState().setCurrentStep(GameStep.LOBBY);
     }
 
-    public GameState getState(){
+    public GameState getState() {
         return state;
     }
 
     /**
      * Starts new game. All values are reset. Initializes all values.
+     *
      * @param playersList players, who will participate in the game
      * @throws IOException can be throws, during reading words
      */
     public void startGame(List<Player> playersList) throws IOException {
         playersList.forEach(players::addPlayer);
-        if(firstTeam == null){
+        if (firstTeam == null) {
             firstTeam = randomFirstGroup();
             board.init(firstTeam, settings);
             state.initState(firstTeam, settings.getFirstTeamWords());
@@ -73,22 +75,22 @@ public class Game {
         started = true;
     }
 
-    private void initHistory(){
+    private void initHistory() {
         history.setWords(getWords(CardColor.BLUE), Team.BLUE);
         history.setWords(getWords(CardColor.RED), Team.RED);
         history.setKiller(getWords(CardColor.KILLER).get(0));
     }
 
-    private List<String> getWords(CardColor cardColor){
-        return board.getCards().stream().filter(card->card.getColor()==cardColor).map(Card::getWord).collect(Collectors.toList());
+    private List<String> getWords(CardColor cardColor) {
+        return board.getCards().stream().filter(card -> card.getColor() == cardColor).map(Card::getWord).collect(Collectors.toList());
     }
 
-    private Team randomFirstGroup(){
+    private Team randomFirstGroup() {
         int randValue = new Random().nextInt(100);
         return randValue < 50 ? Team.BLUE : Team.RED;
     }
 
-    public UseCardResult useCard(Card card){
+    public UseCardResult useCard(Card card) {
         board.getAnswerManager().reset();
         board.getFlagsManager().removeFlags(card);
         return state.useCard(card);
@@ -98,19 +100,19 @@ public class Game {
         return settings;
     }
 
-    public GameHistory getHistory(){
+    public GameHistory getHistory() {
         return history;
     }
 
-    public ClickResult click(int cardId, Player player){
+    public ClickResult click(int cardId, Player player) {
         Card card = board.getCard(cardId);
-        if(canClick(player, card) && state.isGameActive()){
+        if (canClick(player, card) && state.isGameActive()) {
             List<Card> editedCards = board.getAnswerManager().setAnswer(card, player);
-            if(allPlayersAnswer(card, player.getTeam())){
+            if (allPlayersAnswer(card, player.getTeam())) {
                 history.addAnswer(card.getWord(), card.getColor());
-                 UseCardResult result = useCard(card);
-                 UseCardType type = isEndGame(result) ? UseCardType.END_GAME : UseCardType.ANSWER;
-                 return prepareClickResult(card, editedCards, type, result);
+                UseCardResult result = useCard(card);
+                UseCardType type = isEndGame(result) ? UseCardType.END_GAME : UseCardType.ANSWER;
+                return prepareClickResult(card, editedCards, type, result);
             } else {
                 return prepareClickResult(card, editedCards, UseCardType.CLICK, null);
             }
@@ -118,7 +120,7 @@ public class Game {
         return null;
     }
 
-    private boolean isEndGame(UseCardResult result){
+    private boolean isEndGame(UseCardResult result) {
         return result == UseCardResult.LAST_CORRECT || result == UseCardResult.LAST_INCORRECT || result == UseCardResult.KILLER;
     }
 
@@ -129,37 +131,37 @@ public class Game {
         return new ClickResult(type, correctness, updatedCards, card);
     }
 
-    private boolean canClick(Player player, Card card){
+    private boolean canClick(Player player, Card card) {
         return isPlayerTurn(player) && !card.isChecked();
     }
 
-    private boolean isPlayerTurn(Player player){
+    private boolean isPlayerTurn(Player player) {
         return player.getTeam() == state.getCurrentTeam()
                 && player.getRole() == state.getCurrentStage();
     }
 
-    private boolean allPlayersAnswer(Card card, Team team){
+    private boolean allPlayersAnswer(Card card, Team team) {
         int answers = board.getAnswerManager().getCounter(card);
         return answers == players.getTeamSize(team) - 1;
     }
 
-    public Card flag(int cardId, Player player){
+    public Card flag(int cardId, Player player) {
         Card card = board.getCard(cardId);
-        if(canFlag(card)){
+        if (canFlag(card)) {
             board.getFlagsManager().addFlag(player, card);
             return card;
         }
         return null;
     }
 
-    private boolean canFlag(Card card){
+    private boolean canFlag(Card card) {
         return !card.isChecked();
     }
 
-    public boolean setQuestion(QuestionParam question, String sessionId){
+    public boolean setQuestion(QuestionParam question, String sessionId) {
         Player player = players.getPlayer(sessionId);
-        if(isPlayerTurn(player)){
-            if(WordValidator.validate(question.getQuestion())){
+        if (isPlayerTurn(player)) {
+            if (WordValidator.validate(question.getQuestion())) {
                 state.setAnswerState(question.getQuestion(), question.getNumber());
                 history.addQuestion(question.getQuestion(), question.getNumber(), player.getTeam());
                 return true;
@@ -168,22 +170,22 @@ public class Game {
         return false;
     }
 
-    public List<Card> getCards(){
+    public List<Card> getCards() {
         return board.getCards();
     }
 
-    public List<Card> getCards(boolean withoutPass){
-        if(withoutPass){
-            return board.getCards().stream().filter(x->x.getId()>=0).collect(Collectors.toList());
+    public List<Card> getCards(boolean withoutPass) {
+        if (withoutPass) {
+            return board.getCards().stream().filter(x -> x.getId() >= 0).collect(Collectors.toList());
         }
         return getCards();
     }
 
-    public Set<Player> getPlayersWhoClicked(Card card){
+    public Set<Player> getPlayersWhoClicked(Card card) {
         return board.getAnswerManager().getPlayers(card);
     }
 
-    public Set<Player> getFlagsOwner(Card card, Team team){
+    public Set<Player> getFlagsOwner(Card card, Team team) {
         return board.getFlagsManager().getFlagsOwners(card, team);
     }
 }

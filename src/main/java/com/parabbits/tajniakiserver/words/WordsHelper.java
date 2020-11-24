@@ -12,14 +12,14 @@ public class WordsHelper {
         List<String> resultWords = new ArrayList<>();
         BufferedReader bufferedReader = new BufferedReader(new FileReader(filepath));
         String line;
-        while((line = bufferedReader.readLine()) != null){
+        while ((line = bufferedReader.readLine()) != null) {
             resultWords.add(line);
         }
         bufferedReader.close();
         return resultWords;
     }
 
-    public static List<String> randomWords(List<String> allWords, int numberOfWords){
+    public static List<String> randomWords(List<String> allWords, int numberOfWords) {
         Collections.shuffle(allWords);
         return allWords.subList(0, numberOfWords);
     }

@@ -7,7 +7,7 @@ public class IntParam extends IdParam {
     @JsonProperty("value")
     private int value;
 
-    public int getValue(){
+    public int getValue() {
         return value;
     }
 }

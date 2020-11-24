@@ -2,9 +2,7 @@ package com.parabbits.tajniakiserver.shared.parameters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.UUID;
-
-public class BoolParam extends IdParam{
+public class BoolParam extends IdParam {
 
 //    @JsonProperty("gameId")
 //    private UUID gameId;
@@ -16,7 +14,7 @@ public class BoolParam extends IdParam{
 //        return gameId;
 //    }
 
-    public boolean getValue(){
+    public boolean getValue() {
         return value;
     }
 }

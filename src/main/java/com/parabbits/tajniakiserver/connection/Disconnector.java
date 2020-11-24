@@ -8,12 +8,12 @@ import com.parabbits.tajniakiserver.shared.game.GameStep;
 
 public class Disconnector {
 
-    protected static boolean isEnoughPlayers(Game game){
+    protected static boolean isEnoughPlayers(Game game) {
         return game.getPlayers().getPlayers(Team.BLUE).size() >= game.getSettings().getMinTeamSize()
                 && game.getPlayers().getPlayers(Team.RED).size() >= game.getSettings().getMinTeamSize();
     }
 
-    protected static DisconnectMessage createDisconnectMessage(Player player, GameStep step){
+    protected static DisconnectMessage createDisconnectMessage(Player player, GameStep step) {
         DisconnectMessage message = new DisconnectMessage();
         message.setDisconnectedPlayer(player);
         message.setCurrentStep(step);

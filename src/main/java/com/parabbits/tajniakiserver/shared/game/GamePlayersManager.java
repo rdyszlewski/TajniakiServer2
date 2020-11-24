@@ -14,12 +14,12 @@ public class GamePlayersManager {
 
     private final Set<Long> usedPlayers = new HashSet<>();
 
-    public GamePlayersManager(GameSettings settings){
+    public GamePlayersManager(GameSettings settings) {
         this.settings = settings;
     }
 
-    public Player addPlayer(String sessionId, String nickname){
-        if (isNotFull() && playerNotExists(sessionId)){
+    public Player addPlayer(String sessionId, String nickname) {
+        if (isNotFull() && playerNotExists(sessionId)) {
             Player player = new Player(sessionId, nickname);
             addPlayer(player);
             return player;
@@ -35,61 +35,61 @@ public class GamePlayersManager {
         return players.size() < settings.getMaxTeamSize() * 2;
     }
 
-    public synchronized void addPlayer(Player player){
+    public synchronized void addPlayer(Player player) {
         currentPlayerID++;
         players.put(player.getSessionId(), player);
     }
 
-    public void removePlayer(String sessionId){
+    public void removePlayer(String sessionId) {
         System.out.println(players.size());
-        if (players.containsKey(sessionId)){
+        if (players.containsKey(sessionId)) {
             Player player = players.get(sessionId);
             removeUsePlayer(player);
             players.remove(sessionId);
         }
     }
 
-    public Player getPlayer(String sessionId){
-        if(players.containsKey(sessionId)){
+    public Player getPlayer(String sessionId) {
+        if (players.containsKey(sessionId)) {
             return players.get(sessionId);
         }
         return null;
     }
 
-    public Player getPlayerById(long id){
-        return players.values().stream().filter(player -> player.getId()==id).findAny().get();
+    public Player getPlayerById(long id) {
+        return players.values().stream().filter(player -> player.getId() == id).findAny().get();
     }
 
-    public List<Player> getAllPlayers(){
+    public List<Player> getAllPlayers() {
         return new ArrayList<>(players.values());
     }
 
-    public List<Player> getPlayers(Team team){
-        return players.values().stream().filter(x->x.getTeam().equals(team)).collect(Collectors.toList());
+    public List<Player> getPlayers(Team team) {
+        return players.values().stream().filter(x -> x.getTeam().equals(team)).collect(Collectors.toList());
     }
 
-    public int getPlayersCount(){
+    public int getPlayersCount() {
         return players.size();
     }
 
-    public int getTeamSize(Team team){
+    public int getTeamSize(Team team) {
         return getPlayers(team).size();
     }
 
 
-    public void usePlayer(Player player){
+    public void usePlayer(Player player) {
         usedPlayers.add(player.getId());
     }
 
-    public void removeUsePlayer(Player player){
+    public void removeUsePlayer(Player player) {
         usedPlayers.remove(player.getId());
     }
 
-    public boolean areAllPlayerUsed(){
+    public boolean areAllPlayerUsed() {
         return usedPlayers.size() == players.size();
     }
 
-    public void clearUsedPlayer(){
+    public void clearUsedPlayer() {
         usedPlayers.clear();
     }
 

@@ -5,7 +5,7 @@ import com.parabbits.tajniakiserver.voting.service.VotingPlayer;
 import java.util.List;
 
 public class StartVotingMessage {
-    
+
     private int time;
     private List<VotingPlayer> players;
 

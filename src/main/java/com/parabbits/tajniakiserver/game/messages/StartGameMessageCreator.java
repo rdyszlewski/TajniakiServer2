@@ -1,6 +1,5 @@
 package com.parabbits.tajniakiserver.game.messages;
 
-import com.parabbits.tajniakiserver.game.GameState;
 import com.parabbits.tajniakiserver.game.models.ClientCard;
 import com.parabbits.tajniakiserver.game.models.ClientCardCreator;
 import com.parabbits.tajniakiserver.game.models.Player;
@@ -12,7 +11,7 @@ import java.util.List;
 
 public class StartGameMessageCreator {
 
-    public static StartGameMessage create(Role role, Player player, Game game){
+    public static StartGameMessage create(Role role, Player player, Game game) {
         StartGameMessage message = new StartGameMessage();
         message.setNickname(player.getNickname());
         message.setPlayerRole(role);

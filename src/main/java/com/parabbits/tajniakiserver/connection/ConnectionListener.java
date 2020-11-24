@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+
 import java.io.IOException;
 
 
@@ -34,7 +35,7 @@ public class ConnectionListener {
     }
 
     @EventListener(SessionDisconnectEvent.class)
-    public void handleWebsocketDisconnectListener(SessionDisconnectEvent event){
+    public void handleWebsocketDisconnectListener(SessionDisconnectEvent event) {
         String sessionId = event.getMessage().getHeaders().get("simpSessionId").toString();
         Lobby lobby = playersManager.findGame(sessionId);
         disconnectController.disconnectPlayer(sessionId, lobby.getID());

@@ -13,22 +13,22 @@ public class Voting {
 
     private boolean started = false;
 
-    public Voting(List<Player> players){
+    public Voting(List<Player> players) {
         initTeam(Team.BLUE, players, blueVoting);
         initTeam(Team.RED, players, redVoting);
     }
 
-    private void initTeam(Team team, List<Player> players, TeamVoting voting){
-        List<Player> teamPlayers = players.stream().filter(x->x.getTeam() == team).collect(Collectors.toList());
+    private void initTeam(Team team, List<Player> players, TeamVoting voting) {
+        List<Player> teamPlayers = players.stream().filter(x -> x.getTeam() == team).collect(Collectors.toList());
         voting.init(teamPlayers);
     }
 
-    public List<VotingPlayer> getCandidates(Team team){
+    public List<VotingPlayer> getCandidates(Team team) {
         return getVoting(team).getCandidates();
     }
 
-    private TeamVoting getVoting(Team team){
-        switch (team){
+    private TeamVoting getVoting(Team team) {
+        switch (team) {
             case BLUE:
                 return blueVoting;
             case RED:
@@ -38,24 +38,24 @@ public class Voting {
         }
     }
 
-    public List<VotingPlayer> vote(String playerSessionId, String votedPlayerSessionId, Team team){
+    public List<VotingPlayer> vote(String playerSessionId, String votedPlayerSessionId, Team team) {
         return getVoting(team).vote(playerSessionId, votedPlayerSessionId);
     }
 
-    public VotingPlayer getWinner(Team team){
+    public VotingPlayer getWinner(Team team) {
         return getVoting(team).getWinner();
     }
 
-    public void reset(){
+    public void reset() {
         blueVoting.reset();
         redVoting.reset();
     }
 
-    public boolean isStarted(){
+    public boolean isStarted() {
         return started;
     }
 
-    public void startVoting(){
+    public void startVoting() {
         this.started = true;
     }
 }

@@ -6,7 +6,7 @@ import java.util.List;
 public class VotingPlayer {
     private long id;
     private String nickname;
-    private List<Long> votes = new ArrayList<>();
+    private final List<Long> votes = new ArrayList<>();
 
     public VotingPlayer(long id, String nickname) {
         this.id = id;
@@ -29,11 +29,11 @@ public class VotingPlayer {
         this.nickname = nickname;
     }
 
-    public void addVote(Long vote){
+    public void addVote(Long vote) {
         votes.add(vote);
     }
 
-    public void removeVote(Long vote){
+    public void removeVote(Long vote) {
         votes.remove(vote);
     }
 

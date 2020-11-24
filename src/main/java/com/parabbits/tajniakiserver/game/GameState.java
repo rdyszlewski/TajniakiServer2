@@ -1,6 +1,9 @@
 package com.parabbits.tajniakiserver.game;
 
-import com.parabbits.tajniakiserver.game.models.*;
+import com.parabbits.tajniakiserver.game.models.Card;
+import com.parabbits.tajniakiserver.game.models.CardColor;
+import com.parabbits.tajniakiserver.game.models.Role;
+import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.shared.game.GameStep;
 
 
@@ -19,12 +22,12 @@ public class GameState {
     private String currentWord;
     private int remainingAnswers;
 
-    public GameStep getCurrentStep(){
+    public GameStep getCurrentStep() {
         return currentStep;
     }
 
-    public synchronized void setCurrentStep(GameStep currentStep){
-        if(this.currentStep == null || !this.currentStep.equals(currentStep)){
+    public synchronized void setCurrentStep(GameStep currentStep) {
+        if (this.currentStep == null || !this.currentStep.equals(currentStep)) {
             System.out.println(currentStep);
             this.currentStep = currentStep;
         }
@@ -38,16 +41,16 @@ public class GameState {
         return currentPlayer;
     }
 
-    public int getPointsBlue(){
+    public int getPointsBlue() {
         return pointsBlue;
     }
 
-    public int getPointsRed(){
+    public int getPointsRed() {
         return pointsRed;
     }
 
-    public int getRemainings(Team team){
-        switch (team){
+    public int getRemainings(Team team) {
+        switch (team) {
             case BLUE:
                 return remainingBlue;
             case RED:
@@ -57,7 +60,7 @@ public class GameState {
         }
     }
 
-    public String getCurrentWord(){
+    public String getCurrentWord() {
         return currentWord;
     }
 
@@ -65,39 +68,39 @@ public class GameState {
         return remainingAnswers;
     }
 
-    public void initState(Team firstTeam, int wordsInFirstTeam){
+    public void initState(Team firstTeam, int wordsInFirstTeam) {
         active = true;
         currentTeam = firstTeam;
-        currentPlayer = Role.BOSS;
+        currentPlayer = Role.SPYMASTER;
         remainingAnswers = -1;
-        remainingBlue = firstTeam==Team.BLUE? wordsInFirstTeam: wordsInFirstTeam -1;
-        remainingRed = firstTeam == Team.RED? wordsInFirstTeam: wordsInFirstTeam - 1;
+        remainingBlue = firstTeam == Team.BLUE ? wordsInFirstTeam : wordsInFirstTeam - 1;
+        remainingRed = firstTeam == Team.RED ? wordsInFirstTeam : wordsInFirstTeam - 1;
     }
 
-    public void setAnswerState(String word, int remainingAnswers){
-        if(active){
+    public void setAnswerState(String word, int remainingAnswers) {
+        if (active) {
             this.remainingAnswers = remainingAnswers;
             this.currentWord = word;
-            this.currentPlayer = Role.PLAYER;
+            this.currentPlayer = Role.ORDINARY_PLAYER;
         }
     }
 
-    public UseCardResult useCard(Card card){
+    public UseCardResult useCard(Card card) {
         decreaseRemainingCards(card);
         ClickCorrectness correctness = CorrectnessUtil.getCorrectness(card, getCurrentTeam());
-        if(correctness == ClickCorrectness.CORRECT){
+        if (correctness == ClickCorrectness.CORRECT) {
             remainingAnswers--;
             addPoints(card);
         }
 
-        if(!isEndGame(card)){
-            if(isTeamChange(card, correctness)){
+        if (!isEndGame(card)) {
+            if (isTeamChange(card, correctness)) {
                 changeTeams();
             }
         } else {
             active = false;
         }
-        if(!isPassCard(card)){
+        if (!isPassCard(card)) {
             card.setChecked(true);
         }
 
@@ -105,7 +108,7 @@ public class GameState {
     }
 
     private boolean isEndGame(Card card) {
-        return remainingRed==0 || remainingBlue == 0 || card.getColor() == CardColor.KILLER;
+        return remainingRed == 0 || remainingBlue == 0 || card.getColor() == CardColor.KILLER;
     }
 
     private boolean isTeamChange(Card card, ClickCorrectness correctness) {
@@ -117,7 +120,7 @@ public class GameState {
     }
 
     private void addPoints(Card card) {
-        switch (card.getColor()){
+        switch (card.getColor()) {
             case BLUE:
                 pointsBlue++;
                 break;
@@ -127,7 +130,7 @@ public class GameState {
     }
 
     private void decreaseRemainingCards(Card card) {
-        switch (card.getColor()){
+        switch (card.getColor()) {
             case BLUE:
                 remainingBlue--;
                 break;
@@ -137,15 +140,15 @@ public class GameState {
         }
     }
 
-    private void changeTeams(){
+    private void changeTeams() {
         // TODO: zmianę drużyny dodać do oodzielnej kllasy
         remainingAnswers = -1;
-        currentTeam = currentTeam == Team.BLUE? Team.RED : Team.BLUE;
-        currentPlayer = Role.BOSS;
+        currentTeam = currentTeam == Team.BLUE ? Team.RED : Team.BLUE;
+        currentPlayer = Role.SPYMASTER;
         currentWord = "";
     }
 
-    public boolean isGameActive(){
+    public boolean isGameActive() {
         return active;
     }
 }

@@ -17,7 +17,7 @@ public class GameStateMessage {
     private final String currentWord;
     private final int remainingAnswers;
 
-    public GameStateMessage(GameState gameState){
+    public GameStateMessage(GameState gameState) {
         currentStep = gameState.getCurrentStep();
         currentTeam = gameState.getCurrentTeam();
         currentRole = gameState.getCurrentStage();

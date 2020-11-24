@@ -2,6 +2,7 @@ package com.parabbits.tajniakiserver.summary;
 
 import com.parabbits.tajniakiserver.game.models.SummaryAnswer;
 import com.parabbits.tajniakiserver.game.models.Team;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
@@ -21,16 +22,16 @@ public class SummarySaver {
         List<String> words = history.getWords(team);
         String teamName = getTeamName(team);
         writer.write(teamName);
-        writer.write("\n");;
-        for(String word: words){
+        writer.write("\n");
+        for (String word : words) {
             writer.write(word);
             writer.write(';');
         }
         writer.write("\n");
     }
 
-    private static String getTeamName(Team team){
-        return team==Team.BLUE? "Zieleni": "Czerwieni";
+    private static String getTeamName(Team team) {
+        return team == Team.BLUE ? "Zieleni" : "Czerwieni";
     }
 
     private static void printKiller(FileWriter writer, GameHistory history) throws IOException {
@@ -41,12 +42,12 @@ public class SummarySaver {
 
     private static void printProcess(FileWriter writer, GameHistory history) throws IOException {
         writer.write("Przebieg rozgrywki\n");
-        for(SummaryEntry entry: history.getEntries()){
+        for (SummaryEntry entry : history.getEntries()) {
             writer.write(entry.getQuestion());
             writer.write("-");
             writer.write(String.valueOf(entry.getNumber()));
             writer.write(":");
-            for(SummaryAnswer answer: entry.getAnswers()){
+            for (SummaryAnswer answer : entry.getAnswers()) {
                 writer.write(answer.getWord());
                 writer.write("|");
                 writer.write(answer.getColor().toString());

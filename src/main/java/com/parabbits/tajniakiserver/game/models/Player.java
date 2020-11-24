@@ -3,7 +3,7 @@ package com.parabbits.tajniakiserver.game.models;
 public class Player {
 
     protected final String sessionId;
-    protected  long id;
+    protected long id;
     protected String nickname;
     protected Team team;
     protected Role role;
@@ -13,7 +13,7 @@ public class Player {
         this.nickname = nickname;
     }
 
-    public Player(final long id, final String sessionId, String nickname){
+    public Player(final long id, final String sessionId, String nickname) {
         this.id = id;
         this.sessionId = sessionId;
         this.nickname = nickname;

@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.summary;
 
-import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.game.models.CardColor;
+import com.parabbits.tajniakiserver.game.models.Team;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class GameHistory {
 
     private SummaryEntry currentEntry;
 
-    public void addQuestion(String question, int number, Team team){
+    public void addQuestion(String question, int number, Team team) {
         SummaryEntry entry = new SummaryEntry();
         entry.setQuestion(question);
         entry.setTeam(team);
@@ -25,21 +25,21 @@ public class GameHistory {
 
     }
 
-    public void addAnswer(String answer, CardColor color){
+    public void addAnswer(String answer, CardColor color) {
         currentEntry.addAnswer(answer, color);
         System.out.println(answer);
     }
 
-    public void setWords(List<String> words, Team team){
-        if(team == Team.BLUE){
+    public void setWords(List<String> words, Team team) {
+        if (team == Team.BLUE) {
             blueWords = words;
-        } else if (team == Team.RED){
+        } else if (team == Team.RED) {
             redWords = words;
         }
     }
 
-    public List<String> getWords(Team team){
-        switch (team){
+    public List<String> getWords(Team team) {
+        switch (team) {
             case BLUE:
                 return blueWords;
             case RED:
@@ -48,15 +48,15 @@ public class GameHistory {
         return new ArrayList<>();
     }
 
-    public List<SummaryEntry> getEntries(){
+    public List<SummaryEntry> getEntries() {
         return history;
     }
 
-    public String getKiller(){
+    public String getKiller() {
         return killer;
     }
 
-    public void setKiller(String killer){
+    public void setKiller(String killer) {
         this.killer = killer;
     }
 }

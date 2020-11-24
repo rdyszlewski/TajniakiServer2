@@ -9,7 +9,7 @@ public class IdParam {
     @JsonProperty("gameId")
     private UUID gameId;
 
-    public UUID getGameId(){
+    public UUID getGameId() {
         return gameId;
     }
 }

@@ -11,11 +11,11 @@ public class Timer {
     private final ITimerCallback callback;
     private java.util.Timer timer;
 
-    public boolean isRunning(){
+    public boolean isRunning() {
         return running;
     }
 
-    public Timer(@NotNull ITimerCallback callback){
+    public Timer(@NotNull ITimerCallback callback) {
         this.callback = callback;
     }
 
@@ -26,18 +26,18 @@ public class Timer {
         running = true;
     }
 
-    public void stop(){
+    public void stop() {
         timer.cancel();
         running = false;
     }
 
-    private static class CountDownTimerTask extends TimerTask{
+    private static class CountDownTimerTask extends TimerTask {
 
         private long remainingTime;
-        private java.util.Timer timer;
-        private ITimerCallback callback;
+        private final java.util.Timer timer;
+        private final ITimerCallback callback;
 
-        CountDownTimerTask(long time, java.util.Timer timer, ITimerCallback callback){
+        CountDownTimerTask(long time, java.util.Timer timer, ITimerCallback callback) {
             this.remainingTime = time;
             this.timer = timer;
             this.callback = callback;
@@ -49,7 +49,8 @@ public class Timer {
             if (remainingTime == 0) {
                 endTimer();
             } else {
-                callback.onTick(remainingTime); }
+                callback.onTick(remainingTime);
+            }
         }
 
         private void endTimer() {

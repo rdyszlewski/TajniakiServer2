@@ -6,7 +6,7 @@ import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.shared.game.Game;
 
 public class EndGameMessageCreator {
-    public static EndGameMessage create(Game game){
+    public static EndGameMessage create(Game game) {
         EndGameInfo info = EndGameHelper.getEndGameInfo(game);
         int remainingBlue = game.getState().getRemainings(Team.BLUE);
         int remainingRed = game.getState().getRemainings(Team.RED);

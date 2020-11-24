@@ -13,9 +13,9 @@ public class VotingManager {
 
     private final Map<UUID, Voting> votingMap = new HashMap<>();
 
-    public Voting getVoting(Game game){
+    public Voting getVoting(Game game) {
         UUID gameId = game.getID();
-        if(votingMap.containsKey(gameId)){
+        if (votingMap.containsKey(gameId)) {
             return votingMap.get(gameId);
         }
         Voting voting = createVoting(game);
@@ -23,11 +23,11 @@ public class VotingManager {
         return voting;
     }
 
-    private Voting createVoting(Game game){
-        return  new Voting(game.getPlayers().getAllPlayers());
+    private Voting createVoting(Game game) {
+        return new Voting(game.getPlayers().getAllPlayers());
     }
 
-    public void removeVoting(Game game){
+    public void removeVoting(Game game) {
         votingMap.remove(game.getID());
     }
 }

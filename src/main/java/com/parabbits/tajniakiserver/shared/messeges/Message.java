@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Message {
 
     @JsonProperty("message")
-    private String message;
+    private final String message;
 
-    public Message(String message){
+    public Message(String message) {
         this.message = message;
     }
 }

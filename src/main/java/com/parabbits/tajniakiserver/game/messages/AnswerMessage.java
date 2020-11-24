@@ -1,7 +1,7 @@
 package com.parabbits.tajniakiserver.game.messages;
 
 import com.parabbits.tajniakiserver.game.GameState;
-import com.parabbits.tajniakiserver.game.models.*;
+import com.parabbits.tajniakiserver.game.models.ClientCard;
 
 import java.util.List;
 

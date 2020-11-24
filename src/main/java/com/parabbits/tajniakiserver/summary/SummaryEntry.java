@@ -1,8 +1,8 @@
 package com.parabbits.tajniakiserver.summary;
 
+import com.parabbits.tajniakiserver.game.models.CardColor;
 import com.parabbits.tajniakiserver.game.models.SummaryAnswer;
 import com.parabbits.tajniakiserver.game.models.Team;
-import com.parabbits.tajniakiserver.game.models.CardColor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class SummaryEntry {
         this.answers = answers;
     }
 
-    public void addAnswer(String answer, CardColor color){
+    public void addAnswer(String answer, CardColor color) {
         answers.add(new SummaryAnswer(answer, color));
     }
 

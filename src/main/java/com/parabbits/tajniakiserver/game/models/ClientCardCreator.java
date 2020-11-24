@@ -8,55 +8,49 @@ import java.util.stream.Collectors;
 
 public class ClientCardCreator {
 
-    public static ClientCard createCard(Card card, Game game, Role role, Team team){
-        switch (role){
-            case BOSS:
-                return createCardForBoss(card, game, team);
-            case PLAYER:
-                return createCardForPlayer(card, game, team);
+    public static ClientCard createCard(Card card, Game game, Role role, Team team) {
+        switch (role) {
+            case SPYMASTER:
+                return createCardForSpymaster(card, game, team);
+            case ORDINARY_PLAYER:
+                return createCardForOrdinaryPlayer(card, game, team);
         }
         return null;
     }
 
-    public static List<ClientCard> createCards(List<Card> cards, Game game, Role role, Team team){
+    public static List<ClientCard> createCards(List<Card> cards, Game game, Role role, Team team) {
         return cards.parallelStream()
-                .map(x->createCard(x, game, role, team))
+                .map(x -> createCard(x, game, role, team))
                 .collect(Collectors.toList());
     }
 
-    private static ClientCard createCardForBoss(Card card, Game game, Team team){
+    private static ClientCard createCardForSpymaster(Card card, Game game, Team team) {
         return new ClientCard(card.getId(), card.getWord(), card.getColor(), card.isChecked());
     }
 
-    private static ClientCard createCardForPlayer(Card card, Game game, Team team) {
+    private static ClientCard createCardForOrdinaryPlayer(Card card, Game game, Team team) {
         CardColor color = getPlayerCardColor(card);
         ClientCard clientCard = new ClientCard(card.getId(), card.getWord(), color, card.isChecked());
         clientCard.setAnswers(getPlayerFromAnswer(game, card));
-        // TODO: to powinno odziałać jakoś tak
         clientCard.setFlags(getPlayersIdsFromFlags(game, card, team));
 
         return clientCard;
     }
 
     private static CardColor getPlayerCardColor(Card card) {
-        return card.isChecked()? card.getColor() : CardColor.LACK;
+        return card.isChecked() ? card.getColor() : CardColor.LACK;
     }
 
-    private static Set<Long> getPlayerFromAnswer(Game game, Card card){
-        // TODO: zrobić to jakoś inaczej
+    private static Set<Long> getPlayerFromAnswer(Game game, Card card) {
         Set<Player> players = game.getPlayersWhoClicked(card);
         return getPlayersIds(players);
     }
 
-    private static Set<String> getPlayersNicknames(Set<Player> players){
-        return players.stream().map(Player::getNickname).collect(Collectors.toSet());
-    }
-
-    private static Set<Long> getPlayersIds(Set<Player> players){
+    private static Set<Long> getPlayersIds(Set<Player> players) {
         return players.stream().map(Player::getId).collect(Collectors.toSet());
     }
 
-    private static Set<Long> getPlayersIdsFromFlags(Game game, Card card, Team team){
+    private static Set<Long> getPlayersIdsFromFlags(Game game, Card card, Team team) {
         Set<Player> players = game.getFlagsOwner(card, team);
         return getPlayersIds(players);
     }

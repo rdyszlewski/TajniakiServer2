@@ -33,7 +33,7 @@ public class SummaryController {
     @MessageMapping("/summary/summary")
     public void getSummary(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) throws IOException {
         Game game = gameManager.findGame(param.getGameId());
-        if(!StateControl.isCorrectState(GameStep.SUMMARY, true, game)){
+        if (!StateControl.isCorrectState(GameStep.SUMMARY, true, game)) {
             return;
         }
         game.getState().setCurrentStep(GameStep.SUMMARY);
@@ -43,7 +43,7 @@ public class SummaryController {
 
         Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         game.getPlayers().usePlayer(player);
-        if(game.getPlayers().areAllPlayerUsed()){
+        if (game.getPlayers().areAllPlayerUsed()) {
             handleEndGame(game);
         }
     }

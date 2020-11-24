@@ -5,7 +5,7 @@ import com.parabbits.tajniakiserver.lobby.manager.LobbyPlayer;
 
 public class StartLobbyMessageCreator {
 
-    public static StartLobbyMessage create(Lobby lobby, LobbyPlayer player){
+    public static StartLobbyMessage create(Lobby lobby, LobbyPlayer player) {
         // TODO: można jeszcze wysłać jakąś informacje o ustawieniach rozgrywki
         StartLobbyMessage message = new StartLobbyMessage(lobby.getPlayers(), lobby.getSettings());
         message.setMinPlayersInTeam(lobby.getSettings().getMinTeamSize());

@@ -13,7 +13,7 @@ import java.util.List;
 
 public class SummaryMessageCreator {
 
-    public static SummaryMessage create(Game game){
+    public static SummaryMessage create(Game game) {
         SummaryMessage message = new SummaryMessage();
         EndGameInfo info = EndGameHelper.getEndGameInfo(game);
         message.setWinner(info.getWinner());
@@ -27,13 +27,13 @@ public class SummaryMessageCreator {
         return message;
     }
 
-    private static List<SummaryCard> prepareSummaryCards(Game game){
+    private static List<SummaryCard> prepareSummaryCards(Game game) {
         List<SummaryCard> results = new ArrayList<>();
         List<Card> cards = game.getCards(true);
-        for(Card card: cards){
+        for (Card card : cards) {
             SummaryCard summaryCard = new SummaryCard(card.getId(), card.getWord(), card.getColor());
             SummaryEntry summaryEntry = game.getHistory().getEntries().stream().filter(
-                    entry->entry.getAnswers().stream().anyMatch(answer->answer.getWord().equals(card.getWord()))).findAny().get();
+                    entry -> entry.getAnswers().stream().anyMatch(answer -> answer.getWord().equals(card.getWord()))).findAny().get();
             summaryCard.setTeam(summaryEntry.getTeam());
             summaryCard.setQuestion(summaryEntry.getQuestion());
             results.add(summaryCard);

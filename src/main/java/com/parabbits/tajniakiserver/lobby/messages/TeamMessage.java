@@ -5,7 +5,7 @@ public class TeamMessage {
     private long id;
     private String team;
 
-    public TeamMessage(long id, String team){
+    public TeamMessage(long id, String team) {
         this.id = id;
         this.team = team;
     }

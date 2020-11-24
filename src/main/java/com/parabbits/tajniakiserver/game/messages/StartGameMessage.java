@@ -1,6 +1,9 @@
 package com.parabbits.tajniakiserver.game.messages;
-import com.parabbits.tajniakiserver.game.GameState;
-import com.parabbits.tajniakiserver.game.models.*;
+
+import com.parabbits.tajniakiserver.game.models.ClientCard;
+import com.parabbits.tajniakiserver.game.models.Player;
+import com.parabbits.tajniakiserver.game.models.Role;
+import com.parabbits.tajniakiserver.game.models.Team;
 
 import java.util.List;
 
@@ -22,11 +25,11 @@ public class StartGameMessage {
         this.nickname = nickname;
     }
 
-    public Role getPlayerRole(){
+    public Role getPlayerRole() {
         return playerRole;
     }
 
-    public void setPlayerRole(Role playerRole){
+    public void setPlayerRole(Role playerRole) {
         this.playerRole = playerRole;
     }
 
