@@ -123,6 +123,8 @@ public class GameController {
 
     @MessageMapping("/game/quit")
     public void quit(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) {
+        System.out.println("Usunięcie gracza");
         disconnectController.disconnectPlayer(headerAccessor.getSessionId(), param.getGameId());
+
     }
 }

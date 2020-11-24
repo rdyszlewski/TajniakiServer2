@@ -27,15 +27,9 @@ public class GameDisconnector extends Disconnector {
     }
 
     private static DisconnectMessage handleDisconnectingSpymaster(Player player, Game game) {
-        setNewSpymaster(player, game);
         DisconnectMessage message = createDisconnectMessage(player, GameStep.GAME);
         message.setPlayers(game.getPlayers().getAllPlayers());
         return message;
-    }
-
-    private static void setNewSpymaster(Player player, Game game) {
-        Player newSpymaster = game.getPlayers().getPlayers(player.getTeam()).get(0);
-        newSpymaster.setRole(Role.SPYMASTER);
     }
 
     public static Player prepareNewSpymaster(Player disconnectedPlayer, Game game) {

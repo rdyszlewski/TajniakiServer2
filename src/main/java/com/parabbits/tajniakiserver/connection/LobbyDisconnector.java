@@ -8,7 +8,7 @@ import java.util.List;
 
 public class LobbyDisconnector extends Disconnector {
 
-    public static DisconnectMessage getMessage(Player player, List<String> playersIds) {
+    public static DisconnectMessage getMessage(Player player) {
         return createDisconnectMessage(player, GameStep.LOBBY);
     }
 }
