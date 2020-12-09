@@ -6,10 +6,7 @@ import com.parabbits.tajniakiserver.game.models.Team;
 import com.parabbits.tajniakiserver.lobby.manager.Lobby;
 import com.parabbits.tajniakiserver.lobby.manager.LobbyManager;
 import com.parabbits.tajniakiserver.lobby.manager.LobbyPlayer;
-import com.parabbits.tajniakiserver.lobby.messages.LobbyReadyMessage;
-import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessage;
-import com.parabbits.tajniakiserver.lobby.messages.StartLobbyMessageCreator;
-import com.parabbits.tajniakiserver.lobby.messages.TeamMessage;
+import com.parabbits.tajniakiserver.lobby.messages.*;
 import com.parabbits.tajniakiserver.shared.PlayerSessionId;
 import com.parabbits.tajniakiserver.shared.messeges.Message;
 import com.parabbits.tajniakiserver.shared.parameters.BoolParam;
@@ -130,7 +127,7 @@ public class LobbyController {
     }
 
     @MessageMapping("/test/start_ready")
-    public void startTest(@Payload String param, SimpMessageHeaderAccessor headerAccessor) throws IOException {
+    public void readyTest(@Payload String param, SimpMessageHeaderAccessor headerAccessor) throws IOException {
         Lobby lobby = lobbyManager.findFreeLobby();
         LobbyPlayer player = lobby.addPlayer("Jacuś", headerAccessor.getSessionId());
         Team team = lobby.getPlayersCount() % 2 == 0 ? Team.BLUE : Team.RED;
