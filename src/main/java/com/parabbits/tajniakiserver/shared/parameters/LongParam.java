@@ -2,9 +2,7 @@ package com.parabbits.tajniakiserver.shared.parameters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.UUID;
-
-public class LongParam extends IdParam{
+public class LongParam extends IdParam {
 
 //    @JsonProperty("gameId")
 //    private UUID gameId;
@@ -16,7 +14,7 @@ public class LongParam extends IdParam{
 //        return gameId;
 //    }
 
-    public Long getValue(){
+    public Long getValue() {
         return value;
     }
 }

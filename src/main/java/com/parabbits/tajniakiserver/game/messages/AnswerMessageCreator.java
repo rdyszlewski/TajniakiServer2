@@ -8,7 +8,7 @@ import java.util.List;
 public class AnswerMessageCreator {
 
     public static AnswerMessage create(List<Card> cardsToUpdate, boolean correct, Player player, Role role, Game game) {
-        List<ClientCard> cards = ClientCardCreator.createCards( cardsToUpdate, game, role, player.getTeam());
+        List<ClientCard> cards = ClientCardCreator.createCards(cardsToUpdate, game, role, player.getTeam());
         return new AnswerMessage(cards, correct, game.getState());
     }
 }

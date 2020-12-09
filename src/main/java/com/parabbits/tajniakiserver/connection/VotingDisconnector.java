@@ -7,9 +7,8 @@ import com.parabbits.tajniakiserver.shared.game.GameStep;
 
 public class VotingDisconnector extends Disconnector {
 
-    public static DisconnectMessage getMessage(Player player, Game game){
-        GameStep step = isEnoughPlayers(game)? GameStep.VOTING: GameStep.LOBBY;
+    public static DisconnectMessage getMessage(Player player, Game game) {
+        GameStep step = isEnoughPlayers(game) ? GameStep.VOTING : GameStep.LOBBY;
         return createDisconnectMessage(player, step);
     }
-
 }

@@ -2,13 +2,13 @@ package com.parabbits.tajniakiserver.lobby.manager;
 
 import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.shared.game.GameManager;
-import com.parabbits.tajniakiserver.shared.game.GameStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class LobbyManager {
@@ -16,18 +16,18 @@ public class LobbyManager {
     @Autowired
     private GameManager gameManager;
 
-    private Map<UUID, Lobby> lobbyMap = new HashMap<>();
+    private final Map<UUID, Lobby> lobbyMap = new ConcurrentHashMap<>();
 
     public Lobby findFreeLobby() throws IOException {
         Lobby lobby = LobbyFinder.findBestLobby(lobbyMap.values());
-        if(lobby == null){
+        if (lobby == null) {
             lobby = createLobby();
         }
         return lobby;
     }
 
-    public Lobby findLobby(UUID id){
-        if(lobbyMap.containsKey(id)){
+    public Lobby findLobby(UUID id) {
+        if (lobbyMap.containsKey(id)) {
             return lobbyMap.get(id);
         }
         return null;
@@ -43,8 +43,8 @@ public class LobbyManager {
 
     // TODO: można zrobic joinToLobby(UUID id, Player player)
 
-    public void removeLobby(UUID id){
-        if(lobbyMap.containsKey(id)){
+    public void removeLobby(UUID id) {
+        if (lobbyMap.containsKey(id)) {
             // TODO: zakończenie i wyczyszczenie lobby i gry
             lobbyMap.remove(id);
             gameManager.removeGame(id);

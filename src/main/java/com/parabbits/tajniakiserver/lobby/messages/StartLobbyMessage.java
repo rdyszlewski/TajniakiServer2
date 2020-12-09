@@ -1,6 +1,5 @@
 package com.parabbits.tajniakiserver.lobby.messages;
 
-import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.lobby.manager.LobbyPlayer;
 import com.parabbits.tajniakiserver.shared.game.GameSettings;
 
@@ -33,11 +32,11 @@ public class StartLobbyMessage {
         this.gameId = gameId;
     }
 
-    public long getPlayerId(){
+    public long getPlayerId() {
         return playerId;
     }
 
-    public void setPlayerId(long id){
+    public void setPlayerId(long id) {
         playerId = id;
     }
 

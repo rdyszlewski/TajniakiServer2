@@ -4,7 +4,7 @@ public class GameSettings {
 
     private int minTeamSize = 2;
     private int maxTeamSize = 3;
-//    private int firstTeamWords = 9;
+    //    private int firstTeamWords = 9;
     private int firstTeamWords = 4;
     private int numbersOfCards = 25;
 

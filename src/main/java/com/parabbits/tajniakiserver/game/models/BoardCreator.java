@@ -22,7 +22,7 @@ public class BoardCreator {
 
     private static List<Card> buildWordCards(List<String> words, List<CardColor> colors) {
         List<Card> cards = new ArrayList<>();
-        for(int i=0; i<words.size(); i++){
+        for (int i = 0; i < words.size(); i++) {
             String word = words.get(i);
             CardColor color = colors.get(i);
             Card card = new Card(i, word, color, false);
@@ -32,7 +32,7 @@ public class BoardCreator {
         return cards;
     }
 
-    private static Card createPassCard(){
+    private static Card createPassCard() {
         return new Card(-1, "--PASS--", CardColor.LACK, false);
     }
 

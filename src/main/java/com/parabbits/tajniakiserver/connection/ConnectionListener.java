@@ -8,7 +8,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+
 import java.io.IOException;
+import java.util.Objects;
 
 
 @Configuration
@@ -29,13 +31,13 @@ public class ConnectionListener {
 
     @EventListener(SessionConnectEvent.class)
     public void handleWebsocketConnectListener(SessionConnectEvent event) throws IOException {
-        String sessionId = event.getMessage().getHeaders().get("simpSessionId").toString();
+        String sessionId = Objects.requireNonNull(event.getMessage().getHeaders().get("simpSessionId")).toString();
         System.out.println("Połączono " + sessionId);
     }
 
     @EventListener(SessionDisconnectEvent.class)
-    public void handleWebsocketDisconnectListener(SessionDisconnectEvent event){
-        String sessionId = event.getMessage().getHeaders().get("simpSessionId").toString();
+    public void handleWebsocketDisconnectListener(SessionDisconnectEvent event) {
+        String sessionId = Objects.requireNonNull(event.getMessage().getHeaders().get("simpSessionId")).toString();
         Lobby lobby = playersManager.findGame(sessionId);
         disconnectController.disconnectPlayer(sessionId, lobby.getID());
     }

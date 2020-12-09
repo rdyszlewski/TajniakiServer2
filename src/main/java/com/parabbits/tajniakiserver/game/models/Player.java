@@ -2,29 +2,26 @@ package com.parabbits.tajniakiserver.game.models;
 
 public class Player {
 
-    protected String sessionId;
+    protected final String sessionId;
     protected long id;
     protected String nickname;
     protected Team team;
     protected Role role;
 
-    protected Player() {
+    public Player(String sessionId, String nickname) {
+        this.sessionId = sessionId;
+        this.nickname = nickname;
     }
 
-    public Player(String sessionId, String nickname) {
-        init(sessionId, nickname);
+    public Player(final long id, final String sessionId, String nickname) {
+        this.id = id;
+        this.sessionId = sessionId;
+        this.nickname = nickname;
     }
 
     public Player(String sessionId, long id, String nickname, Team team) {
-        init(sessionId, nickname);
-        this.id = id;
+        this(id, sessionId, nickname);
         this.team = team;
-    }
-
-    private void init(String sessionid, String nickname) {
-        this.sessionId = sessionid;
-        this.nickname = nickname;
-        this.team = Team.LACK;
     }
 
     public long getId() {

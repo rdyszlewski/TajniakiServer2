@@ -2,8 +2,8 @@ package com.parabbits.tajniakiserver.game.models;
 
 public class Card {
 
-    private int index;
-    private String word;
+    private final int index;
+    private final String word;
     private CardColor color;
     private boolean checked;
 
@@ -18,16 +18,8 @@ public class Card {
         return index;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
     public String getWord() {
         return word;
-    }
-
-    public void setWord(String word) {
-        this.word = word;
     }
 
     public CardColor getColor() {

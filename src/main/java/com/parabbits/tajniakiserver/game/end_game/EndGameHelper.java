@@ -42,18 +42,18 @@ public class EndGameHelper {
         info.setWinner(game.getState().getCurrentTeam());
     }
 
-    private static void setUnknownCause(Game game, EndGameInfo info){
+    private static void setUnknownCause(Game game, EndGameInfo info) {
         info.setCause(EndGameCause.UNKNOWN);
         info.setWinner(getBetterTeam(game, info));
     }
 
-    private static Team getBetterTeam(Game game, EndGameInfo info){
+    private static Team getBetterTeam(Game game, EndGameInfo info) {
 
         int remainingBlue = game.getState().getRemainings(Team.BLUE);
         int remainingRed = game.getState().getRemainings(Team.RED);
-        if(remainingBlue == remainingRed){
+        if (remainingBlue == remainingRed) {
             return Team.LACK;
-        } else if(remainingBlue < remainingRed){
+        } else if (remainingBlue < remainingRed) {
             return Team.BLUE;
         } else {
             return Team.RED;

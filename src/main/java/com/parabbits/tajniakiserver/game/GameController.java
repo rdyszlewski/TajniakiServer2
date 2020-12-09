@@ -66,12 +66,12 @@ public class GameController {
     }
 
     private void handleClickAction(Game game, Player player, ClickResult result) {
-        switch (result.getType()){
+        switch (result.getType()) {
             case CLICK:
                 handleClickMessage(player, result.getUpdatedCards(), game);
                 break;
             case ANSWER:
-                handleAnswerMessage(player, CorrectnessChecker.isCorrect(result.getCorrectness()), game, result.getUpdatedCards());
+                handleAnswerMessage(player, CorrectnessUtil.isCorrect(result.getCorrectness()), game, result.getUpdatedCards());
                 break;
             case END_GAME:
                 // TODO: na razie zostawić to w ten spsobó
@@ -81,18 +81,18 @@ public class GameController {
     }
 
     private void handleAnswerMessage(Player player, boolean correct, Game game, List<Card> cardsToUpdate) {
-        sendAnswerMessageToRole(player, correct, game, Role.BOSS, cardsToUpdate);
-        sendAnswerMessageToRole(player, correct, game, Role.PLAYER, cardsToUpdate);
+        sendAnswerMessageToRole(player, correct, game, Role.SPYMASTER, cardsToUpdate);
+        sendAnswerMessageToRole(player, correct, game, Role.ORDINARY_PLAYER, cardsToUpdate);
     }
 
-    private void sendAnswerMessageToRole(Player player, boolean correct, Game game, Role role, List<Card> cardsToUpdate){
+    private void sendAnswerMessageToRole(Player player, boolean correct, Game game, Role role, List<Card> cardsToUpdate) {
         AnswerMessage message = AnswerMessageCreator.create(cardsToUpdate, correct, player, role, game);
         messageManager.sendToPlayersWithRole(message, role, ANSWER_MESSAGE_RESPONSE, game);
     }
 
-    private void handleClickMessage(Player player, List<Card> updatedCards,  Game game) {
+    private void handleClickMessage(Player player, List<Card> updatedCards, Game game) {
         ClickMessage message = ClickMessageCreator.create(player, updatedCards, game);
-        messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
+        messageManager.sendToRoleFromTeam(message, Role.ORDINARY_PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
     }
 
     private void sendEndGameMessage(Game game) {
@@ -104,8 +104,8 @@ public class GameController {
     public void setQuestion(@Payload QuestionParam param, SimpMessageHeaderAccessor headerAccessor) {
         Game game = gameManager.findGame(param.getGameId());
         boolean correct = game.setQuestion(param, headerAccessor.getSessionId());
-        if(correct){
-            BossMessage message = BossMessageCreator.create(param.getQuestion(), param.getNumber(), game);
+        if (correct) {
+            SpymasterMessage message = SpymasterMessageCreator.create(param.getQuestion(), param.getNumber(), game);
             messageManager.sendToAll(message, QUESTION_MESSAGE_RESPONSE, game);
         }
     }
@@ -115,14 +115,16 @@ public class GameController {
         Game game = gameManager.findGame(param.getGameId());
         Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
         Card card = game.flag(param.getValue(), player);
-        if(card != null){
+        if (card != null) {
             ClickMessage message = FlagMessageCreator.create(player, card, game);
-            messageManager.sendToRoleFromTeam(message, Role.PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
+            messageManager.sendToRoleFromTeam(message, Role.ORDINARY_PLAYER, player.getTeam(), CLICK_MESSAGE_RESPONSE, game);
         }
     }
 
     @MessageMapping("/game/quit")
-    public void quit(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor){
+    public void quit(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) {
+        System.out.println("Usunięcie gracza");
         disconnectController.disconnectPlayer(headerAccessor.getSessionId(), param.getGameId());
+
     }
 }

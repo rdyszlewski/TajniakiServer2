@@ -4,6 +4,7 @@ import com.parabbits.tajniakiserver.game.models.Player;
 import com.parabbits.tajniakiserver.shared.game.Game;
 import com.parabbits.tajniakiserver.shared.game.GameManager;
 import com.parabbits.tajniakiserver.shared.game.GameStep;
+import com.parabbits.tajniakiserver.shared.messeges.Message;
 import com.parabbits.tajniakiserver.shared.parameters.IdParam;
 import com.parabbits.tajniakiserver.shared.parameters.LongParam;
 import com.parabbits.tajniakiserver.shared.state.StateControl;
@@ -26,10 +27,10 @@ import java.util.List;
 @Controller
 public class VotingController {
 
-    private final String VOTING_START = "/boss/start";
-    private final String VOTING_VOTE = "/boss/vote";
-    private final String VOTING_END = "/boss/end";
-    private final String VOTING_TIMER = "/boss/timer";
+    private final String VOTING_START = "/voting/start";
+    private final String VOTING_VOTE = "/voting/vote";
+    private final String VOTING_END = "/voting/end";
+    private final String VOTING_TIMER = "/voting/timer";
 
     private final int VOTING_TIME = 10;
 
@@ -46,7 +47,7 @@ public class VotingController {
     private MessageManager messageManager;
 
 
-    @MessageMapping("/boss/start")
+    @MessageMapping("/voting/start")
     public void startVoting(@Payload IdParam param, SimpMessageHeaderAccessor headerAccessor) {
         Game game = gameManager.findGame(param.getGameId());
         if (!StateControl.isCorrectState(GameStep.VOTING, true, game)) {
@@ -75,12 +76,12 @@ public class VotingController {
 
             @Override
             public void onTick(Long time) {
-                messageManager.sendToAll(time, VOTING_TIMER, game);
+                messageManager.sendToAll(new Message(time.toString()), VOTING_TIMER, game);
             }
         });
     }
 
-    @MessageMapping("/boss/vote")
+    @MessageMapping("/voting/vote")
     public void vote(@Payload LongParam param, SimpMessageHeaderAccessor headerAccessor) {
         Game game = gameManager.findGame(param.getGameId());
         Player player = game.getPlayers().getPlayer(headerAccessor.getSessionId());
@@ -94,6 +95,6 @@ public class VotingController {
 
     public void endVoting(Game game, Voting voting) {
         PlayerRole.setRole(game, voting);
-        messageManager.sendToAll("END", VOTING_END, game);
+        messageManager.sendToAll(new Message("END"), VOTING_END, game);
     }
 }

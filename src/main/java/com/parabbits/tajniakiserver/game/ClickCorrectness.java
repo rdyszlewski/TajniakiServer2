@@ -1,6 +1,6 @@
 package com.parabbits.tajniakiserver.game;
 
-public enum ClickCorrectness{
+public enum ClickCorrectness {
     CORRECT,
     INCORRECT,
     KILLER,

@@ -7,25 +7,21 @@ public class LobbyPlayer extends Player {
 
     private boolean ready = false;
 
-    public LobbyPlayer(){
+    public LobbyPlayer(final String sessionId, final String nickname) {
+        super(sessionId, nickname);
+    }
+
+    public LobbyPlayer(final long id, final String sessionId, final String nickanme) {
+        super(id, sessionId, nickanme);
     }
 
     public void setId(long id) {
         this.id = id;
     }
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
-
     public void setTeam(Team team) {
         this.team = team;
     }
-
 
     public boolean isReady() {
         return ready;

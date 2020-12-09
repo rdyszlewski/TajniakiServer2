@@ -1,16 +1,17 @@
 package com.parabbits.tajniakiserver.shared.game;
 
 import com.parabbits.tajniakiserver.connection.DisconnectController;
-import com.parabbits.tajniakiserver.game.models.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class GameManager {
 
-    private Map<UUID, Game> gamesMap;
+    private final Map<UUID, Game> gamesMap;
 
     @Autowired
     private DisconnectController disconnectController;
@@ -27,10 +28,10 @@ public class GameManager {
     }
 
     public void removeGame(UUID id) {
-        if(gamesMap.containsKey(id)){
+        if (gamesMap.containsKey(id)) {
             Game game = gamesMap.get(id);
-            if(game.getPlayers().getPlayersCount() != 0){
-                game.getPlayers().getAllPlayers().forEach(x->disconnectController.disconnectPlayer(x.getSessionId(), id));
+            if (game.getPlayers().getPlayersCount() != 0) {
+                game.getPlayers().getAllPlayers().forEach(x -> disconnectController.disconnectPlayer(x.getSessionId(), id));
             }
             gamesMap.remove(id);
         }

@@ -13,23 +13,23 @@ public class TeamVoting {
     private Map<String, VotingPlayer> candidates = new HashMap<>();
     private final Team team;
 
-    public TeamVoting(Team team){
+    public TeamVoting(Team team) {
         this.team = team;
     }
 
-    public void init(List<Player> players){
-        Map<String, Player> playersMap = players.stream().collect(Collectors.toMap(Player::getSessionId, player->player));
+    public void init(List<Player> players) {
+        Map<String, Player> playersMap = players.stream().collect(Collectors.toMap(Player::getSessionId, player -> player));
         this.candidates = createCandidates(playersMap);
     }
 
-    private Map<String, VotingPlayer> createCandidates(Map<String, Player> players){
-        return players.values().stream().filter(player->player.getTeam()==team)
+    private Map<String, VotingPlayer> createCandidates(Map<String, Player> players) {
+        return players.values().stream().filter(player -> player.getTeam() == team)
                 .collect(Collectors.toMap(Player::getSessionId,
-                        player->new VotingPlayer(player.getId(), player.getNickname())));
+                        player -> new VotingPlayer(player.getId(), player.getNickname())));
     }
 
-    public List<VotingPlayer> vote(String sessionId, String vote){
-        if(isVoteAlready(sessionId, vote)){
+    public List<VotingPlayer> vote(String sessionId, String vote) {
+        if (isVoteAlready(sessionId, vote)) {
             return null;
         }
         return setVote(sessionId, vote);
@@ -42,7 +42,7 @@ public class TeamVoting {
         votedPlayer.addVote(votingPlayer.getId());
         playersToUpdate.add(votedPlayer);
 
-        if(isVoteForAnotherPlayer(sessionId, vote)){
+        if (isVoteForAnotherPlayer(sessionId, vote)) {
             VotingPlayer previousVotedPlayer = candidates.get(votes.get(sessionId));
             previousVotedPlayer.removeVote(votingPlayer.getId());
             playersToUpdate.add(previousVotedPlayer);
@@ -55,33 +55,36 @@ public class TeamVoting {
         return votes.containsKey(sessionId) && votes.get(sessionId).equals(vote);
     }
 
-    private boolean isVoteForAnotherPlayer(String sessionId, String vote){
+    private boolean isVoteForAnotherPlayer(String sessionId, String vote) {
         return votes.containsKey(sessionId) && !votes.get(sessionId).equals(vote);
     }
 
-    public void reset(){
+    public void reset() {
         votes.clear();
     }
 
-    public VotingPlayer getWinner(){
+    public VotingPlayer getWinner() {
         VotingPlayer bestCandidate = null;
         Random random = new Random();
         int maxVotes = 0;
-        for (VotingPlayer candidate: candidates.values()){
+        for (VotingPlayer candidate : candidates.values()) {
             int votes = candidate.getVotes().size();
-            if(votes > maxVotes){
+            if (votes > maxVotes) {
                 bestCandidate = candidate;
                 maxVotes = votes;
-            } else if(votes == maxVotes){
+            } else if (votes == maxVotes) {
                 int val = random.nextInt(100);
-                bestCandidate = val > 50? bestCandidate: candidate;
-                maxVotes = val > 50? maxVotes: votes;
+                bestCandidate = val > 50 ? bestCandidate : candidate;
+                maxVotes = val > 50 ? maxVotes : votes;
             }
+        }
+        if (bestCandidate == null && !candidates.isEmpty()) {
+            return candidates.values().stream().findFirst().get();
         }
         return bestCandidate;
     }
 
-    public List<VotingPlayer> getCandidates(){
+    public List<VotingPlayer> getCandidates() {
         return new ArrayList<>(candidates.values());
     }
 }

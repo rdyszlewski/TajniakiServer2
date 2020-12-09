@@ -5,7 +5,7 @@ import com.parabbits.tajniakiserver.voting.service.Voting;
 
 public class StartVotingMessageCreator {
 
-    public static StartVotingMessage create(Team team, Voting voting, int votingTime){
+    public static StartVotingMessage create(Team team, Voting voting, int votingTime) {
         StartVotingMessage votingMessage = new StartVotingMessage();
         votingMessage.setTime(votingTime);
         votingMessage.setPlayers(voting.getCandidates(team));

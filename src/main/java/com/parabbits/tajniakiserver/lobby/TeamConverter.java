@@ -4,8 +4,8 @@ import com.parabbits.tajniakiserver.game.models.Team;
 
 public class TeamConverter {
 
-    public static Team getTeam(String team){
-        switch (team){
+    public static Team getTeam(String team) {
+        switch (team) {
             case "RED":
                 return Team.RED;
             case "BLUE":
